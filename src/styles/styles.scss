@@ -1,0 +1,30 @@
+@use 'variables.scss' as *;
+@use '@angular/material/' as mat;
+@use '@angular/material/prebuilt-themes/indigo-pink.css';
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&display=swap');
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+app-root {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  padding: $size-1;
+  flex: 1 0 auto;
+  min-height: 100vh;
+}
+
+footer {
+  flex-shrink: 0;
+}

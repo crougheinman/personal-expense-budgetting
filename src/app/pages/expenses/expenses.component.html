@@ -1,0 +1,15 @@
+<ng-container>
+  <div class="expenses">
+    <mat-grid-list cols="3" rowHeight="100px" gutterSize="16px">
+      <mat-grid-tile>
+        <button mat-raised-button color="primary" (click)="openAddExpenseDialog()">Add Expense</button>
+      </mat-grid-tile>
+      <mat-grid-tile>
+        <button mat-raised-button color="accent">View Reports</button>
+      </mat-grid-tile>
+      <mat-grid-tile>
+        <button mat-raised-button color="warn">Delete All</button>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </div>
+</ng-container>

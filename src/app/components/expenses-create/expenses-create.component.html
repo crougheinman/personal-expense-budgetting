@@ -1,0 +1,31 @@
+<ng-container>
+  <div class="expenses-create px-4 py-3">
+    <form [formGroup]="expensesForm">
+      <mat-form-field
+        appearance="outline"
+        floatLabel="auto"
+      >
+        <mat-label>Name</mat-label>
+        <input
+          #expenseName
+          matInput
+          type="text"
+          formControlName="expenseName"
+        />
+      </mat-form-field>
+      <mat-form-field
+        appearance="outline"
+        floatLabel="auto"
+      >
+        <mat-label>Amount</mat-label>
+        <input
+          #expenseAmount
+          matInput
+          type="number"
+          formControlName="expenseAmount"
+        />
+      </mat-form-field>
+    </form>
+    <button mat-raised-button color="primary" (click)="addExpenses()">Submit</button>
+  </div>
+</ng-container>
