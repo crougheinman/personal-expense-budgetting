@@ -1,1 +1,11 @@
-<div>test</div>
+<ng-container *ngIf="vm$ | async as vm">
+  <mat-action-list>
+    <button  mat-list-item *ngFor="let expense of vm.expenses">
+      <mat-icon matListItemIcon>folder</mat-icon>
+      <h3 matListItemTitle>{{ expense.name }}</h3>
+      <p matListItemLine>
+        <span>{{ expense.amount | currency:'PHP':'symbol':'1.2-2' }}</span>
+      </p>
+    </button >
+  </mat-action-list>
+</ng-container>

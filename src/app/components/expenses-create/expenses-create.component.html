@@ -1,9 +1,14 @@
 <ng-container>
   <div class="expenses-create px-4 py-3">
-    <form [formGroup]="expensesForm">
+    <h2>
+      Add Expense
+    </h2>
+    <mat-divider></mat-divider>
+    <form [formGroup]="expensesForm" class="pt-4">
       <mat-form-field
         appearance="outline"
         floatLabel="auto"
+        class="w-100"
       >
         <mat-label>Name</mat-label>
         <input
@@ -16,6 +21,7 @@
       <mat-form-field
         appearance="outline"
         floatLabel="auto"
+        class="w-100"
       >
         <mat-label>Amount</mat-label>
         <input
@@ -26,6 +32,8 @@
         />
       </mat-form-field>
     </form>
-    <button mat-raised-button color="primary" (click)="addExpenses()">Submit</button>
+    <div class="d-flex justify-content-end">
+      <button mat-raised-button color="primary" (click)="addExpenses()">Submit</button>
+    </div>
   </div>
 </ng-container>

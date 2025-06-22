@@ -6,7 +6,7 @@ import { ExpensesService } from '@services';
 export class ExpensesCreateFacade {
     constructor(private expensesService: ExpensesService) { }
 
-    async addExpense(expense: Partial<Expense>): Promise<string> {
-        return await this.expensesService.addExpenses(expense);
+    async addExpense(expense: Partial<Expense>): Promise<void> {
+        await this.expensesService.addExpenses(expense);
     }
 }

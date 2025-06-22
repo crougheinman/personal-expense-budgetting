@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { ExpensesService } from "@services";
 import { Expense } from "@models";
-import { map, Observable } from "rxjs";
+import { map, Observable, of } from "rxjs";
 
 export interface ExpensesListFacadeModel {
   expenses?: Expense[];
@@ -13,8 +13,11 @@ const initialState: ExpensesListFacadeModel = {
 
 @Injectable()
 export class ExpensesListFacade {
-  vm$ = this.buildViewModel();
-  constructor(private expensesService: ExpensesService) {}
+  vm$: Observable<ExpensesListFacadeModel> = of({});
+
+  constructor(private expensesService: ExpensesService) {
+    this.vm$ = this.buildViewModel();
+  }
 
   private buildViewModel(): Observable<ExpensesListFacadeModel> {
     return this.getExpenses().pipe(
@@ -28,6 +31,6 @@ export class ExpensesListFacade {
 
   private getExpenses(): Observable<Expense[]> {
     return this.expensesService
-      .getExpenses<Expense[]>();
+      .getExpenses();
   }
 }

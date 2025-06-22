@@ -1,22 +1,25 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { AsyncPipe, CommonModule } from '@angular/common';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
+import { AsyncPipe, CommonModule } from "@angular/common";
 
-import { SidebarComponent } from './custom/sidebar/sidebar.component';
-import { ExpensesCreateComponent } from './expenses-create/expenses-create.component';
-import { ExpensesListComponent } from './expenses-list/expenses-list.component';
+import { SidebarComponent } from "./custom/sidebar/sidebar.component";
+import { ExpensesCreateComponent } from "./expenses-create/expenses-create.component";
+import { ExpensesListComponent } from "./expenses-list/expenses-list.component";
 
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule, MatNavList } from '@angular/material/list';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatSelectModule } from '@angular/material/select';
-import { ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { MatToolbarModule } from "@angular/material/toolbar";
+import { MatIconModule } from "@angular/material/icon";
+import { MatSidenavModule } from "@angular/material/sidenav";
+import { MatListModule, MatNavList } from "@angular/material/list";
+import { MatCardModule } from "@angular/material/card";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { MatButtonModule } from "@angular/material/button";
+import { MatMenuModule } from "@angular/material/menu";
+import { MatSelectModule } from "@angular/material/select";
+import {
+  MatBottomSheetModule,
+} from "@angular/material/bottom-sheet";
+import { ReactiveFormsModule } from "@angular/forms";
+import { RouterModule } from "@angular/router";
 
 @NgModule({
   declarations: [
@@ -37,6 +40,7 @@ import { RouterModule } from '@angular/router';
     MatCardModule,
     MatMenuModule,
     MatSelectModule,
+    MatBottomSheetModule,
     ReactiveFormsModule,
     RouterModule,
     CommonModule,
@@ -58,9 +62,10 @@ import { RouterModule } from '@angular/router';
     MatCardModule,
     MatMenuModule,
     MatSelectModule,
+    MatBottomSheetModule,
     ReactiveFormsModule,
     RouterModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ComponentsModule { }
+export class ComponentsModule {}

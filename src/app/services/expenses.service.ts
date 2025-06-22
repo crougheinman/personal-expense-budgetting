@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { Expense } from "@models";
 import { Observable } from "rxjs";
 import { FirestoreService } from "./firestore.service";
+import { DBPathHelper } from "@app/models/db-path-helper";
 
 @Injectable({
   providedIn: "root",
@@ -9,17 +10,15 @@ import { FirestoreService } from "./firestore.service";
 export class ExpensesService {
   constructor(private firestoreService: FirestoreService) {}
 
-  getExpenses<T extends Expense[]>(): Observable<T> {
-    return this.firestoreService.getDocument<T>("expenses");
+  getExpenses(): Observable<Expense[]> {
+    return this.firestoreService.getDocument(DBPathHelper.getExpensesPath()) as Observable<Expense[]>;
   }
 
-  addExpenses(data: Partial<Expense>): Promise<string> {
-    const expenseId = this.firestoreService.addDocument("expenses", {
+  async addExpenses(data: Partial<Expense>): Promise<void> {
+    await this.firestoreService.addDocument(DBPathHelper.getExpensesPath(), {
       ...data,
       created: this.firestoreService.timestamp,
       updated: this.firestoreService.timestamp,
     });
-
-    return expenseId;
   }
 }

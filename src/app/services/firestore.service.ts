@@ -1,9 +1,18 @@
 import 'firebase/compat/firestore';
 import firebase from 'firebase/compat/app';
 import { Injectable } from "@angular/core";
-import { AngularFirestore } from "@angular/fire/compat/firestore";
+import { AngularFirestore, DocumentData } from "@angular/fire/compat/firestore";
 import { FirebaseError } from "firebase/app";
 import { map, Observable } from "rxjs";
+import {
+  Firestore,
+  collection,
+  collectionData,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc
+} from '@angular/fire/firestore'
 
 @Injectable({
   providedIn: "root",
@@ -12,37 +21,21 @@ export class FirestoreService {
   readonly batchMaxLength = 500;
 
   constructor(
-    private firestore: AngularFirestore,
+    private firestore: Firestore,
   ) {}
 
   get timestamp(): firebase.firestore.FieldValue {
     return firebase.firestore.FieldValue.serverTimestamp();
   }
 
-  getDocument<T>(ref: string): Observable<T> {
-    return this.firestore
-      .doc<T>(ref)
-      .snapshotChanges()
-      .pipe(
-        map((snapshot) => {
-          return snapshot.payload.exists
-            ? {
-                id: snapshot.payload.id,
-                ...(snapshot.payload.data() as T),
-              }
-            : null;
-        }),
-        this.logFirebaseObservableError(ref)
-      );
+  getDocument<T>(collectionPath: string): Observable<DocumentData[]> {
+    const collectionInstance = collection(this.firestore, collectionPath);
+    return collectionData(collectionInstance, {idField: 'id'});
   }
 
-  async addDocument<T>(collectionPath: string, data: T): Promise<string> {
-    return (
-      await this.firestore
-        .collection<T>(collectionPath)
-        .add(data)
-        .catch(this.logFirebaseError(`addDocument ${collectionPath}`))
-    ).id;
+  async addDocument(collectionPath: string, data: any): Promise<void> {
+    const collectionInstance = collection(this.firestore, collectionPath);
+    addDoc(collectionInstance, data);
   }
 
   private logFirebaseError(requestPath: string): (reason: any) => any {

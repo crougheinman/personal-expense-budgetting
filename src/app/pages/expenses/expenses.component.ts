@@ -17,9 +17,6 @@ export class ExpensesComponent {
     console.log('opened');
     
     this.dialogService.open(ExpensesCreateComponent, {
-            data: { message : 'add expenses'},
-            title: 'Some invites have not been sent!',
-            panelClass: 'tt9-modal',
             width: '444px',
             closeButtonTxt: 'OK',
             confirmBtn: false,
