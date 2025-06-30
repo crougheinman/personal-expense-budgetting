@@ -1,15 +1,17 @@
 import { Injectable } from "@angular/core";
-import { AppState, selectAuthenticatedUser } from "@store";
+import { AppState, selectAuthenticatedUser, selectUserIsAuthenticated } from "@store";
 import { Store } from "@ngrx/store";
-import { map, Observable, startWith } from "rxjs";
+import { combineLatest, map, Observable, startWith } from "rxjs";
 import { User } from "@models";
 
 export interface SidebarFacadeModel {
   user: User;
+  isAuthenticated: boolean | undefined;
 }
 
 const initialState: SidebarFacadeModel = {
   user: {} as User,
+  isAuthenticated: false,
 }
 
 @Injectable()
@@ -21,12 +23,14 @@ export class SidebarFacade {
   }
 
   private buildViewModel(): Observable<SidebarFacadeModel> {
-    return this.store.select(selectAuthenticatedUser).pipe(
-        map((user) => {
-            console.log("SidebarFacade - User:", user);
-            
+    return combineLatest([
+      this.store.select(selectAuthenticatedUser),
+      this.store.select(selectUserIsAuthenticated),
+    ]).pipe(
+        map(([user, isAuthenticated]) => {
             return {
-                user
+                user,
+                isAuthenticated,
             };
         }),
         startWith(initialState),

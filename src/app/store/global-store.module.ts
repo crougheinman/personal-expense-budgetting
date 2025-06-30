@@ -1,10 +1,9 @@
 import { ModuleWithProviders, NgModule } from '@angular/core';
-import { AuthModule } from '@angular/fire/auth';
+import { AuthModule } from './state/auth/auth.module';
 
 @NgModule({
-  declarations: [],
   imports: [
-    AuthModule
+    AuthModule,
   ]
 })
 export class GlobalStoreModule { 

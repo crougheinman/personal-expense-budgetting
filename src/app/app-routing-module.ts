@@ -3,11 +3,13 @@ import { RouterModule, Routes } from '@angular/router';
 import { ExpensesComponent, ForgotPasswordComponent, Home, NotFoundComponent, SignInComponent, SignUpComponent } from '@pages';
 import { ExpensesCreateComponent } from '@components'
 import { AuthGuard } from './auth-guard';
+import { IsAuthenticatedGuard } from './is-auth-guard';
 
 const routes: Routes = [
     {
-        path: '',
-        component: Home
+        path: 'dashboard/home',
+        component: Home,
+        canActivate: [AuthGuard] 
     },
     {
         path: 'auth', children: [
@@ -15,7 +17,8 @@ const routes: Routes = [
             {path: 'signin', component: SignInComponent},
             {path: 'signup', component:SignUpComponent},
             {path: 'forgot-password', component: ForgotPasswordComponent}
-        ]
+        ],
+        canActivate: [IsAuthenticatedGuard],
     },
     {
         path: 'expenses', children: [
@@ -31,7 +34,7 @@ const routes: Routes = [
     },
     {
         path: '**',
-        redirectTo: 'notFound'
+        redirectTo: 'dashboard/home'
     }
 ];
 

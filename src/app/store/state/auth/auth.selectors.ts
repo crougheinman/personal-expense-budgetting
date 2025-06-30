@@ -8,5 +8,10 @@ export const authState = createFeatureSelector<AuthState>(AUTH_FEATURE_KEY);
 
 export const selectAuthenticatedUser = createSelector<AppState, [AuthState], User>(
     authState,
-    (authStateDate: AuthState) => authStateDate?.user
+    (authStateDate) => authStateDate?.user
+);
+
+export const selectUserIsAuthenticated = createSelector<AppState, [AuthState], boolean | undefined>(
+    authState,
+    (authStateData) => authStateData?.isAuthenticated,
 );

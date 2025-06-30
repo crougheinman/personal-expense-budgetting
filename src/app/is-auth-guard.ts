@@ -10,7 +10,7 @@ import { User } from "@app/models";
 @Injectable({
   providedIn: "root",
 })
-export class AuthGuard implements CanActivate {
+export class IsAuthenticatedGuard implements CanActivate {
   constructor(
     private auth: Auth,
     private router: Router,
@@ -20,22 +20,11 @@ export class AuthGuard implements CanActivate {
   canActivate(): Observable<boolean> {
     return new Observable((subscriber) => {
       this.auth.onAuthStateChanged((user) => {
-        if (user) {
-          this.store.dispatch(
-            setAuthenticatedUser({
-              user: {
-                email: user.email || "",
-                uid: user.uid,
-                displayName: user.displayName || "",
-                photoURL: user.photoURL || "",
-                phoneNumber: user.phoneNumber || "",
-                providerId: user.providerData[0]?.providerId || "",
-              } as User,
-            })
-          );
+        if (!user) {
           subscriber.next(true);
         } else {
-          this.router.navigate(["/auth/signin"]);
+        console.log('aleradylogin');
+          this.router.navigate(["/"]);
           subscriber.next(false);
         }
         subscriber.complete();

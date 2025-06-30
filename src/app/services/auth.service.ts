@@ -1,17 +1,19 @@
 import { Injectable } from '@angular/core';
-import { Auth } from '@angular/fire/auth';
+import { AppState, signOut } from '@store';
+import { Store } from '@ngrx/store';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  constructor(private auth: Auth) { }
+  constructor(
+    private store: Store<AppState>,
+  ) { }
 
   async logout(): Promise<void> {
     try {
-      await this.auth.signOut();
-      console.log('User logged out successfully');
+      this.store.dispatch(signOut());
     } catch (error) {
       console.error('Error logging out:', error);
       throw error;

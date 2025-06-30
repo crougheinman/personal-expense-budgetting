@@ -1,9 +1,9 @@
 import { Injectable } from "@angular/core";
 import { ExpensesService } from "@services";
 import { Expense } from "@models";
-import { map, Observable, of } from "rxjs";
+import { combineLatest, map, Observable, of } from "rxjs";
 import { Store } from "@ngrx/store";
-import { AppState } from "@store";
+import { AppState, selectAuthenticatedUser } from "@store";
 
 export interface ExpensesListFacadeModel {
   expenses?: Expense[];
@@ -22,8 +22,11 @@ export class ExpensesListFacade {
   }
 
   private buildViewModel(): Observable<ExpensesListFacadeModel> {
-    return this.getExpenses().pipe(
-      map((expenses: Expense[]) => {
+    return combineLatest([
+      this.getExpenses(),
+      this.store.select(selectAuthenticatedUser),
+    ]).pipe(
+      map(([expenses, user]) => {
         return {
           expenses: expenses,
         };

@@ -7,23 +7,21 @@ export const AUTH_FEATURE_KEY = 'auth';
 
 export interface AuthState {
   user: User;
-  tokenId?: string;
+  isAuthenticated?: boolean;
 }
 
 const initialState: AuthState = {
   user: {} as User,
-  tokenId: undefined,
+  isAuthenticated: false,
 };
 
 const _authReducer = createReducer(
   initialState,
   on(setAuthenticatedUser, (state, { user }) => ({
     ...state,
-    user: {
-      displayName:'testoo',
-      email: 'test email'
-    },
-  }))
+    user,
+    isAuthenticated: !!user && Object.keys(user).length > 0, // Check if user is not empty
+  })),
 );
 
 export function authReducer(state: any, action: Action) {

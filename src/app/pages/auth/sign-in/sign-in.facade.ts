@@ -16,7 +16,6 @@ import {
   map,
   Observable,
 } from "rxjs";
-import { log } from "console";
 import { AppState, setAuthenticatedUser } from "@app/store";
 
 export interface SignInFacadeModel {
@@ -97,10 +96,7 @@ export class SignInFacade {
 
   async signInWithGoogle(): Promise<void> {
     try {
-      const result = await signInWithPopup(this.auth, this.googleAuthProvider);
-      console.log("Google sign-in result:", result.user);
-      
-      this.store.dispatch(setAuthenticatedUser({ user: result.user as User }));
+      await signInWithPopup(this.auth, this.googleAuthProvider);
     } catch (error: any) {
       if (error.message.includes(AuthErrorCodes.POPUP_CLOSED_BY_USER)) {
         this.errorMessage$.next("Popup closed by user. Please try again.");

@@ -13,7 +13,9 @@ import { getAuth, provideAuth } from "@angular/fire/auth";
 import { StoreModule } from "@ngrx/store";
 import { StoreDevtoolsModule } from "@ngrx/store-devtools";
 import { AuthGuard } from "./auth-guard";
-import { GlobalStoreModule } from "./store";
+import { GlobalStoreModule } from "@store";
+import { EffectsModule } from "@ngrx/effects";
+import { IsAuthenticatedGuard } from "./is-auth-guard";
 
 @NgModule({
   declarations: [App],
@@ -22,7 +24,7 @@ import { GlobalStoreModule } from "./store";
     AppRoutingModule,
     PagesModule,
     ComponentsModule,
-    GlobalStoreModule.forRoot(),
+    GlobalStoreModule,
     StoreModule.forRoot(
       {},
       {
@@ -33,6 +35,7 @@ import { GlobalStoreModule } from "./store";
         },
       }
     ),
+    EffectsModule.forRoot([]),
     StoreDevtoolsModule.instrument({
       maxAge: 25, // Retains last 25 states
       logOnly: environment.production, // Restrict extension to log-only mode
@@ -41,6 +44,7 @@ import { GlobalStoreModule } from "./store";
   ],
   providers: [
     AuthGuard,
+    IsAuthenticatedGuard,
     provideZonelessChangeDetection(),
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideFirestore(() => getFirestore()),
