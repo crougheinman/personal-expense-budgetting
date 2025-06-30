@@ -1,1 +1,10 @@
-{}
+{
+  "hosting": {
+    "public": "dist/personal-expense-budgetting/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

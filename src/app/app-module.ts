@@ -1,10 +1,5 @@
-import {
-  NgModule,
-  provideZonelessChangeDetection,
-} from "@angular/core";
-import {
-  BrowserModule,
-} from "@angular/platform-browser";
+import { NgModule, provideZonelessChangeDetection } from "@angular/core";
+import { BrowserModule } from "@angular/platform-browser";
 
 import { AppRoutingModule } from "./app-routing-module";
 import { App } from "./app";
@@ -12,27 +7,44 @@ import { ComponentsModule } from "./components";
 import { PagesModule } from "./pages";
 import { environment } from "./environments/environment";
 
-import { AngularFirestoreModule } from "@angular/fire/compat/firestore";
-import { AngularFireModule } from '@angular/fire/compat';
-import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
-import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { provideFirebaseApp, initializeApp } from "@angular/fire/app";
+import { provideFirestore, getFirestore } from "@angular/fire/firestore";
+import { getAuth, provideAuth } from "@angular/fire/auth";
+import { StoreModule } from "@ngrx/store";
+import { StoreDevtoolsModule } from "@ngrx/store-devtools";
+import { AuthGuard } from "./auth-guard";
+import { GlobalStoreModule } from "./store";
 
 @NgModule({
-  declarations: [
-    App
-  ],
+  declarations: [App],
   imports: [
-    BrowserModule, 
+    BrowserModule,
     AppRoutingModule,
     PagesModule,
     ComponentsModule,
-    // AngularFireModule.initializeApp(environment.firebaseConfig),
-    // AngularFirestoreModule
+    GlobalStoreModule.forRoot(),
+    StoreModule.forRoot(
+      {},
+      {
+        metaReducers: !environment.production ? [] : [],
+        runtimeChecks: {
+          strictActionImmutability: true,
+          strictStateImmutability: true,
+        },
+      }
+    ),
+    StoreDevtoolsModule.instrument({
+      maxAge: 25, // Retains last 25 states
+      logOnly: environment.production, // Restrict extension to log-only mode
+      autoPause: true, // Pauses recording actions when the extension is not open
+    }),
   ],
   providers: [
+    AuthGuard,
     provideZonelessChangeDetection(),
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideFirestore(() => getFirestore()),
+    provideAuth(() => getAuth()),
   ],
   bootstrap: [App],
 })

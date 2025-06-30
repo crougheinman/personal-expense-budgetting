@@ -19,6 +19,7 @@ import {
   MatBottomSheetModule,
 } from "@angular/material/bottom-sheet";
 import { ReactiveFormsModule } from "@angular/forms";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { RouterModule } from "@angular/router";
 
 @NgModule({
@@ -41,6 +42,7 @@ import { RouterModule } from "@angular/router";
     MatMenuModule,
     MatSelectModule,
     MatBottomSheetModule,
+    MatProgressSpinnerModule,
     ReactiveFormsModule,
     RouterModule,
     CommonModule,
@@ -63,6 +65,7 @@ import { RouterModule } from "@angular/router";
     MatMenuModule,
     MatSelectModule,
     MatBottomSheetModule,
+    MatProgressSpinnerModule,
     ReactiveFormsModule,
     RouterModule,
   ],

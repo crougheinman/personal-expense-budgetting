@@ -14,8 +14,6 @@ export class ExpensesComponent {
   constructor(private dialogService: DialogService) {}
 
   openAddExpenseDialog(): void {
-    console.log('opened');
-    
     this.dialogService.open(ExpensesCreateComponent, {
             width: '444px',
             closeButtonTxt: 'OK',

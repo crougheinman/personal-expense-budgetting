@@ -1,13 +1,23 @@
-import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from "@angular/core";
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Home } from "./home/home.component";
-import { Login } from "./login/login.component";
 import { ExpensesComponent } from "./expenses/expenses.component";
 import { ComponentsModule } from "@components";
+import { NotFoundComponent } from "./not-found/not-found.component";
+import { SignInComponent } from "./auth/sign-in/sign-in.component";
+import { SignUpComponent } from "./auth/sign-up/sign-up.component";
+import { ForgotPasswordComponent } from "./auth/forgot-password/forgot-password.component";
 
 @NgModule({
-  declarations: [ExpensesComponent, Home, Login],
-  imports: [ComponentsModule, CommonModule],
+  declarations: [
+    ExpensesComponent,
+    Home,
+    NotFoundComponent,
+    SignInComponent,
+    SignUpComponent,
+    ForgotPasswordComponent,
+  ],
+  imports: [ComponentsModule, CommonModule,],
   exports: [ComponentsModule, CommonModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

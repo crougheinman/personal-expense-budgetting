@@ -1,21 +1,36 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Observable } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
+import { Observable } from "rxjs";
+import { map, shareReplay } from "rxjs/operators";
+import { AuthService } from "@services";
+import { SidebarFacade, SidebarFacadeModel } from "./sidebar-facade";
 
 @Component({
-  selector: 'components-custom-sidebar',
-  templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.scss',
+  selector: "components-custom-sidebar",
+  templateUrl: "./sidebar.component.html",
+  styleUrl: "./sidebar.component.scss",
   standalone: false,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [SidebarFacade]
 })
 export class SidebarComponent {
-  private breakpointObserver = inject(BreakpointObserver);
+  isHandset$: Observable<boolean>;
+  vm$: Observable<SidebarFacadeModel>;
 
-  isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
-    .pipe(
-      map(result => result.matches),
-      shareReplay()
+  constructor(
+    private breakpointObserver: BreakpointObserver, 
+    private authService: AuthService,
+    private facade: SidebarFacade,
+  ) {
+    this.isHandset$ = this.breakpointObserver.observe(Breakpoints.Handset).pipe(
+      map((result) => result.matches),
+      shareReplay(),
     );
+
+    this.vm$ = this.facade.vm$;
+  }
+
+  async logout(): Promise<void> {
+    await this.authService.logout();
+  }
 }

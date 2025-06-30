@@ -23,6 +23,9 @@
       "@models": [
         "src/app/models/index.ts"
       ],
+      "@store": [
+        "src/app/store/index.ts"
+      ],
       "@style/vars": [
         "src/styles/variables"
       ],
