@@ -1,5 +1,17 @@
-<ng-container>
-    <div class="main-content">
-        Home
+<ng-container *ngIf="vm$ | async as vm">
+  <div class="home">
+    <mat-card appearance="outlined" class="welcome-bar">
+      <mat-card-header>
+        <mat-card-title>
+          <h1>Good day {{ vm.user?.displayName }}</h1></mat-card-title
+        >
+      </mat-card-header>
+    </mat-card>
+    <div class="second-section row">
+      <div class="col">
+        <mat-card appearance="raised"> test </mat-card>
+      </div>
+      <div class="col"></div>
     </div>
+  </div>
 </ng-container>

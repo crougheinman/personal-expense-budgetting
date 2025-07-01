@@ -23,7 +23,6 @@ export class IsAuthenticatedGuard implements CanActivate {
         if (!user) {
           subscriber.next(true);
         } else {
-        console.log('aleradylogin');
           this.router.navigate(["/"]);
           subscriber.next(false);
         }

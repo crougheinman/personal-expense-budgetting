@@ -98,14 +98,7 @@ export class SignInFacade {
     try {
       await signInWithPopup(this.auth, this.googleAuthProvider);
     } catch (error: any) {
-      if (error.message.includes(AuthErrorCodes.POPUP_CLOSED_BY_USER)) {
-        this.errorMessage$.next("Popup closed by user. Please try again.");
-      }
-      if (error.message.includes(AuthErrorCodes.POPUP_BLOCKED)) {
-        this.errorMessage$.next(
-          "Popup blocked. Please allow popups and try again."
-        );
-      }
+      
     }
   }
 }
