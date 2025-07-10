@@ -25,6 +25,7 @@ export class AuthGuard implements CanActivate {
             setAuthenticatedUser({
               user: {
                 email: user.email || "",
+                id: user.uid,
                 uid: user.uid,
                 displayName: user.displayName || "",
                 photoURL: user.photoURL || "",

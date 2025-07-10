@@ -1,12 +1,13 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 import {
   AbstractControl,
   FormBuilder,
   FormControl,
   FormGroup,
 } from "@angular/forms";
-import { ExpensesCreateFacade } from "./expenses-create.facade";
+import { ExpensesCreateFacade, ExpensesCreateFacadeModel, initialState } from "./expenses-create.facade";
 import { MatDialogRef } from "@angular/material/dialog";
+import { Observable, of } from "rxjs";
 
 @Component({
   selector: "app-expenses-create.component",
@@ -18,12 +19,14 @@ import { MatDialogRef } from "@angular/material/dialog";
 })
 export class ExpensesCreateComponent {
   expensesForm!: FormGroup;
+  vm$: Observable<ExpensesCreateFacadeModel> = of(initialState);
 
   constructor(
     private facade: ExpensesCreateFacade,
     private formBuilder: FormBuilder,
     private matDialogRef: MatDialogRef<ExpensesCreateComponent>,
   ) {
+    this.vm$ = this.facade.vm$;
     this.expensesForm = this.formBuilder.group({
       expenseName: new FormControl<string | null>(null),
       expenseAmount: new FormControl<string | null>(null),
@@ -40,8 +43,9 @@ export class ExpensesCreateComponent {
     return this.expensesForm.get("expenseAmount") as AbstractControl;
   }
 
-  async addExpenses(): Promise<void> {
+  async addExpenses(vm: ExpensesCreateFacadeModel): Promise<void> {
     await this.facade.addExpense({
+      userId: vm.userId,
       name: this.nameControl.value,
       amount: this.amountControl.value,
     });

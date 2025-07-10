@@ -7,35 +7,48 @@ import { AppState, selectAuthenticatedUser } from "@store";
 
 export interface ExpensesListFacadeModel {
   expenses?: Expense[];
+  totalValue: number;
 }
 
-const initialState: ExpensesListFacadeModel = {
+export const initialState: ExpensesListFacadeModel = {
   expenses: [],
+  totalValue: 0,
 };
 
 @Injectable()
 export class ExpensesListFacade {
-  vm$: Observable<ExpensesListFacadeModel> = of({});
+  vm$: Observable<ExpensesListFacadeModel> = of(initialState);
 
-  constructor(private expensesService: ExpensesService, private store: Store<AppState>) {
+  constructor(
+    private expensesService: ExpensesService,
+    private store: Store<AppState>
+  ) {
     this.vm$ = this.buildViewModel();
   }
 
   private buildViewModel(): Observable<ExpensesListFacadeModel> {
     return combineLatest([
-      this.getExpenses(),
-      this.store.select(selectAuthenticatedUser),
+      this.getUserExpenses(),
     ]).pipe(
-      map(([expenses, user]) => {
+      map(([expenses]) => {
+        const totalValue = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+
         return {
-          expenses: expenses,
+          expenses,
+          totalValue,
         };
       })
     );
   }
 
-  private getExpenses(): Observable<Expense[]> {
-    return this.expensesService
-      .getExpenses();
+  private getUserExpenses(): Observable<Expense[]> {
+    return combineLatest([
+      this.expensesService.getExpenses(),
+      this.store.select(selectAuthenticatedUser),
+    ]).pipe(
+      map(([expenses, user]) => {
+        return expenses.filter((expense) => expense.userId === user.id);
+      })
+    );
   }
 }

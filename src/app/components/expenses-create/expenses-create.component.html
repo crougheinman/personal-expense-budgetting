@@ -1,4 +1,4 @@
-<ng-container>
+<ng-container *ngIf="vm$ | async as vm">
   <div class="expenses-create px-4 py-3">
     <h2>
       Add Expense
@@ -33,7 +33,7 @@
       </mat-form-field>
     </form>
     <div class="d-flex justify-content-end">
-      <button mat-raised-button color="primary" (click)="addExpenses()">Submit</button>
+      <button mat-raised-button color="primary" (click)="addExpenses(vm)">Submit</button>
     </div>
   </div>
 </ng-container>

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ExpensesListFacade, ExpensesListFacadeModel } from './expenses-list.facade';
+import { ExpensesListFacade, ExpensesListFacadeModel, initialState } from './expenses-list.facade';
 import { Observable, of } from 'rxjs';
 
 @Component({
@@ -12,10 +12,10 @@ import { Observable, of } from 'rxjs';
 })
 export class ExpensesListComponent {
 
-  vm$: Observable<ExpensesListFacadeModel> = of({});
+  vm$: Observable<ExpensesListFacadeModel> = of(initialState);
 
-  constructor(private expensesListFacade: ExpensesListFacade) {
-    this.vm$ = this.expensesListFacade.vm$;
+  constructor(private facade: ExpensesListFacade) {
+    this.vm$ = this.facade.vm$;
   }
 
 }
