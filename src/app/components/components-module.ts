@@ -18,7 +18,7 @@ import { MatSelectModule } from "@angular/material/select";
 import {
   MatBottomSheetModule,
 } from "@angular/material/bottom-sheet";
-import {MatGridListModule} from '@angular/material/grid-list';
+import { MatGridListModule } from "@angular/material/grid-list";
 import { ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { RouterModule } from "@angular/router";

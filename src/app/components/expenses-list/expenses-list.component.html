@@ -1,32 +1,42 @@
 <ng-container *ngIf="vm$ | async as vm">
-  <div class="d-flex mt-2">
-      <mat-card class="mx-1">
-        <mat-card-header>
-          <mat-card-title>
-            {{ vm.totalValue | currency : "PHP" : "symbol" : "1.2-2" }}
-          </mat-card-title>
-          <mat-card-subtitle>Total</mat-card-subtitle>
-        </mat-card-header>
-      </mat-card>
-      <mat-card class="mx-1">
-        <mat-card-header>
-          <mat-card-title>
-            {{ vm.totalValue | currency : "PHP" : "symbol" : "1.2-2" }}
-          </mat-card-title>
-          <mat-card-subtitle>Total</mat-card-subtitle>
-        </mat-card-header>
-      </mat-card>
+  <div class="d-flex mt-2 mb-3">
+    <mat-card class="mx-1">
+      <mat-card-header>
+        <mat-card-title>
+          {{ vm.totalValue | currency : "PHP" : "symbol" : "1.2-2" }}
+        </mat-card-title>
+        <mat-card-subtitle>Total</mat-card-subtitle>
+      </mat-card-header>
+    </mat-card>
+    <mat-card class="mx-1">
+      <mat-card-header>
+        <mat-card-title>
+          {{ vm.totalValue | currency : "PHP" : "symbol" : "1.2-2" }}
+        </mat-card-title>
+        <mat-card-subtitle>Total</mat-card-subtitle>
+      </mat-card-header>
+    </mat-card>
   </div>
 
-  <mat-action-list>
-    <button mat-list-item *ngFor="let expense of vm.expenses">
-      <mat-icon matListItemIcon>folder</mat-icon>
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Search...</mat-label>
+    <input
+      #searchInput
+      matInput
+      placeholder="Search"
+      (input)="onSearch($event)"
+    />
+  </mat-form-field>
+
+  <mat-selection-list role="listbox">
+    <mat-list-option 
+      role="listitem" 
+      *ngFor="let expense of vm.expenses"
+      (click)="onClick()"
+    >
+      {{ expense.amount | currency : "PHP" : "symbol" : "1.2-2" }}
+      <mat-icon matListItemIcon>money</mat-icon>
       <h3 matListItemTitle>{{ expense.name }}</h3>
-      <p matListItemLine>
-        <span>{{
-          expense.amount | currency : "PHP" : "symbol" : "1.2-2"
-        }}</span>
-      </p>
-    </button>
-  </mat-action-list>
+    </mat-list-option>
+  </mat-selection-list>
 </ng-container>

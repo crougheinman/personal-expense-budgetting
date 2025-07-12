@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { ExpensesService } from "@services";
 import { Expense } from "@models";
-import { combineLatest, map, Observable, of } from "rxjs";
+import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of } from "rxjs";
 import { Store } from "@ngrx/store";
 import { AppState, selectAuthenticatedUser } from "@store";
 
@@ -18,6 +18,7 @@ export const initialState: ExpensesListFacadeModel = {
 @Injectable()
 export class ExpensesListFacade {
   vm$: Observable<ExpensesListFacadeModel> = of(initialState);
+  searchKey$: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   constructor(
     private expensesService: ExpensesService,
@@ -29,12 +30,15 @@ export class ExpensesListFacade {
   private buildViewModel(): Observable<ExpensesListFacadeModel> {
     return combineLatest([
       this.getUserExpenses(),
+      this.searchKey$.asObservable().pipe(distinctUntilChanged()),
     ]).pipe(
-      map(([expenses]) => {
+      map(([expenses, searchKey]) => {
         const totalValue = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-
+        const filteredExpenses = searchKey.length > 0? 
+          expenses.filter((expense) => expense.name.toLowerCase().includes(searchKey.toLowerCase())):
+          expenses;
         return {
-          expenses,
+          expenses: filteredExpenses,
           totalValue,
         };
       })
@@ -50,5 +54,9 @@ export class ExpensesListFacade {
         return expenses.filter((expense) => expense.userId === user.id);
       })
     );
+  }
+
+  updateSearchKey(value: string) : void {
+    this.searchKey$.next(value);
   }
 }
