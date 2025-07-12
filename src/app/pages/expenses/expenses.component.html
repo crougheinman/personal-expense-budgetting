@@ -1,11 +1,7 @@
 <ng-container>
-  <div class="expenses">
-    <mat-grid-list cols="3" rowHeight="100px" gutterSize="16px">
-      <mat-grid-tile>
-        <button mat-raised-button color="primary" (click)="openAddExpenseDialog()">Add Expense</button>
-      </mat-grid-tile>
-    </mat-grid-list>
-  </div>
+  <button mat-fab color="accent" class="floating-btn" (click)="openAddExpenseDialog()">
+    <mat-icon>add</mat-icon>
+  </button>
 
   <component-expenses-list></component-expenses-list>
 </ng-container>

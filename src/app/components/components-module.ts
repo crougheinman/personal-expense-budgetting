@@ -18,6 +18,7 @@ import { MatSelectModule } from "@angular/material/select";
 import {
   MatBottomSheetModule,
 } from "@angular/material/bottom-sheet";
+import {MatGridListModule} from '@angular/material/grid-list';
 import { ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { RouterModule } from "@angular/router";
@@ -43,6 +44,7 @@ import { RouterModule } from "@angular/router";
     MatSelectModule,
     MatBottomSheetModule,
     MatProgressSpinnerModule,
+    MatGridListModule,
     ReactiveFormsModule,
     RouterModule,
     CommonModule,
@@ -66,6 +68,7 @@ import { RouterModule } from "@angular/router";
     MatSelectModule,
     MatBottomSheetModule,
     MatProgressSpinnerModule,
+    MatGridListModule,
     ReactiveFormsModule,
     RouterModule,
   ],
