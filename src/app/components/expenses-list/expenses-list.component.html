@@ -28,15 +28,15 @@
     />
   </mat-form-field>
 
-  <mat-selection-list role="listbox">
-    <mat-list-option 
+  <mat-list role="listbox">
+    <mat-list-item 
       role="listitem" 
       *ngFor="let expense of vm.expenses"
-      (click)="onClick()"
+      (click)="onClick(expense)"
     >
       {{ expense.amount | currency : "PHP" : "symbol" : "1.2-2" }}
       <mat-icon matListItemIcon>money</mat-icon>
       <h3 matListItemTitle>{{ expense.name }}</h3>
-    </mat-list-option>
-  </mat-selection-list>
+    </mat-list-item>
+  </mat-list>
 </ng-container>

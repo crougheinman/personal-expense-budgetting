@@ -5,10 +5,9 @@ import {
   initialState,
 } from "./expenses-list.facade";
 import { Observable, of } from "rxjs";
-import {
-  MatBottomSheet,
-  MatBottomSheetRef,
-} from "@angular/material/bottom-sheet";
+import { MatBottomSheet } from "@angular/material/bottom-sheet";
+import { Expense } from "@app/models";
+import { ExpensesEditComponent } from "../expenses-edit/expenses-edit.component";
 
 @Component({
   selector: "component-expenses-list",
@@ -23,7 +22,7 @@ export class ExpensesListComponent {
 
   constructor(
     private facade: ExpensesListFacade,
-    private bottomSheet: MatBottomSheet,
+    private bottomSheet: MatBottomSheet
   ) {
     this.vm$ = this.facade.vm$;
   }
@@ -33,7 +32,11 @@ export class ExpensesListComponent {
     this.facade.updateSearchKey(target.value);
   }
 
-  onClick(): void {
-    console.log("clicked");
+  onClick(expense: Expense): void {
+    this.bottomSheet.open(ExpensesEditComponent, {
+      data: {
+        ...expense,
+      },
+    });
   }
 }

@@ -1,0 +1,38 @@
+<div class="expenses-edit px-4 py-3">
+  <h2>Edit Expense</h2>
+  <mat-divider></mat-divider>
+  <form [formGroup]="expensesForm" class="pt-4">
+    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+      <mat-label>Name</mat-label>
+      <input #expenseName matInput type="text" formControlName="expenseName" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+      <mat-label>Amount</mat-label>
+      <input
+        #expenseAmount
+        matInput
+        type="number"
+        formControlName="expenseAmount"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+      <mat-label>Description</mat-label>
+      <textarea
+        #expenseDescription
+        matInput
+        placeholder="Ex. Just anything..."
+        formControlName="expenseDescription"
+      ></textarea>
+    </mat-form-field>
+  </form>
+  <div class="d-flex justify-content-end gap-2">
+    <button mat-raised-button color="primary" (click)="updateExpense()">
+      Update
+    </button>
+    <button mat-raised-button class="bg-danger" (click)="deleteExpense()">
+      Delete
+    </button>
+  </div>
+</div>

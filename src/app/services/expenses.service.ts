@@ -11,7 +11,9 @@ export class ExpensesService {
   constructor(private firestoreService: FirestoreService) {}
 
   getExpenses(): Observable<Expense[]> {
-    return this.firestoreService.getDocument(DBPathHelper.getExpensesPath()) as Observable<Expense[]>;
+    return this.firestoreService.getDocument(
+      DBPathHelper.getExpensesPath()
+    ) as Observable<Expense[]>;
   }
 
   async addExpenses(data: Partial<Expense>): Promise<void> {
@@ -20,5 +22,32 @@ export class ExpensesService {
       created: this.firestoreService.timestamp,
       updated: this.firestoreService.timestamp,
     });
+  }
+
+  async updateExpense(data: Partial<Expense>): Promise<void> {
+    if (!data.id) {
+      return;
+    }
+
+    await this.firestoreService.updateDocument(
+      DBPathHelper.getExpensesPath(),
+      data.id as string,
+      {
+        ...data,
+        created: this.firestoreService.timestamp,
+        updated: this.firestoreService.timestamp,
+      }
+    );
+  }
+
+  async deleteExpense(data: Partial<Expense>): Promise<void> {
+    if (!data.id) {
+      return;
+    }
+
+    await this.firestoreService.deleteDocument(
+      DBPathHelper.getExpensesPath(),
+      data.id
+    );
   }
 }

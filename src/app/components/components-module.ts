@@ -4,6 +4,7 @@ import { AsyncPipe, CommonModule } from "@angular/common";
 import { SidebarComponent } from "./custom/sidebar/sidebar.component";
 import { ExpensesCreateComponent } from "./expenses-create/expenses-create.component";
 import { ExpensesListComponent } from "./expenses-list/expenses-list.component";
+import { ExpensesEditComponent } from './expenses-edit/expenses-edit.component';
 
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatIconModule } from "@angular/material/icon";
@@ -28,6 +29,7 @@ import { RouterModule } from "@angular/router";
     ExpensesCreateComponent,
     ExpensesListComponent,
     SidebarComponent,
+    ExpensesEditComponent,
   ],
   imports: [
     AsyncPipe,
@@ -51,6 +53,7 @@ import { RouterModule } from "@angular/router";
   ],
   exports: [
     ExpensesCreateComponent,
+    ExpensesEditComponent,
     ExpensesListComponent,
     SidebarComponent,
     AsyncPipe,

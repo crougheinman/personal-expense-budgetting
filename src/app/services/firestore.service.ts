@@ -11,7 +11,7 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
-  doc
+  doc,
 } from '@angular/fire/firestore'
 
 @Injectable({
@@ -38,28 +38,13 @@ export class FirestoreService {
     addDoc(collectionInstance, data);
   }
 
-  private logFirebaseError(requestPath: string): (reason: any) => any {
-    return (error) => {
-      if ((error as FirebaseError)?.code === "permission-denied") {
-        console.info(
-          `Missing or insufficient permissions when querying ${requestPath}`
-        );
-      }
-      throw error;
-    };
+  async updateDocument(documentPath: string,  id: string, data: any): Promise<void> {
+    const documentInstance = doc(this.firestore, documentPath, id);
+    updateDoc(documentInstance, data);
   }
 
-  private logFirebaseObservableError(
-    requestPath: string
-  ): (observalble: Observable<any>) => Observable<any> {
-    return (observable: Observable<any>) => {
-      return observable.pipe(
-        map((data) => data),
-        (error: any) => {
-          console.error(`Error in Firebase request to ${requestPath}:`, error);
-          throw error;
-        }
-      );
-    };
+  async deleteDocument(documentPath: string,  id: string): Promise<void> {
+    const documentInstance = doc(this.firestore, documentPath, id);
+    deleteDoc(documentInstance);
   }
 }
