@@ -8,17 +8,22 @@ import { AppState, selectAuthenticatedUser } from "@store";
 export interface ExpensesListFacadeModel {
   expenses?: Expense[];
   totalValue: number;
+  filteredCount: number;
+  totalCount: number;
 }
 
 export const initialState: ExpensesListFacadeModel = {
   expenses: [],
   totalValue: 0,
+  filteredCount: 0,
+  totalCount: 0,
 };
 
 @Injectable()
 export class ExpensesListFacade {
   vm$: Observable<ExpensesListFacadeModel> = of(initialState);
   searchKey$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  selectedCategory$: BehaviorSubject<string> = new BehaviorSubject<string>('all');
 
   constructor(
     private expensesService: ExpensesService,
@@ -31,15 +36,31 @@ export class ExpensesListFacade {
     return combineLatest([
       this.getUserExpenses(),
       this.searchKey$.asObservable().pipe(distinctUntilChanged()),
+      this.selectedCategory$.asObservable().pipe(distinctUntilChanged()),
     ]).pipe(
-      map(([expenses, searchKey]) => {
+      map(([expenses, searchKey, selectedCategory]) => {
         const totalValue = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-        const filteredExpenses = searchKey.length > 0? 
-          expenses.filter((expense) => expense.name.toLowerCase().includes(searchKey.toLowerCase())):
-          expenses;
+        let filteredExpenses = expenses;
+        
+        // Filter by search key
+        if (searchKey.length > 0) {
+          filteredExpenses = filteredExpenses.filter((expense) => 
+            expense.name.toLowerCase().includes(searchKey.toLowerCase())
+          );
+        }
+        
+        // Filter by category
+        if (selectedCategory !== 'all') {
+          filteredExpenses = filteredExpenses.filter((expense) => 
+            expense.category?.toLowerCase() === selectedCategory.toLowerCase()
+          );
+        }
+        
         return {
           expenses: filteredExpenses,
           totalValue,
+          filteredCount: filteredExpenses.length,
+          totalCount: expenses.length,
         };
       })
     );
@@ -58,5 +79,9 @@ export class ExpensesListFacade {
 
   updateSearchKey(value: string) : void {
     this.searchKey$.next(value);
+  }
+
+  updateSelectedCategory(category: string): void {
+    this.selectedCategory$.next(category);
   }
 }

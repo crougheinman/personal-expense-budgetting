@@ -10,6 +10,7 @@ import { environment } from "./environments/environment";
 import { provideFirebaseApp, initializeApp } from "@angular/fire/app";
 import { provideFirestore, getFirestore } from "@angular/fire/firestore";
 import { getAuth, provideAuth } from "@angular/fire/auth";
+import { provideNativeDateAdapter } from "@angular/material/core";
 import { StoreModule } from "@ngrx/store";
 import { StoreDevtoolsModule } from "@ngrx/store-devtools";
 import { AuthGuard } from "./auth-guard";
@@ -46,6 +47,7 @@ import { IsAuthenticatedGuard } from "./is-auth-guard";
     AuthGuard,
     IsAuthenticatedGuard,
     provideZonelessChangeDetection(),
+    provideNativeDateAdapter(),
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),

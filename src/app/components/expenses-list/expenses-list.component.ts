@@ -6,7 +6,13 @@ import {
 } from "./expenses-list.facade";
 import { Observable, of } from "rxjs";
 import { MatBottomSheet } from "@angular/material/bottom-sheet";
-import { Expense } from "@app/models";
+import { 
+  Expense, 
+  EXPENSE_CATEGORIES, 
+  EXPENSE_CATEGORY_ICONS, 
+  getExpenseCategoryIcon, 
+  getCategoryDisplayName 
+} from "@app/models";
 import { ExpensesEditComponent } from "../expenses-edit/expenses-edit.component";
 
 @Component({
@@ -19,6 +25,8 @@ import { ExpensesEditComponent } from "../expenses-edit/expenses-edit.component"
 })
 export class ExpensesListComponent {
   vm$: Observable<ExpensesListFacadeModel> = of(initialState);
+  categories = ['all', ...EXPENSE_CATEGORIES];
+  selectedCategory = 'all';
 
   constructor(
     private facade: ExpensesListFacade,
@@ -32,11 +40,37 @@ export class ExpensesListComponent {
     this.facade.updateSearchKey(target.value);
   }
 
+  onCategoryFilter(category: string): void {
+    this.selectedCategory = category;
+    this.facade.updateSelectedCategory(category);
+  }
+
   onClick(expense: Expense): void {
     this.bottomSheet.open(ExpensesEditComponent, {
       data: {
         ...expense,
       },
     });
+  }
+
+  getCategoryIcon(category: string): string {
+    return EXPENSE_CATEGORY_ICONS[category?.toLowerCase()] || EXPENSE_CATEGORY_ICONS['all'];
+  }
+
+  getCategoryDisplayName(category: string): string {
+    return getCategoryDisplayName(category);
+  }
+
+  getExpenseIcon(category: string): string {
+    return getExpenseCategoryIcon(category);
+  }
+
+  getAmountClass(amount: number): string {
+    if (amount < 0) {
+      return 'negative';
+    } else if (amount > 0) {
+      return 'positive';
+    }
+    return '';
   }
 }

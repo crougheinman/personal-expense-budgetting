@@ -16,6 +16,8 @@ import { MatInputModule } from "@angular/material/input";
 import { MatButtonModule } from "@angular/material/button";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatSelectModule } from "@angular/material/select";
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatChipsModule } from '@angular/material/chips';
 import {
   MatBottomSheetModule,
 } from "@angular/material/bottom-sheet";
@@ -47,6 +49,8 @@ import { RouterModule } from "@angular/router";
     MatBottomSheetModule,
     MatProgressSpinnerModule,
     MatGridListModule,
+    MatDatepickerModule,
+    MatChipsModule,
     ReactiveFormsModule,
     RouterModule,
     CommonModule,
@@ -72,6 +76,8 @@ import { RouterModule } from "@angular/router";
     MatBottomSheetModule,
     MatProgressSpinnerModule,
     MatGridListModule,
+    MatDatepickerModule,
+    MatChipsModule,
     ReactiveFormsModule,
     RouterModule,
   ],

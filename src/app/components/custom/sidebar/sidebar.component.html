@@ -11,12 +11,14 @@
       <mat-toolbar>PEB</mat-toolbar>
       <mat-divider></mat-divider>
       <mat-nav-list>
-        <a mat-list-item routerLinkActive="active" routerLink="expenses"
-          >Expenses</a
-        >
-        <a mat-list-item routerLinkActive="active" routerLink="bills"
-          >Bills</a
-        >
+        <a mat-list-item routerLinkActive="active" routerLink="expenses">
+          <mat-icon matListItemIcon>receipt</mat-icon>
+          <span matListItemTitle>Expenses</span>
+        </a>
+        <a mat-list-item routerLinkActive="active" routerLink="bills">
+          <mat-icon matListItemIcon>description</mat-icon>
+          <span matListItemTitle>Bills</span>
+        </a>
       </mat-nav-list>
     </mat-sidenav>
     <mat-sidenav-content>

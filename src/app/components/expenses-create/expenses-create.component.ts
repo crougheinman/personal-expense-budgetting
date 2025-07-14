@@ -48,6 +48,7 @@ export class ExpensesCreateComponent {
       userId: vm.userId,
       name: this.nameControl.value,
       amount: this.amountControl.value,
+      category: 'default',
     });
     
     this.matDialogRef.close();

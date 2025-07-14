@@ -1,6 +1,6 @@
 <ng-container *ngIf="vm$ | async as vm">
   <div class="expenses-create px-4 py-3">
-    <h2>
+    <h2 class="text-light">
       Add Expense
     </h2>
     <mat-divider></mat-divider>
@@ -16,7 +16,11 @@
           matInput
           type="text"
           formControlName="expenseName"
+          required
         />
+        <mat-error *ngIf="expensesForm.get('expenseName')?.hasError('required')">
+          Expense name is required
+        </mat-error>
       </mat-form-field>
       <mat-form-field
         appearance="outline"
@@ -29,11 +33,28 @@
           matInput
           type="number"
           formControlName="expenseAmount"
+          required
+          min="0"
+          step="0.01"
         />
+        <mat-error *ngIf="expensesForm.get('expenseAmount')?.hasError('required')">
+          Amount is required
+        </mat-error>
+        <mat-error *ngIf="expensesForm.get('expenseAmount')?.hasError('min')">
+          Amount must be greater than 0
+        </mat-error>
       </mat-form-field>
     </form>
     <div class="d-flex justify-content-end">
-      <button mat-raised-button color="primary" (click)="addExpenses(vm)">Submit</button>
+      <button 
+        mat-raised-button 
+        color="primary" 
+        (click)="addExpenses(vm)"
+        [disabled]="expensesForm.invalid"
+      >
+        <mat-icon>add</mat-icon>
+        Add Expense
+      </button>
     </div>
   </div>
 </ng-container>

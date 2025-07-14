@@ -18,6 +18,21 @@
     </mat-card>
   </div>
 
+  <!-- Category Filter Navigation -->
+  <div class="category-navigation mb-3">
+    <h4 class="mb-2">Filter by Category</h4>
+    <mat-chip-listbox class="category-chips">
+      <mat-chip-option 
+        *ngFor="let category of categories"
+        [selected]="selectedCategory === category"
+        (click)="onCategoryFilter(category)"
+      >
+        <mat-icon matChipAvatar>{{ getCategoryIcon(category) }}</mat-icon>
+        {{ getCategoryDisplayName(category) }}
+      </mat-chip-option>
+    </mat-chip-listbox>
+  </div>
+
   <mat-form-field appearance="outline" class="w-100">
     <mat-label>Search...</mat-label>
     <input
@@ -28,15 +43,23 @@
     />
   </mat-form-field>
 
-  <mat-list role="listbox">
-    <mat-list-item 
-      role="listitem" 
-      *ngFor="let expense of vm.expenses"
-      (click)="onClick(expense)"
-    >
-      {{ expense.amount | currency : "PHP" : "symbol" : "1.2-2" }}
-      <mat-icon matListItemIcon>money</mat-icon>
-      <h3 matListItemTitle>{{ expense.name }}</h3>
-    </mat-list-item>
-  </mat-list>
+  <div class="results-info mb-2" *ngIf="vm.filteredCount !== vm.totalCount">
+    <small class="text-muted">
+      Showing {{ vm.filteredCount }} of {{ vm.totalCount }} expenses
+    </small>
+  </div>
+
+  <div class="expenses-list">
+    <mat-list role="listbox">
+      <mat-list-item 
+        role="listitem" 
+        *ngFor="let expense of vm.expenses"
+        (click)="onClick(expense)"
+      >
+        {{ expense.amount | currency : "PHP" : "symbol" : "1.2-2" }}
+        <mat-icon matListItemIcon>{{ getExpenseIcon(expense.category ?? 'default') }}</mat-icon>
+        <h3 matListItemTitle>{{ expense.name }}</h3>
+      </mat-list-item>
+    </mat-list>
+  </div>
 </ng-container>
