@@ -57,6 +57,18 @@
 }
 
 .category-navigation {
+  animation: slideDown 0.3s ease-out;
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
   .category-chips-container {
     overflow-x: auto;
     overflow-y: hidden;
@@ -131,6 +143,35 @@
     color: rgba(0, 0, 0, 0.87);
     font-weight: 500;
     margin-bottom: 12px;
+  }
+}
+
+.search-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 16px;
+
+  .search-field {
+    flex: 1;
+  }
+
+  .category-toggle-btn {
+    margin-top: 8px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+      transform: scale(1.1);
+    }
+
+    mat-icon {
+      transition: transform 0.2s ease;
+    }
+
+    &:active mat-icon {
+      transform: scale(0.95);
+    }
   }
 }
 

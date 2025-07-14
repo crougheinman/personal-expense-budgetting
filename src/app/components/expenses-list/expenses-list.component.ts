@@ -27,6 +27,7 @@ export class ExpensesListComponent {
   vm$: Observable<ExpensesListFacadeModel> = of(initialState);
   categories = ['all', ...EXPENSE_CATEGORIES];
   selectedCategory = 'all';
+  showCategoryFilter = false;
 
   constructor(
     private facade: ExpensesListFacade,
@@ -43,6 +44,10 @@ export class ExpensesListComponent {
   onCategoryFilter(category: string): void {
     this.selectedCategory = category;
     this.facade.updateSelectedCategory(category);
+  }
+
+  toggleCategoryFilter(): void {
+    this.showCategoryFilter = !this.showCategoryFilter;
   }
 
   onClick(expense: Expense): void {
