@@ -33,4 +33,14 @@ export class SidebarComponent {
   async logout(): Promise<void> {
     await this.authService.logout();
   }
+
+  viewProfile(): void {
+    // TODO: Implement profile view functionality
+    console.log('View profile clicked');
+  }
+
+  openSettings(): void {
+    // TODO: Implement settings functionality
+    console.log('Settings clicked');
+  }
 }

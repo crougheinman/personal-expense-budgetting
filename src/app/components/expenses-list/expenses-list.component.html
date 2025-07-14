@@ -1,36 +1,55 @@
 <ng-container *ngIf="vm$ | async as vm">
-  <div class="d-flex mt-2 mb-3">
-    <mat-card class="mx-1">
-      <mat-card-header>
+  <div id="expenses-summary" class="expenses-summary-container mt-2 mb-3">
+    <div class="expenses-summary-cards">
+      <mat-card class="summary-card">
+        <mat-card-header>
         <mat-card-title>
-          {{ vm.totalValue | currency : "PHP" : "symbol" : "1.2-2" }}
+          {{ vm.filteredCount }}
         </mat-card-title>
-        <mat-card-subtitle>Total</mat-card-subtitle>
-      </mat-card-header>
-    </mat-card>
-    <mat-card class="mx-1">
-      <mat-card-header>
-        <mat-card-title>
-          {{ vm.totalValue | currency : "PHP" : "symbol" : "1.2-2" }}
-        </mat-card-title>
-        <mat-card-subtitle>Total</mat-card-subtitle>
-      </mat-card-header>
-    </mat-card>
+        <mat-card-subtitle>Total Expenses</mat-card-subtitle>
+        </mat-card-header>
+        </mat-card>
+        <mat-card class="summary-card">
+          <mat-card-header>
+          <mat-card-title>
+            {{ vm.totalValue | currency : "PHP" : "symbol" : "1.2-2" }}
+          </mat-card-title>
+          <mat-card-subtitle>Total Amount</mat-card-subtitle>
+        </mat-card-header>
+        </mat-card>
+        <mat-card class="summary-card">
+          <mat-card-header>
+          <mat-card-title>
+            {{ vm.averageAmount | currency : "PHP" : "symbol" : "1.2-2" }}
+          </mat-card-title>
+          <mat-card-subtitle>Average Amount</mat-card-subtitle>
+        </mat-card-header>
+        </mat-card>
+        <mat-card class="summary-card">
+          <mat-card-header>
+          <mat-card-title>
+            {{ vm.highestExpense | currency : "PHP" : "symbol" : "1.2-2" }}
+          </mat-card-title>
+          <mat-card-subtitle>Highest Expense</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+    </div>
   </div>
 
   <!-- Category Filter Navigation -->
   <div class="category-navigation mb-3">
-    <h4 class="mb-2">Filter by Category</h4>
-    <mat-chip-listbox class="category-chips">
-      <mat-chip-option 
-        *ngFor="let category of categories"
-        [selected]="selectedCategory === category"
-        (click)="onCategoryFilter(category)"
-      >
-        <mat-icon matChipAvatar>{{ getCategoryIcon(category) }}</mat-icon>
-        {{ getCategoryDisplayName(category) }}
-      </mat-chip-option>
-    </mat-chip-listbox>
+    <div class="category-chips-container">
+      <mat-chip-listbox class="category-chips">
+        <mat-chip-option 
+          *ngFor="let category of categories"
+          [selected]="selectedCategory === category"
+          (click)="onCategoryFilter(category)"
+        >
+          <mat-icon matChipAvatar>{{ getCategoryIcon(category) }}</mat-icon>
+          {{ getCategoryDisplayName(category) }}
+        </mat-chip-option>
+      </mat-chip-listbox>
+    </div>
   </div>
 
   <mat-form-field appearance="outline" class="w-100">
@@ -44,7 +63,7 @@
   </mat-form-field>
 
   <div class="results-info mb-2" *ngIf="vm.filteredCount !== vm.totalCount">
-    <small class="text-muted">
+    <small class="text-light">
       Showing {{ vm.filteredCount }} of {{ vm.totalCount }} expenses
     </small>
   </div>

@@ -1,13 +1,205 @@
 .home {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+
   .welcome-bar {
-    background-color: var(--mat-primary);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 16px;
+    margin-bottom: 32px;
+    border-radius: 12px;
+    overflow: hidden;
+
+    mat-card-header {
+      padding: 24px;
+    }
 
     h1 {
       margin: 0;
-      font-size: 2rem;
+      font-size: 2.5rem;
       font-weight: 300;
+      margin-bottom: 8px;
+    }
+
+    mat-card-subtitle {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.1rem;
+    }
+  }
+
+  .quick-launch-section {
+    margin-bottom: 40px;
+
+    h2 {
+      font-size: 1.8rem;
+      font-weight: 500;
+      margin-bottom: 24px;
+      color: #333;
+    }
+
+    .quick-launch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+
+      .launch-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        min-height: 180px;
+
+        &:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        &:focus {
+          outline: 2px solid #667eea;
+          outline-offset: 2px;
+        }
+
+        mat-card-content {
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          position: relative;
+        }
+
+        .card-icon {
+          margin-bottom: 16px;
+          
+          mat-icon {
+            font-size: 48px;
+            width: 48px;
+            height: 48px;
+            color: white;
+          }
+        }
+
+        h3 {
+          margin: 0 0 8px 0;
+          font-size: 1.4rem;
+          font-weight: 600;
+          color: white;
+        }
+
+        p {
+          margin: 0;
+          color: rgba(255, 255, 255, 0.9);
+          flex-grow: 1;
+          line-height: 1.5;
+        }
+
+        .card-action {
+          margin-top: 16px;
+          display: flex;
+          justify-content: flex-end;
+          
+          mat-icon {
+            color: rgba(255, 255, 255, 0.8);
+            transition: transform 0.2s ease;
+          }
+        }
+
+        &:hover .card-action mat-icon {
+          transform: translateX(4px);
+        }
+
+        // Card-specific colors
+        &.expenses-card {
+          background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        &.bills-card {
+          background: linear-gradient(135deg, #4834d4 0%, #686de0 100%);
+        }
+
+        &.create-card {
+          background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%);
+        }
+
+        &.analytics-card {
+          background: linear-gradient(135deg, #5f27cd 0%, #a55eea 100%);
+        }
+      }
+    }
+  }
+
+  .recent-activity-section {
+    h2 {
+      font-size: 1.8rem;
+      font-weight: 500;
+      margin-bottom: 24px;
+      color: #333;
+    }
+
+    .activity-card {
+      border-radius: 12px;
+      min-height: 200px;
+
+      mat-card-content {
+        padding: 32px;
+      }
+
+      .activity-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #666;
+        height: 150px;
+
+        mat-icon {
+          font-size: 48px;
+          width: 48px;
+          height: 48px;
+          margin-bottom: 16px;
+          opacity: 0.5;
+        }
+
+        p {
+          margin: 0;
+          font-size: 1.1rem;
+        }
+      }
+    }
+  }
+
+  // Mobile responsiveness
+  @media (max-width: 768px) {
+    padding: 16px;
+
+    .welcome-bar {
+      h1 {
+        font-size: 2rem;
+      }
+    }
+
+    .quick-launch-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .launch-card {
+      min-height: 150px;
+
+      mat-card-content {
+        padding: 20px;
+      }
+
+      .card-icon mat-icon {
+        font-size: 36px;
+        width: 36px;
+        height: 36px;
+      }
+
+      h3 {
+        font-size: 1.2rem;
+      }
     }
   }
 }

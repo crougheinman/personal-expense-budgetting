@@ -33,10 +33,69 @@
           <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
         </button>
         <span class="spacer"></span>
-        <mat-avatar *ngIf="vm.user?.photoURL" class="user-avatar" style="margin-right:16px;">
-          <img [src]="vm.user.photoURL" alt="User Avatar" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-        </mat-avatar>
-        <button *ngIf="vm.isAuthenticated" matIconButton aria-label="Logout" (click)="logout()">
+        
+        <!-- User Menu Dropdown -->
+        <div *ngIf="vm.user?.photoURL" class="user-menu">
+          <button 
+            mat-icon-button 
+            [matMenuTriggerFor]="userMenu" 
+            class="user-avatar-button"
+            aria-label="User menu"
+          >
+            <mat-avatar class="user-avatar">
+              <img 
+                [src]="vm.user.photoURL" 
+                alt="User Avatar" 
+                style="width:40px; height:40px; border-radius:50%; object-fit:cover;"
+              >
+            </mat-avatar>
+          </button>
+          
+          <mat-menu #userMenu="matMenu" xPosition="before">
+            <div class="user-menu-header" mat-menu-item disabled>
+              <div class="user-info">
+                <mat-avatar class="menu-avatar">
+                  <img 
+                    [src]="vm.user.photoURL" 
+                    alt="User Avatar" 
+                    style="width:32px; height:32px; border-radius:50%; object-fit:cover;"
+                  >
+                </mat-avatar>
+                <div class="user-details">
+                  <div class="user-name text-light">{{ vm.user.displayName || 'User' }}</div>
+                  <div class="user-email">{{ vm.user.email }}</div>
+                </div>
+              </div>
+            </div>
+            
+            <mat-divider></mat-divider>
+            
+            <button mat-menu-item (click)="viewProfile()">
+              <mat-icon>person</mat-icon>
+              <span>Profile</span>
+            </button>
+            
+            <button mat-menu-item (click)="openSettings()">
+              <mat-icon>settings</mat-icon>
+              <span>Settings</span>
+            </button>
+            
+            <mat-divider></mat-divider>
+            
+            <button mat-menu-item (click)="logout()" class="logout-item">
+              <mat-icon>logout</mat-icon>
+              <span>Logout</span>
+            </button>
+          </mat-menu>
+        </div>
+
+        <!-- Fallback logout button if no photo -->
+        <button 
+          *ngIf="vm.isAuthenticated && !vm.user?.photoURL" 
+          matIconButton 
+          aria-label="Logout" 
+          (click)="logout()"
+        >
           <mat-icon>logout</mat-icon>
         </button>
       </mat-toolbar>

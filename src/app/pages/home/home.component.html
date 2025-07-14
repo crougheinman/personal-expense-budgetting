@@ -3,15 +3,103 @@
     <mat-card appearance="outlined" class="welcome-bar">
       <mat-card-header>
         <mat-card-title>
-          <h1>Good day {{ vm.user?.displayName }}</h1></mat-card-title
-        >
+          <h1>Good day {{ vm.user?.displayName }}</h1>
+        </mat-card-title>
+        <mat-card-subtitle>
+          Welcome to your personal expense tracking dashboard
+        </mat-card-subtitle>
       </mat-card-header>
     </mat-card>
-    <div class="second-section row">
-      <div class="col">
-        <mat-card appearance="raised"> test </mat-card>
+
+    <!-- Quick Launch Section -->
+    <div class="quick-launch-section">
+      <h2 class="text-light">Quick Actions</h2>
+      <div class="quick-launch-grid">
+        <mat-card 
+          class="launch-card expenses-card" 
+          (click)="navigateToExpenses()"
+          tabindex="0"
+          role="button"
+        >
+          <mat-card-content>
+            <div class="card-icon">
+              <mat-icon>receipt_long</mat-icon>
+            </div>
+            <h3>Manage Expenses</h3>
+            <p>View, add, and track your daily expenses</p>
+            <div class="card-action">
+              <mat-icon>arrow_forward</mat-icon>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card 
+          class="launch-card bills-card" 
+          (click)="navigateToBills()"
+          tabindex="0"
+          role="button"
+        >
+          <mat-card-content>
+            <div class="card-icon">
+              <mat-icon>payment</mat-icon>
+            </div>
+            <h3>Bills & Recurring</h3>
+            <p>Manage your bills and recurring payments</p>
+            <div class="card-action">
+              <mat-icon>arrow_forward</mat-icon>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card 
+          class="launch-card create-card" 
+          (click)="createNewExpense()"
+          tabindex="0"
+          role="button"
+        >
+          <mat-card-content>
+            <div class="card-icon">
+              <mat-icon>add_circle</mat-icon>
+            </div>
+            <h3>Add New Expense</h3>
+            <p>Quickly record a new expense</p>
+            <div class="card-action">
+              <mat-icon>arrow_forward</mat-icon>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card 
+          class="launch-card analytics-card" 
+          (click)="viewAnalytics()"
+          tabindex="0"
+          role="button"
+        >
+          <mat-card-content>
+            <div class="card-icon">
+              <mat-icon>analytics</mat-icon>
+            </div>
+            <h3>Analytics</h3>
+            <p>View your spending patterns and insights</p>
+            <div class="card-action">
+              <mat-icon>arrow_forward</mat-icon>
+            </div>
+          </mat-card-content>
+        </mat-card>
       </div>
-      <div class="col"></div>
+    </div>
+
+    <!-- Recent Activity Section -->
+    <div class="recent-activity-section">
+      <h2>Recent Activity</h2>
+      <mat-card class="activity-card">
+        <mat-card-content>
+          <div class="activity-placeholder">
+            <mat-icon>history</mat-icon>
+            <p>Your recent expenses and activities will appear here</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
     </div>
   </div>
 </ng-container>

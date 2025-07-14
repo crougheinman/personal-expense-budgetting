@@ -10,6 +10,8 @@ export interface ExpensesListFacadeModel {
   totalValue: number;
   filteredCount: number;
   totalCount: number;
+  averageAmount: number;
+  highestExpense: number;
 }
 
 export const initialState: ExpensesListFacadeModel = {
@@ -17,6 +19,8 @@ export const initialState: ExpensesListFacadeModel = {
   totalValue: 0,
   filteredCount: 0,
   totalCount: 0,
+  averageAmount: 0,
+  highestExpense: 0,
 };
 
 @Injectable()
@@ -56,11 +60,22 @@ export class ExpensesListFacade {
           );
         }
         
+        // Calculate additional metrics
+        const averageAmount = filteredExpenses.length > 0 
+          ? filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0) / filteredExpenses.length 
+          : 0;
+        
+        const highestExpense = filteredExpenses.length > 0 
+          ? Math.max(...filteredExpenses.map(expense => expense.amount)) 
+          : 0;
+        
         return {
           expenses: filteredExpenses,
           totalValue,
           filteredCount: filteredExpenses.length,
           totalCount: expenses.length,
+          averageAmount,
+          highestExpense,
         };
       })
     );
