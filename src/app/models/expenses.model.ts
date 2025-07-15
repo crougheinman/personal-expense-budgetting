@@ -15,8 +15,28 @@ export interface Expense {
     tags?: string[];
     notes?: string;
     expenseDate?: Date;
+    receiptData?: ReceiptData;
     created: Timestamp;
     updated: Timestamp;
+}
+
+export interface ReceiptData {
+    imageUrl?: string;
+    originalText?: string;
+    extractedData?: {
+        merchantName?: string;
+        total?: number;
+        date?: Date;
+        items?: ReceiptItem[];
+    };
+    confidence?: number;
+    processedAt?: Date;
+}
+
+export interface ReceiptItem {
+    name: string;
+    quantity?: number;
+    price?: number;
 }
 
 // Expense categories

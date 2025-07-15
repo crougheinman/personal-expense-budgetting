@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { DialogService } from '@services';
-import { ExpensesCreateComponent } from '@app/components';
+import { ExpensesCreateEnhancedComponent } from '@app/components';
 
 @Component({
   selector: 'pages-expenses',
@@ -14,9 +14,11 @@ export class ExpensesComponent {
   constructor(private dialogService: DialogService) {}
 
   openAddExpenseDialog(): void {
-    this.dialogService.open(ExpensesCreateComponent, {
-            width: '444px',
-            closeButtonTxt: 'OK',
+    this.dialogService.open(ExpensesCreateEnhancedComponent, {
+            width: '800px',
+            maxWidth: '95vw',
+            maxHeight: '90vh',
+            closeButtonTxt: 'Cancel',
             confirmBtn: false,
         })
   }
