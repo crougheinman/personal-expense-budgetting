@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:personal-expense-budgetting": "node dist/personal-expense-budgetting/server/server.mjs",
-    "deploy": "ng build && firebase deploy --project ang-fire-b15d9"
+    "deploy": "ng build --configuration production && firebase deploy --project ang-fire-b15d9"
   },
   "private": true,
   "dependencies": {
