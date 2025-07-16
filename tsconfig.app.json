@@ -31,6 +31,10 @@
       ],
     },
     "outDir": "./out-tsc/app",
+    "typeRoots": [
+      "node_modules/@types",
+      "src/types"
+    ],
     "types": [
       "node"
     ]

@@ -49,6 +49,7 @@ export class ExpensesCreateComponent {
       name: this.nameControl.value,
       amount: this.amountControl.value,
       category: 'default',
+      expenseDate: new Date(),
     });
     
     this.matDialogRef.close();

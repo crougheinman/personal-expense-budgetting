@@ -31,7 +31,6 @@
       matInput
       placeholder="Ex. Just anything..."
       formControlName="expenseDescription"
-      required
       ></textarea>
       <mat-error *ngIf="expensesForm.get('expenseDescription')?.hasError('required')">
       Description is required

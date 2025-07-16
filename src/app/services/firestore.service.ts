@@ -12,6 +12,8 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  query,
+  orderBy,
 } from '@angular/fire/firestore'
 
 @Injectable({
@@ -30,7 +32,8 @@ export class FirestoreService {
 
   getDocument<T>(collectionPath: string): Observable<DocumentData[]> {
     const collectionInstance = collection(this.firestore, collectionPath);
-    return collectionData(collectionInstance, {idField: 'id'});
+    const q = query(collectionInstance, orderBy('updated', 'desc'));
+    return collectionData(q, {idField: 'id'});
   }
 
   async addDocument(collectionPath: string, data: any): Promise<void> {

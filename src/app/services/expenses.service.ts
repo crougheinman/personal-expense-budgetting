@@ -3,6 +3,7 @@ import { Expense } from "@models";
 import { Observable } from "rxjs";
 import { FirestoreService } from "./firestore.service";
 import { DBPathHelper } from "@app/models/db-path-helper";
+import { removeNoValuesKeys } from "@app/shared/utils";
 
 @Injectable({
   providedIn: "root",
@@ -32,11 +33,11 @@ export class ExpensesService {
     await this.firestoreService.updateDocument(
       DBPathHelper.getExpensesPath(),
       data.id as string,
-      {
+      removeNoValuesKeys({
         ...data,
         created: this.firestoreService.timestamp,
         updated: this.firestoreService.timestamp,
-      }
+      })
     );
   }
 
