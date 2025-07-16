@@ -17,12 +17,7 @@ Once the server is running, open your browser and navigate to `http://localhost:
 To start run this:
 
 ```
-ng build
-```
+npm run deploy
 
-then:
-
-```
-firebase deploy --project ang-fire-b15d9
 ```
 
