@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { HomeFacade, HomeFacadeModel } from './home.facade';
 import { Observable, of } from 'rxjs';
-import { ExpensesCreateEnhancedComponent } from '@components';
+import { ExpensesCreateComponent } from '@components';
 
 @Component({
   selector: 'app-home',
@@ -34,10 +34,9 @@ export class Home {
   }
 
   createNewExpense(): void {
-    this.dialog.open(ExpensesCreateEnhancedComponent, {
-      width: '800px',
-      maxWidth: '95vw',
-      maxHeight: '90vh'
+    this.dialog.open(ExpensesCreateComponent, {
+      width: '500px',
+      maxWidth: '90vw'
     });
   }
 

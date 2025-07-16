@@ -5,8 +5,6 @@ import { SidebarComponent } from "./custom/sidebar/sidebar.component";
 import { ExpensesCreateComponent } from "./expenses-create/expenses-create.component";
 import { ExpensesListComponent } from "./expenses-list/expenses-list.component";
 import { ExpensesEditComponent } from './expenses-edit/expenses-edit.component';
-import { ReceiptScannerComponent } from './receipt-scanner/receipt-scanner.component';
-import { ExpensesCreateEnhancedComponent } from './expenses-create-enhanced/expenses-create-enhanced.component';
 
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatIconModule } from "@angular/material/icon";
@@ -26,7 +24,6 @@ import {
 import { MatGridListModule } from "@angular/material/grid-list";
 import { ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatTooltipModule } from "@angular/material/tooltip";
 import { RouterModule } from "@angular/router";
 
 @NgModule({
@@ -35,8 +32,6 @@ import { RouterModule } from "@angular/router";
     ExpensesListComponent,
     SidebarComponent,
     ExpensesEditComponent,
-    ReceiptScannerComponent,
-    ExpensesCreateEnhancedComponent,
   ],
   imports: [
     AsyncPipe,
@@ -56,8 +51,6 @@ import { RouterModule } from "@angular/router";
     MatGridListModule,
     MatDatepickerModule,
     MatChipsModule,
-    MatProgressSpinnerModule,
-    MatTooltipModule,
     ReactiveFormsModule,
     RouterModule,
     CommonModule,
@@ -85,7 +78,6 @@ import { RouterModule } from "@angular/router";
     MatGridListModule,
     MatDatepickerModule,
     MatChipsModule,
-    MatTooltipModule,
     ReactiveFormsModule,
     RouterModule,
   ],

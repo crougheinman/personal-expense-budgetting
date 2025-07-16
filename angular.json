@@ -38,7 +38,11 @@
               "bootstrap/dist/css/bootstrap.min.css",
               "src/styles/styles.scss"
             ],
-            "outputMode": "static"
+            "server": "src/main.server.ts",
+            "outputMode": "server",
+            "ssr": {
+              "entry": "src/server.ts"
+            }
           },
           "configurations": {
             "production": {
