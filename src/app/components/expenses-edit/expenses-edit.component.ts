@@ -6,6 +6,8 @@ import {
 } from "@angular/material/bottom-sheet";
 import { ExpensesEditFacade } from "./expenses-edit.facade";
 import { Expense, EXPENSE_CATEGORIES } from "@app/models";
+import { Timestamp } from "firebase/firestore";
+import moment from "moment";
 
 interface InputData {
   id?: string;
@@ -13,7 +15,7 @@ interface InputData {
   amount?: string;
   description?: string;
   category?: string;
-  expenseDate?: Date;
+  expenseDate?: Timestamp;
 }
 
 @Component({
@@ -46,7 +48,7 @@ export class ExpensesEditComponent {
     this.amountControl.setValue(amount);
     this.descriptionControl.setValue(description);
     this.categoryControl.setValue(category);
-    this.expenseDateControl.setValue(expenseDate)
+    this.expenseDateControl.setValue(expenseDate?.toDate());
   }
 
   get nameControl(): AbstractControl {

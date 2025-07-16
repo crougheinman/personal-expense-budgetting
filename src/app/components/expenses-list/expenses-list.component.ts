@@ -41,6 +41,16 @@ export class ExpensesListComponent {
     this.facade.updateSearchKey(target.value);
   }
 
+  onStartDateChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.facade.updateStartDate(target.value);
+  }
+
+  onEndDateChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.facade.updateEndDate(target.value);
+  }
+
   onCategoryFilter(category: string): void {
     this.selectedCategory = category;
     this.facade.updateSelectedCategory(category);

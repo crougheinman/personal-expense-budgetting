@@ -4,6 +4,8 @@ import { Expense } from "@models";
 import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of } from "rxjs";
 import { Store } from "@ngrx/store";
 import { AppState, selectAuthenticatedUser } from "@store";
+import moment from "moment";
+import { Timestamp } from "firebase/firestore";
 
 export interface ExpensesListFacadeModel {
   expenses?: Expense[];
@@ -12,6 +14,8 @@ export interface ExpensesListFacadeModel {
   totalCount: number;
   averageAmount: number;
   highestExpense: number;
+  startDate: Timestamp | null;
+  endDate: Timestamp | null;
 }
 
 export const initialState: ExpensesListFacadeModel = {
@@ -21,6 +25,8 @@ export const initialState: ExpensesListFacadeModel = {
   totalCount: 0,
   averageAmount: 0,
   highestExpense: 0,
+  startDate: null,
+  endDate: null,
 };
 
 @Injectable()
@@ -28,6 +34,8 @@ export class ExpensesListFacade {
   vm$: Observable<ExpensesListFacadeModel> = of(initialState);
   searchKey$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   selectedCategory$: BehaviorSubject<string> = new BehaviorSubject<string>('all');
+  startDate$: BehaviorSubject<Timestamp> = new BehaviorSubject<Timestamp>(Timestamp.fromDate(moment().startOf('month').toDate()));
+  endDate$: BehaviorSubject<Timestamp> = new BehaviorSubject<Timestamp>(Timestamp.fromDate(moment().endOf('month').toDate()));
 
   constructor(
     private expensesService: ExpensesService,
@@ -40,9 +48,11 @@ export class ExpensesListFacade {
     return combineLatest([
       this.getUserExpenses(),
       this.searchKey$.asObservable().pipe(distinctUntilChanged()),
+      this.startDate$.asObservable().pipe(distinctUntilChanged()),
+      this.endDate$.asObservable().pipe(distinctUntilChanged()),
       this.selectedCategory$.asObservable().pipe(distinctUntilChanged()),
     ]).pipe(
-      map(([expenses, searchKey, selectedCategory]) => {
+      map(([expenses, searchKey, startDate, endDate, selectedCategory]) => {
         const totalValue = expenses.reduce((sum, expense) => sum + expense.amount, 0);
         let filteredExpenses = expenses;
         
@@ -59,7 +69,15 @@ export class ExpensesListFacade {
             expense.category?.toLowerCase() === selectedCategory.toLowerCase()
           );
         }
-        
+
+        // Filter by date range
+        if (startDate && endDate) {
+          filteredExpenses = filteredExpenses.filter((expense) => {
+            const expenseDate = expense.expenseDate ? expense.expenseDate : new Date();
+            return expenseDate >= startDate && expenseDate <= endDate;
+          });
+        }
+
         // Calculate additional metrics
         const averageAmount = filteredExpenses.length > 0 
           ? filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0) / filteredExpenses.length 
@@ -76,6 +94,8 @@ export class ExpensesListFacade {
           totalCount: expenses.length,
           averageAmount,
           highestExpense,
+          startDate,
+          endDate,
         };
       })
     );
@@ -94,6 +114,15 @@ export class ExpensesListFacade {
 
   updateSearchKey(value: string) : void {
     this.searchKey$.next(value);
+  }
+
+  updateStartDate(value: string): void {
+    this.startDate$.next(Timestamp.fromDate(moment(value).startOf('day').toDate()));
+    
+  }
+
+  updateEndDate(value: string): void {
+    this.endDate$.next(Timestamp.fromDate(moment(value).endOf('day').toDate()));
   }
 
   updateSelectedCategory(category: string): void {

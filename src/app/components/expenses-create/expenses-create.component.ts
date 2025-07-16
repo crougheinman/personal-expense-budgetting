@@ -8,6 +8,8 @@ import {
 import { ExpensesCreateFacade, ExpensesCreateFacadeModel, initialState } from "./expenses-create.facade";
 import { MatDialogRef } from "@angular/material/dialog";
 import { Observable, of } from "rxjs";
+import moment from "moment";
+import { Timestamp } from "firebase/firestore";
 
 @Component({
   selector: "app-expenses-create.component",
@@ -48,8 +50,7 @@ export class ExpensesCreateComponent {
       userId: vm.userId,
       name: this.nameControl.value,
       amount: this.amountControl.value,
-      category: 'default',
-      expenseDate: new Date(),
+      expenseDate: Timestamp.fromDate(moment().toDate()),
     });
     
     this.matDialogRef.close();

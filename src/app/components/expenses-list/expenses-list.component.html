@@ -3,30 +3,30 @@
     <div class="expenses-summary-cards">
       <mat-card class="summary-card">
         <mat-card-header>
-        <mat-card-title>
-          {{ vm.filteredCount }}
-        </mat-card-title>
-        <mat-card-subtitle>Total Expenses</mat-card-subtitle>
+          <mat-card-title>
+            {{ vm.filteredCount }}
+          </mat-card-title>
+          <mat-card-subtitle>Total Expenses</mat-card-subtitle>
         </mat-card-header>
-        </mat-card>
-        <mat-card class="summary-card">
-          <mat-card-header>
+      </mat-card>
+      <mat-card class="summary-card">
+        <mat-card-header>
           <mat-card-title>
             {{ vm.totalValue | currency : "PHP" : "symbol" : "1.2-2" }}
           </mat-card-title>
           <mat-card-subtitle>Total Amount</mat-card-subtitle>
         </mat-card-header>
-        </mat-card>
-        <mat-card class="summary-card">
-          <mat-card-header>
+      </mat-card>
+      <mat-card class="summary-card">
+        <mat-card-header>
           <mat-card-title>
             {{ vm.averageAmount | currency : "PHP" : "symbol" : "1.2-2" }}
           </mat-card-title>
           <mat-card-subtitle>Average Amount</mat-card-subtitle>
         </mat-card-header>
-        </mat-card>
-        <mat-card class="summary-card">
-          <mat-card-header>
+      </mat-card>
+      <mat-card class="summary-card">
+        <mat-card-header>
           <mat-card-title>
             {{ vm.highestExpense | currency : "PHP" : "symbol" : "1.2-2" }}
           </mat-card-title>
@@ -36,20 +36,30 @@
     </div>
   </div>
 
-  <!-- Category Filter Navigation -->
-  <div class="category-navigation mb-3" *ngIf="showCategoryFilter">
-    <div class="category-chips-container">
-      <mat-chip-listbox class="category-chips">
-        <mat-chip-option 
-          *ngFor="let category of categories"
-          [selected]="selectedCategory === category"
-          (click)="onCategoryFilter(category)"
-        >
-          <mat-icon matChipAvatar>{{ getCategoryIcon(category) }}</mat-icon>
-          {{ getCategoryDisplayName(category) }}
-        </mat-chip-option>
-      </mat-chip-listbox>
-    </div>
+  <div class="date-filter">
+    <mat-form-field>
+      <mat-label>Enter a date range</mat-label>
+      <mat-date-range-input [rangePicker]="picker">
+          <input
+            #startDate
+            matStartDate
+            placeholder="Start date"
+            (click)="onStartDateChange($event)"
+            [value]="vm.startDate?.toDate()"
+            
+          />
+          <input
+            #endDate
+            matEndDate
+            placeholder="End date"
+            (click)="onEndDateChange($event)"
+            [value]="vm.endDate?.toDate()"
+          />
+      </mat-date-range-input>
+      <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-date-range-picker #picker></mat-date-range-picker>
+    </mat-form-field>
   </div>
 
   <div class="search-container">
@@ -62,16 +72,38 @@
         (input)="onSearch($event)"
       />
     </mat-form-field>
-    
-    <button 
-      mat-icon-button 
+
+    <button
+      mat-icon-button
       class="category-toggle-btn"
       (click)="toggleCategoryFilter()"
-      [attr.aria-label]="showCategoryFilter ? 'Hide category filters' : 'Show category filters'"
-      [title]="showCategoryFilter ? 'Hide category filters' : 'Show category filters'"
+      [attr.aria-label]="
+        showCategoryFilter ? 'Hide category filters' : 'Show category filters'
+      "
+      [title]="
+        showCategoryFilter ? 'Hide category filters' : 'Show category filters'
+      "
     >
-      <mat-icon>{{ showCategoryFilter ? 'filter_list_off' : 'filter_list' }}</mat-icon>
+      <mat-icon>{{
+        showCategoryFilter ? "filter_list_off" : "filter_list"
+      }}</mat-icon>
     </button>
+  </div>
+
+  <!-- Category Filter Navigation -->
+  <div class="category-navigation" *ngIf="showCategoryFilter">
+    <div class="category-chips-container">
+      <mat-chip-listbox class="category-chips">
+        <mat-chip-option
+          *ngFor="let category of categories"
+          [selected]="selectedCategory === category"
+          (click)="onCategoryFilter(category)"
+        >
+          <mat-icon matChipAvatar>{{ getCategoryIcon(category) }}</mat-icon>
+          {{ getCategoryDisplayName(category) }}
+        </mat-chip-option>
+      </mat-chip-listbox>
+    </div>
   </div>
 
   <div class="results-info mb-2" *ngIf="vm.filteredCount !== vm.totalCount">
@@ -82,13 +114,15 @@
 
   <div class="expenses-list">
     <mat-list role="listbox">
-      <mat-list-item 
-        role="listitem" 
+      <mat-list-item
+        role="listitem"
         *ngFor="let expense of vm.expenses"
         (click)="onClick(expense)"
       >
         {{ expense.amount | currency : "PHP" : "symbol" : "1.2-2" }}
-        <mat-icon matListItemIcon>{{ getExpenseIcon(expense.category ?? 'default') }}</mat-icon>
+        <mat-icon matListItemIcon>{{
+          getExpenseIcon(expense.category ?? "default")
+        }}</mat-icon>
         <h3 matListItemTitle>{{ expense.name }}</h3>
       </mat-list-item>
     </mat-list>

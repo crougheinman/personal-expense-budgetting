@@ -14,7 +14,7 @@ export interface Expense {
     paymentMethod?: string;
     tags?: string[];
     notes?: string;
-    expenseDate?: Date;
+    expenseDate?: Timestamp | null;
     created: Timestamp;
     updated: Timestamp;
 }
