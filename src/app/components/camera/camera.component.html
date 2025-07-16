@@ -1,0 +1,76 @@
+<div class="camera-container">
+  <!-- Camera Not Supported -->
+  <div *ngIf="!cameraSupported" class="camera-not-supported">
+    <mat-icon class="error-icon">camera_off</mat-icon>
+    <h3>Camera Not Supported</h3>
+    <p>Your device doesn't support camera functionality</p>
+  </div>
+
+  <!-- Camera Controls (when not active) -->
+  <div *ngIf="cameraSupported && !cameraActive" class="camera-controls-start">
+    <button 
+      mat-fab 
+      color="primary" 
+      (click)="startCamera()"
+      [disabled]="isCapturing">
+      <mat-icon>camera_alt</mat-icon>
+    </button>
+    <p>Tap to start camera</p>
+  </div>
+
+  <!-- Camera View (when active) -->
+  <div *ngIf="cameraActive" class="camera-view">
+    <!-- Video Stream -->
+    <div class="video-container">
+      <video 
+        #videoElement
+        class="video-stream"
+        [style.width.px]="width"
+        [style.height.px]="height"
+        autoplay
+        muted
+        playsinline>
+      </video>
+      
+      <!-- Camera overlay -->
+      <div class="camera-overlay">
+        <div class="viewfinder"></div>
+      </div>
+    </div>
+
+    <!-- Camera Controls -->
+    <div class="camera-controls">
+      <!-- Switch Camera -->
+      <button 
+        mat-icon-button 
+        (click)="switchCamera()"
+        [disabled]="isCapturing"
+        class="control-button">
+        <mat-icon>flip_camera_ios</mat-icon>
+      </button>
+
+      <!-- Capture Photo -->
+      <button 
+        mat-fab 
+        color="accent" 
+        (click)="capturePhoto()"
+        [disabled]="isCapturing"
+        class="capture-button">
+        <mat-icon *ngIf="!isCapturing">camera</mat-icon>
+        <mat-spinner *ngIf="isCapturing" diameter="24"></mat-spinner>
+      </button>
+
+      <!-- Stop Camera -->
+      <button 
+        mat-icon-button 
+        (click)="stopCamera()"
+        [disabled]="isCapturing"
+        class="control-button">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden canvas for photo capture -->
+  <canvas #canvasElement style="display: none;"></canvas>
+</div>

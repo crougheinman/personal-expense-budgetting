@@ -10,6 +10,7 @@ import { MatDialogRef } from "@angular/material/dialog";
 import { Observable, of } from "rxjs";
 import moment from "moment";
 import { Timestamp } from "firebase/firestore";
+import { CameraError, CameraPhoto } from "../camera/camera.component";
 
 @Component({
   selector: "app-expenses-create.component",
@@ -54,5 +55,40 @@ export class ExpensesCreateComponent {
     });
     
     this.matDialogRef.close();
+  }
+
+  openCamera(): void {
+    this.facade.openCamera();
+  }
+
+  closeCamera(): void {
+    this.facade.closeCamera();
+  }
+
+  onPhotoTaken(event: CameraPhoto): void {
+    console.log('Photo captured:', event);
+    // Handle the captured photo
+    this.processPhoto(event.file);
+    this.closeCamera();
+  }
+
+  onCameraError(): void {
+    console.error('Camera error occurred');
+    // Handle camera errors
+    alert(`Camera Error: An error occurred while accessing the camera. Please try again later.`);
+  }
+
+  onCameraStarted(): void {
+    console.log('Camera started successfully');
+  }
+
+  onCameraStopped(): void {
+    console.log('Camera stopped');
+    this.closeCamera();
+  }
+
+  private processPhoto(file: File): void {
+    // Process the captured photo
+    // Upload to server, apply filters, etc.
   }
 }

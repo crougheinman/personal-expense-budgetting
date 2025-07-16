@@ -36,8 +36,8 @@
     </div>
   </div>
 
-  <div class="date-filter">
-    <mat-form-field>
+  <div class="date-filter" *ngIf="showCategoryFilter">
+    <mat-form-field appearance="outline" class="date-field">
       <mat-label>Enter a date range</mat-label>
       <mat-date-range-input [rangePicker]="picker">
           <input
@@ -56,7 +56,6 @@
             [value]="vm.endDate?.toDate()"
           />
       </mat-date-range-input>
-      <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
       <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-date-range-picker #picker></mat-date-range-picker>
     </mat-form-field>

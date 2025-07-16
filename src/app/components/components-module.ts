@@ -25,6 +25,7 @@ import { MatGridListModule } from "@angular/material/grid-list";
 import { ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { RouterModule } from "@angular/router";
+import { CameraComponent } from "./camera/camera.component";
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { RouterModule } from "@angular/router";
     ExpensesListComponent,
     SidebarComponent,
     ExpensesEditComponent,
+    CameraComponent
   ],
   imports: [
     AsyncPipe,
