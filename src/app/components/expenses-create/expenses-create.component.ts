@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, OnDestroy } from "@angular/core";
 import {
   AbstractControl,
   FormBuilder,
@@ -20,9 +20,11 @@ import { CameraError, CameraPhoto } from "../camera/camera.component";
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [ExpensesCreateFacade],
 })
-export class ExpensesCreateComponent {
+export class ExpensesCreateComponent implements OnDestroy {
   expensesForm!: FormGroup;
   vm$: Observable<ExpensesCreateFacadeModel> = of(initialState);
+  private ocrWorker: any = null;
+  isProcessingOCR = false;
 
   constructor(
     private facade: ExpensesCreateFacade,
@@ -67,7 +69,6 @@ export class ExpensesCreateComponent {
 
   onPhotoTaken(event: CameraPhoto): void {
     console.log('Photo captured:', event);
-    // Handle the captured photo
     this.processPhoto(event.file);
     this.closeCamera();
   }
@@ -87,8 +88,76 @@ export class ExpensesCreateComponent {
     this.closeCamera();
   }
 
-  private processPhoto(file: File): void {
-    // Process the captured photo
-    // Upload to server, apply filters, etc.
+  private async processPhoto(file: File): Promise<void> {
+    try {
+      this.isProcessingOCR = true;
+      console.log('Processing image with OCR...');
+
+      // Dynamic import to avoid SSR issues with __dirname
+      const { createWorker } = await import('tesseract.js');
+      
+      if (!this.ocrWorker) {
+        this.ocrWorker = await createWorker('eng', 1, {
+          logger: m => console.log(m),
+          corePath: 'https://unpkg.com/tesseract.js-core@v5.0.0/tesseract-core.wasm.js',
+          workerPath: 'https://unpkg.com/tesseract.js@v5.0.0/dist/worker.min.js',
+        });
+      }
+
+      const { data: { text } } = await this.ocrWorker.recognize(file);
+      console.log("OCR Result:", text);
+
+      this.extractExpenseData(text);
+    } catch (error) {
+      console.error('OCR processing failed:', error);
+      alert('Failed to process image. Please enter expense details manually.');
+    } finally {
+      this.isProcessingOCR = false;
+    }
+  }
+
+  private extractExpenseData(ocrText: string): void {
+    // Clean the text
+    const cleanText = ocrText.replace(/[^\w\s\$\.\,\-]/g, '').trim();
+    
+    // Extract amount patterns
+    const amountPatterns = [
+      /total:?\s*\$?(\d+\.?\d*)/i,
+      /amount:?\s*\$?(\d+\.?\d*)/i,
+      /\$(\d+\.?\d*)/,
+      /(\d+\.\d{2})/
+    ];
+
+    let extractedAmount = '';
+    for (const pattern of amountPatterns) {
+      const match = cleanText.match(pattern);
+      if (match && match[1]) {
+        extractedAmount = match[1];
+        break;
+      }
+    }
+
+    if (extractedAmount) {
+      this.amountControl.setValue(extractedAmount);
+    }
+
+    // Extract merchant name (first meaningful line)
+    const lines = cleanText.split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 2 && line.length < 50);
+    
+    if (lines.length > 0) {
+      // Skip lines that are just numbers or amounts
+      const merchantLine = lines.find(line => !/^\$?\d+\.?\d*$/.test(line));
+      if (merchantLine) {
+        this.nameControl.setValue(merchantLine);
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.ocrWorker) {
+      this.ocrWorker.terminate();
+    }
   }
 }

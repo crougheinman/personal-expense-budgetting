@@ -27,6 +27,18 @@
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "allowedCommonJsDependencies": [
+              "tesseract.js",
+              "tesseract.js-core",
+              "regenerator-runtime",
+              "moment",
+              "is-electron",
+              "is-url",
+              "crypto-js",
+              "lodash/isEmpty",
+              "lodash/omitBy",
+              "lodash/random"
+            ],
             "assets": [
               {
                 "glob": "**/*",
