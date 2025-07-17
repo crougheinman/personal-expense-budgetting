@@ -1,0 +1,33 @@
+<div class="barcode-scanner">
+  <div class="video-container" *ngIf="isScanning">
+    <video
+      id="barcodeVideoElement"
+      [style.width.px]="300"
+      [style.height.px]="200"
+      [style.border]="'1px solid #ccc'"
+      [style.border-radius.px]="8"
+      [style.box-shadow]="'0 4px 8px rgba(0,0,0,0.1)'"
+    ></video>
+  </div>
+  
+  <div class="controls">
+    <button 
+        mat-raised-button
+        color="{{ isScanning ? 'warn' : 'primary' }}"
+        (click)="isScanning ? stopScan() : startScan()"
+        class="toggle-btn"
+    >
+        <mat-icon>{{ isScanning ? 'stop' : 'videocam' }}</mat-icon>
+        {{ isScanning ? 'Stop' : 'Start' }} Scan
+    </button>
+  </div>
+  
+  <div class="result" *ngIf="barcodeResult">
+    <p><strong>Scanned:</strong> {{ barcodeResult }}</p>
+  </div>
+  
+  <div class="status" *ngIf="isScanning">
+    <p>📱 Point camera at a barcode...</p>
+    <small>Make sure the barcode is clear and well-lit</small>
+  </div>
+</div>

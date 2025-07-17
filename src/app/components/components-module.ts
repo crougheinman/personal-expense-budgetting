@@ -18,6 +18,7 @@ import { MatMenuModule } from "@angular/material/menu";
 import { MatSelectModule } from "@angular/material/select";
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDividerModule } from '@angular/material/divider';
 import {
   MatBottomSheetModule,
 } from "@angular/material/bottom-sheet";
@@ -26,6 +27,7 @@ import { ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { RouterModule } from "@angular/router";
 import { CameraComponent } from "./camera/camera.component";
+import { BarcodeScanner } from './barcode-scanner/barcode-scanner';
 
 @NgModule({
   declarations: [
@@ -33,7 +35,8 @@ import { CameraComponent } from "./camera/camera.component";
     ExpensesListComponent,
     SidebarComponent,
     ExpensesEditComponent,
-    CameraComponent
+    CameraComponent,
+    BarcodeScanner,
   ],
   imports: [
     AsyncPipe,
@@ -53,6 +56,7 @@ import { CameraComponent } from "./camera/camera.component";
     MatGridListModule,
     MatDatepickerModule,
     MatChipsModule,
+    MatDividerModule,
     ReactiveFormsModule,
     RouterModule,
     CommonModule,
@@ -80,6 +84,7 @@ import { CameraComponent } from "./camera/camera.component";
     MatGridListModule,
     MatDatepickerModule,
     MatChipsModule,
+    MatDividerModule,
     ReactiveFormsModule,
     RouterModule,
   ],

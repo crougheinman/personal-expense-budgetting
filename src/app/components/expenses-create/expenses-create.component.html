@@ -2,19 +2,13 @@
   <div class="expenses-create px-4 py-3">
     <h2 class="text-light">Add Expense</h2>
     <mat-divider></mat-divider>
-    <component-camera
-      #cameraComponent
-      [autoStart]="true"
-      [width]="640"
-      [height]="480"
-      [facingMode]="'environment'"
-      [quality]="0.8"
-      (photoTaken)="onPhotoTaken($event)"
-      (cameraError)="onCameraError()"
-      (cameraStarted)="onCameraStarted()"
-      (cameraStopped)="onCameraStopped()"
-    >
-    </component-camera>
+    
+    <!-- Barcode Scanner Component -->
+    <app-barcode-scanner 
+      (scanned)="onBarcodeScanned($event)"
+      (error)="onBarcodeScanError($event)">
+    </app-barcode-scanner>
+    
     <form [formGroup]="expensesForm" class="pt-4">
       <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
         <mat-label>Name</mat-label>
