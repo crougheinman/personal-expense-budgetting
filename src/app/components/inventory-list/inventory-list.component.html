@@ -1,0 +1,46 @@
+<ng-container *ngIf="vm$ | async as vm">
+  <div id="inventory-summary" class="inventory-summary-container mt-2 mb-3">
+    <div class="inventory-summary-cards">
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-card-title>
+            {{ vm.filteredCount }}
+          </mat-card-title>
+          <mat-card-subtitle>Total Items</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+    </div>
+  </div>
+
+  <div class="search-container">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search...</mat-label>
+      <input
+        #searchInput
+        matInput
+        placeholder="Search"
+        (input)="onSearch($event)"
+      />
+    </mat-form-field>
+  </div>
+
+  <div class="results-info mb-2" *ngIf="vm.filteredCount !== vm.totalCount">
+    <small class="text-light">
+      Showing {{ vm.filteredCount }} of {{ vm.totalCount }} items
+    </small>
+  </div>
+
+  <div class="inventory-list">
+    <mat-list role="listbox">
+      <mat-list-item
+        role="listitem"
+        *ngFor="let item of vm.inventoryItems"
+        (click)="onItemClick(item)"
+      >
+        {{ item.price | currency : "PHP" : "symbol" : "1.2-2" }}
+        <mat-icon matListItemIcon>folder</mat-icon>
+        <h3 matListItemTitle>{{ item.name }}</h3>
+      </mat-list-item>
+    </mat-list>
+  </div>
+</ng-container>
