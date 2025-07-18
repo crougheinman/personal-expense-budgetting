@@ -28,6 +28,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { RouterModule } from "@angular/router";
 import { CameraComponent } from "./camera/camera.component";
 import { BarcodeScanner } from './barcode-scanner/barcode-scanner';
+import { InventoryCreateComponent } from "./inventory-create/inventory-create.component";
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import { BarcodeScanner } from './barcode-scanner/barcode-scanner';
     ExpensesListComponent,
     SidebarComponent,
     ExpensesEditComponent,
+    InventoryCreateComponent,
     CameraComponent,
     BarcodeScanner,
   ],

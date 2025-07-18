@@ -1,9 +1,10 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ExpensesComponent, ForgotPasswordComponent, Home, NotFoundComponent, SignInComponent, SignUpComponent } from '@pages';
+import { ExpensesComponent, ForgotPasswordComponent, Home, InventoryComponent, NotFoundComponent, SignInComponent, SignUpComponent } from '@pages';
 import { ExpensesCreateComponent } from '@components'
 import { AuthGuard } from './auth-guard';
 import { IsAuthenticatedGuard } from './is-auth-guard';
+import { InventoryCreateComponent } from './components/inventory-create/inventory-create.component';
 
 const routes: Routes = [
     {
@@ -25,6 +26,13 @@ const routes: Routes = [
             {path: '', redirectTo: 'list', pathMatch: 'full'},
             {path: 'list', component: ExpensesComponent},
             {path: 'create', component: ExpensesCreateComponent}
+        ],
+        canActivate: [AuthGuard] 
+    },
+    {
+        path: 'inventory', children: [
+            {path: '', redirectTo: 'list', pathMatch: 'full'},
+            {path: 'list', component: InventoryComponent},
         ],
         canActivate: [AuthGuard] 
     },

@@ -1,0 +1,37 @@
+.inventory-create {
+  .camera-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+
+    mat-icon {
+      font-size: 24px;
+      margin-right: 8px;
+    }
+
+    span {
+      font-size: 16px;
+    }
+  }
+
+  .row {
+    display: flex;
+    gap: 1rem;
+    
+    .col-md-6 {
+      flex: 1;
+    }
+  }
+
+  mat-form-field {
+    margin-bottom: 1rem;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
