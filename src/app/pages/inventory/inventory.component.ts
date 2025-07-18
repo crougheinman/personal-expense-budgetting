@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { DialogService } from '@services';
-import { ExpensesCreateComponent } from '@app/components';
+import { InventoryCreateComponent } from '@app/components';
 
 @Component({
   selector: 'pages-inventory',
@@ -14,7 +14,7 @@ export class InventoryComponent {
   constructor(private dialogService: DialogService) {}
 
   openAddInventoryDialog(): void {
-    this.dialogService.open(ExpensesCreateComponent, {
+    this.dialogService.open(InventoryCreateComponent, {
             width: '444px',
             closeButtonTxt: 'OK',
             confirmBtn: false,

@@ -10,6 +10,7 @@ import { MatDialogRef } from "@angular/material/dialog";
 import { Observable, of } from "rxjs";
 import moment from "moment";
 import { Timestamp } from "firebase/firestore";
+import { Inventory } from "@app/models";
 
 @Component({
   selector: "app-inventory-create",
@@ -31,48 +32,54 @@ export class InventoryCreateComponent {
   ) {
     this.vm$ = this.facade.vm$;
     this.inventoryForm = this.formBuilder.group({
+      barCode: new FormControl<string | null>(null),
       itemName: new FormControl<string | null>(null),
-      itemQuantity: new FormControl<number | null>(null),
-      itemPrice: new FormControl<number | null>(null),
-      itemDescription: new FormControl<string | null>(null),
+      price: new FormControl<string | null>(null),
+      store: new FormControl<string | null>(null),
     });
+    this.barCodeControl.setValue("");
     this.nameControl.setValue("");
-    this.quantityControl.setValue("");
     this.priceControl.setValue("");
-    this.descriptionControl.setValue("");
+    this.storeControl.setValue("");
+  }
+
+  get barCodeControl(): AbstractControl {
+    return this.inventoryForm.get("barCode") as AbstractControl;
   }
 
   get nameControl(): AbstractControl {
     return this.inventoryForm.get("itemName") as AbstractControl;
   }
 
-  get quantityControl(): AbstractControl {
-    return this.inventoryForm.get("itemQuantity") as AbstractControl;
-  }
-
   get priceControl(): AbstractControl {
-    return this.inventoryForm.get("itemPrice") as AbstractControl;
+    return this.inventoryForm.get("price") as AbstractControl;
   }
 
-  get descriptionControl(): AbstractControl {
-    return this.inventoryForm.get("itemDescription") as AbstractControl;
+  get storeControl(): AbstractControl {
+    return this.inventoryForm.get("store") as AbstractControl;
   }
 
   async addInventoryItem(vm: InventoryCreateFacadeModel): Promise<void> {
-    await this.facade.addInventoryItem({
-      userId: vm.userId,
-      name: this.nameControl.value,
-      amount: this.priceControl.value,
-      expenseDate: Timestamp.fromDate(moment().toDate()),
-      // Store additional inventory info in the name field for now
-      // Format: "ItemName (Qty: X, Desc: Y)"
-    });
-    this.matDialogRef.close();
+    try {
+      // Combine inventory data into a structured description
+      const inventoryData: Partial<Inventory> = {
+        barCode: this.barCodeControl.value,
+        price: this.priceControl.value,
+        store: this.storeControl.value,
+      };
+      
+      await this.facade.addInventoryItem(inventoryData);
+      this.matDialogRef.close();
+    } catch (error) {
+      // Error is already handled in the facade with snackbar
+      // Dialog remains open so user can retry
+      console.error('Failed to add inventory item:', error);
+    }
   }
 
   onBarcodeScanned(barcode: string): void {
-    // Handle the scanned barcode - populate the item name field
-    this.nameControl.setValue(barcode);
+    // Handle the scanned barcode - populate both barcode fields
+    this.barCodeControl.setValue(barcode);
   }
 
   onBarcodeScanError(error: string): void {

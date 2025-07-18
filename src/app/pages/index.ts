@@ -4,5 +4,5 @@ export * from './auth/sign-in/sign-in.component';
 export * from './auth/sign-up/sign-up.component';
 export * from './expenses/expenses.component';
 export * from './not-found/not-found.component';
-export * from './inventory/expenses/inventory.component';
+export * from './inventory/inventory.component';
 export * from './pages-module';

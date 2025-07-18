@@ -25,7 +25,6 @@ const routes: Routes = [
         path: 'expenses', children: [
             {path: '', redirectTo: 'list', pathMatch: 'full'},
             {path: 'list', component: ExpensesComponent},
-            {path: 'create', component: ExpensesCreateComponent}
         ],
         canActivate: [AuthGuard] 
     },

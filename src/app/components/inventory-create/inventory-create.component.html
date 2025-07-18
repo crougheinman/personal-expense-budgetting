@@ -11,6 +11,23 @@
     
     <form [formGroup]="inventoryForm" class="pt-4">
       <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+        <mat-label>Barcode</mat-label>
+        <input
+          #barCode
+          matInput
+          type="text"
+          formControlName="barCode"
+          required
+          readonly="true"
+        />
+        <mat-error
+          *ngIf="inventoryForm.get('barCode')?.hasError('required')"
+        >
+          Barcode is required
+        </mat-error>
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
         <mat-label>Item Name</mat-label>
         <input
           #itemName
@@ -26,62 +43,38 @@
         </mat-error>
       </mat-form-field>
       
-      <div class="row">
-        <div class="col-md-6">
-          <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
-            <mat-label>Quantity</mat-label>
-            <input
-              #itemQuantity
-              matInput
-              type="number"
-              formControlName="itemQuantity"
-              required
-              min="1"
-              step="1"
-            />
-            <mat-error
-              *ngIf="inventoryForm.get('itemQuantity')?.hasError('required')"
-            >
-              Quantity is required
-            </mat-error>
-            <mat-error *ngIf="inventoryForm.get('itemQuantity')?.hasError('min')">
-              Quantity must be at least 1
-            </mat-error>
-          </mat-form-field>
-        </div>
-        
-        <div class="col-md-6">
-          <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
-            <mat-label>Price per Unit</mat-label>
-            <input
-              #itemPrice
-              matInput
-              type="number"
-              formControlName="itemPrice"
-              required
-              min="0"
-              step="0.01"
-            />
-            <mat-error
-              *ngIf="inventoryForm.get('itemPrice')?.hasError('required')"
-            >
-              Price is required
-            </mat-error>
-            <mat-error *ngIf="inventoryForm.get('itemPrice')?.hasError('min')">
-              Price must be greater than 0
-            </mat-error>
-          </mat-form-field>
-        </div>
-      </div>
+      <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+        <mat-label>Price</mat-label>
+        <input
+          #price
+          matInput
+          type="number"
+          formControlName="price"
+          min="0"
+          step="0.01"
+          required
+        />
+        <mat-error
+          *ngIf="inventoryForm.get('price')?.hasError('required')"
+        >
+          Price is required
+        </mat-error>
+      </mat-form-field>
       
       <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
-        <mat-label>Description (Optional)</mat-label>
-        <textarea
-          #itemDescription
+        <mat-label>Store</mat-label>
+        <input
+          #store
           matInput
-          formControlName="itemDescription"
-          rows="3"
-        ></textarea>
+          type="text"
+          formControlName="store"
+          required
+        />
+        <mat-error
+          *ngIf="inventoryForm.get('store')?.hasError('required')"
+        >
+          Store is required
+        </mat-error>
       </mat-form-field>
     </form>
     
