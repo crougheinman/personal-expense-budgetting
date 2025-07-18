@@ -27,6 +27,89 @@
     }
   }
 
+  .mobile-quick-actions {
+    margin-bottom: 32px;
+    padding: 0 16px;
+    
+    .action-buttons-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      
+      @media (min-width: 769px) {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+      }
+      
+      .action-button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: end;
+        padding: 16px 8px;
+        min-height: 80px;
+        border-radius: 12px;
+        background: #00bcd4;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: none;
+        box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3);
+        transition: all 0.3s ease;
+        line-height: 1.2;
+        
+        @media (min-width: 769px) {
+          flex-direction: row;
+          justify-content: space-between;
+          padding: 16px 20px;
+          min-height: 60px;
+          font-size: 1rem;
+        }
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4);
+          background: #00acc1;
+        }
+        
+        span {
+          text-align: center;
+          margin-top: 4px;
+          
+          @media (min-width: 769px) {
+            flex: 1;
+            text-align: left;
+            margin-top: 0;
+            margin-left: 12px;
+          }
+        }
+        
+        .arrow {
+          font-size: 16px;
+          opacity: 0.8;
+          margin-top: 4px;
+          
+          @media (min-width: 769px) {
+            font-size: 20px;
+            margin-top: 0;
+          }
+        }
+        
+        mat-icon:first-child {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+          
+          @media (min-width: 769px) {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+          }
+        }
+      }
+    }
+  }
+
   .quick-launch-section {
     margin-bottom: 40px;
 

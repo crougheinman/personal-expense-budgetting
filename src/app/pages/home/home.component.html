@@ -1,15 +1,37 @@
 <ng-container *ngIf="vm$ | async as vm">
   <div class="home">
-    <mat-card appearance="outlined" class="welcome-bar">
-      <mat-card-header>
-        <mat-card-title>
-          <h1>Good day {{ vm.user?.displayName }}</h1>
-        </mat-card-title>
-        <mat-card-subtitle>
-          Welcome to your personal expense tracking dashboard
-        </mat-card-subtitle>
-      </mat-card-header>
-    </mat-card>
+
+    <!-- Mobile Quick Action Buttons -->
+    <div class="mobile-quick-actions">
+      <div class="action-buttons-grid">
+        <button 
+          mat-raised-button 
+          color="accent" 
+          class="action-button"
+          (click)="createNewExpense()"
+        >
+          <span>Add New Expense</span>
+        </button>
+        
+        <button 
+          mat-raised-button 
+          color="accent" 
+          class="action-button"
+          (click)="createNewItem()"
+        >
+          <span>Add New Item</span>
+        </button>
+        
+        <button 
+          mat-raised-button 
+          color="accent" 
+          class="action-button"
+          (click)="createNewBill()"
+        >
+          <span>Add New Bill</span>
+        </button>
+      </div>
+    </div>
 
     <!-- Quick Launch Section -->
     <div class="quick-launch-section">

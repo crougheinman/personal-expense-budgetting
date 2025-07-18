@@ -7,7 +7,7 @@ import {
 } from "@angular/forms";
 import { InventoryCreateFacade, InventoryCreateFacadeModel, initialState } from "./inventory-create.facade";
 import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
-import { Observable, of } from "rxjs";
+import { tap, Observable, of } from "rxjs";
 import moment from "moment";
 import { Timestamp } from "firebase/firestore";
 import { Inventory } from "@app/models";
@@ -32,7 +32,6 @@ export class InventoryCreateComponent {
     private matDialogRef: MatDialogRef<InventoryCreateComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    this.vm$ = this.facade.vm$;
     this.showCloseButton = data?.showCloseButton || false;
     this.inventoryForm = this.formBuilder.group({
       barCode: new FormControl<string | null>(null),
@@ -42,8 +41,13 @@ export class InventoryCreateComponent {
     });
     this.barCodeControl.setValue("");
     this.nameControl.setValue("");
-    this.priceControl.setValue("");
-    this.storeControl.setValue("");
+    this.vm$ = this.facade.vm$.pipe(
+      tap((vm) => {
+        this.storeControl.setValue(vm.selectedStore);
+        console.log(vm.selectedStore, 'Selected Store in Inventory Create Component');
+        
+      })
+    );
   }
 
   get barCodeControl(): AbstractControl {

@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { DialogService } from '@services';
 import { HomeFacade, HomeFacadeModel } from './home.facade';
 import { Observable, of } from 'rxjs';
-import { ExpensesCreateComponent } from '@components';
+import { ExpensesCreateComponent, InventoryCreateComponent } from '@components';
 
 @Component({
   selector: 'app-home',
@@ -39,6 +39,19 @@ export class Home {
       mobileFullscreen: true,
       showCloseButton: true,
     });
+  }
+
+  createNewItem(): void {
+    this.dialogService.open(InventoryCreateComponent, {
+      width: '444px',
+      mobileFullscreen: true,
+      showCloseButton: true,
+    });
+  }
+
+  createNewBill(): void {
+    // For now, navigate to expenses - bills functionality can be added later
+    this.router.navigate(['/expenses/list']);
   }
 
   viewAnalytics(): void {

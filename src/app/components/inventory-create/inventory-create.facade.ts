@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { InventoryService } from '@app/services/inventory.service';
-import { AppState, selectAuthenticatedUser } from '@app/store';
+import { AppState, selectAuthenticatedUser, selectedStore, setStore } from '@app/store';
 import { Inventory } from '@models'
 import { Store } from '@ngrx/store';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -9,11 +9,13 @@ import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, 
 export interface InventoryCreateFacadeModel {
     userId: string | undefined,
     cameraOpened: boolean;
+    selectedStore: string;
 };
 
 export const initialState: InventoryCreateFacadeModel = {
     userId: '',
     cameraOpened: false,
+    selectedStore: '',
 };
 
 @Injectable()
@@ -33,11 +35,13 @@ export class InventoryCreateFacade {
         return combineLatest([
             this.store.select(selectAuthenticatedUser),
             this.cameraOpened$.asObservable().pipe(distinctUntilChanged()),
+            this.store.select(selectedStore)
         ]).pipe(
-            map(([user, cameraOpened]) => {
+            map(([user, cameraOpened, selectedStore]) => {
                 return {
                     userId: user.id,
                     cameraOpened,
+                    selectedStore,
                 }
             })
         );
@@ -46,6 +50,7 @@ export class InventoryCreateFacade {
     async addInventoryItem(inventoryItem: Partial<Inventory>): Promise<void> {
         try {
             await this.inventoryService.addInventoryItem(inventoryItem);
+            this.store.dispatch(setStore({ store: inventoryItem.store as string }));
             this.snackBar.open('Inventory item added successfully!', 'Close', {
                 duration: 3000,
                 panelClass: ['success-snackbar']
