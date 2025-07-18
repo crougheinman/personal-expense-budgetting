@@ -56,13 +56,16 @@ export class ExpensesCreateComponent {
     this.matDialogRef.close();
   }
 
-  onBarcodeScanned(barcode: string): void {
+  async onBarcodeScanned(barcode: string): Promise<void> {
     // Handle the scanned barcode - populate the expense name field
-    this.nameControl.setValue(barcode);
+    const scannedData = await this.facade.onBarcodeScanned(barcode);
+    if (scannedData) {
+      this.nameControl.setValue(scannedData.name);
+      this.amountControl.setValue(scannedData.amount);
+    }
   }
 
   onBarcodeScanError(error: string): void {
     console.error('Barcode scan error:', error);
-    // Optionally show user-friendly error message
   }
 }

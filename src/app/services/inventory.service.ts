@@ -4,6 +4,7 @@ import { Observable } from "rxjs";
 import { FirestoreService } from "./firestore.service";
 import { DBPathHelper } from "@app/models/db-path-helper";
 import { removeNoValuesKeys } from "@app/shared/utils";
+import { query, where } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: "root",
@@ -15,6 +16,26 @@ export class InventoryService {
     return this.firestoreService.getDocument(
       DBPathHelper.getInventoryPath()
     ) as Observable<Inventory[]>;
+  }
+
+  getInventoryItemById(id: string): Observable<Inventory | undefined> {
+    return this.firestoreService.getDocumentById(
+      DBPathHelper.getInventoryPath(),
+      id
+    ) as Observable<Inventory | undefined>;
+  }
+
+  getInventoryItemsByQuery(queryFn: (q: any) => any): Observable<Inventory[]> {
+    return this.firestoreService.getDocumentByQuery(
+      DBPathHelper.getInventoryPath(),
+      queryFn
+    );
+  }
+
+  getInventoryItemByBarcode(barcode: string): Observable<Inventory[]> {
+    return this.getInventoryItemsByQuery((collectionRef) => 
+      query(collectionRef, where('barCode', '==', barcode))
+    );
   }
 
   async addInventoryItem(data: Partial<Inventory>): Promise<void> {

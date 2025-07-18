@@ -17,6 +17,13 @@ export class ExpensesService {
     ) as Observable<Expense[]>;
   }
 
+  getExpenseById(id: string): Observable<Expense | undefined> {
+    return this.firestoreService.getDocumentById(
+      DBPathHelper.getExpensesPath(),
+      id
+    ) as Observable<Expense | undefined>;
+  }
+
   async addExpenses(data: Partial<Expense>): Promise<void> {
     await this.firestoreService.addDocument(DBPathHelper.getExpensesPath(), {
       ...data,

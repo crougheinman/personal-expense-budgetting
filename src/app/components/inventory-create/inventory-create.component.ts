@@ -61,8 +61,9 @@ export class InventoryCreateComponent {
 
   async addInventoryItem(vm: InventoryCreateFacadeModel): Promise<void> {
     try {
-      // Combine inventory data into a structured description
       const inventoryData: Partial<Inventory> = {
+        userId: vm.userId,
+        name: this.nameControl.value,
         barCode: this.barCodeControl.value,
         price: this.priceControl.value,
         store: this.storeControl.value,
@@ -71,19 +72,15 @@ export class InventoryCreateComponent {
       await this.facade.addInventoryItem(inventoryData);
       this.matDialogRef.close();
     } catch (error) {
-      // Error is already handled in the facade with snackbar
-      // Dialog remains open so user can retry
       console.error('Failed to add inventory item:', error);
     }
   }
 
   onBarcodeScanned(barcode: string): void {
-    // Handle the scanned barcode - populate both barcode fields
     this.barCodeControl.setValue(barcode);
   }
 
   onBarcodeScanError(error: string): void {
     console.error('Barcode scan error:', error);
-    // Optionally show user-friendly error message
   }
 }
