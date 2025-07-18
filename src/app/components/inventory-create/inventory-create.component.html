@@ -1,4 +1,15 @@
 <ng-container *ngIf="vm$ | async as vm">
+  <!-- Close button for mobile fullscreen -->
+  <button 
+    *ngIf="showCloseButton" 
+    mat-icon-button 
+    class="dialog-close-button"
+    (click)="closeDialog()"
+    aria-label="Close dialog"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+  
   <div class="inventory-create px-4 py-3">
     <h2 class="text-light">Add Inventory Item</h2>
     <mat-divider></mat-divider>

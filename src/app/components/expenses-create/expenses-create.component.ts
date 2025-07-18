@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Inject } from "@angular/core";
 import {
   AbstractControl,
   FormBuilder,
@@ -6,7 +6,7 @@ import {
   FormGroup,
 } from "@angular/forms";
 import { ExpensesCreateFacade, ExpensesCreateFacadeModel, initialState } from "./expenses-create.facade";
-import { MatDialogRef } from "@angular/material/dialog";
+import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { Observable, of } from "rxjs";
 import moment from "moment";
 import { Timestamp } from "firebase/firestore";
@@ -23,13 +23,16 @@ export class ExpensesCreateComponent {
   expensesForm!: FormGroup;
   vm$: Observable<ExpensesCreateFacadeModel> = of(initialState);
   capturedImageUrl: string | null = null;
+  showCloseButton: boolean = false;
 
   constructor(
     private facade: ExpensesCreateFacade,
     private formBuilder: FormBuilder,
     private matDialogRef: MatDialogRef<ExpensesCreateComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.vm$ = this.facade.vm$;
+    this.showCloseButton = data?.showCloseButton || false;
     this.expensesForm = this.formBuilder.group({
       expenseName: new FormControl<string | null>(null),
       expenseAmount: new FormControl<string | null>(null),
@@ -67,5 +70,9 @@ export class ExpensesCreateComponent {
 
   onBarcodeScanError(error: string): void {
     console.error('Barcode scan error:', error);
+  }
+
+  closeDialog(): void {
+    this.matDialogRef.close();
   }
 }

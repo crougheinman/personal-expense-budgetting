@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Inject } from "@angular/core";
 import {
   AbstractControl,
   FormBuilder,
@@ -6,7 +6,7 @@ import {
   FormGroup,
 } from "@angular/forms";
 import { InventoryCreateFacade, InventoryCreateFacadeModel, initialState } from "./inventory-create.facade";
-import { MatDialogRef } from "@angular/material/dialog";
+import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { Observable, of } from "rxjs";
 import moment from "moment";
 import { Timestamp } from "firebase/firestore";
@@ -24,13 +24,16 @@ export class InventoryCreateComponent {
   inventoryForm!: FormGroup;
   vm$: Observable<InventoryCreateFacadeModel> = of(initialState);
   capturedImageUrl: string | null = null;
+  showCloseButton: boolean = false;
 
   constructor(
     private facade: InventoryCreateFacade,
     private formBuilder: FormBuilder,
     private matDialogRef: MatDialogRef<InventoryCreateComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.vm$ = this.facade.vm$;
+    this.showCloseButton = data?.showCloseButton || false;
     this.inventoryForm = this.formBuilder.group({
       barCode: new FormControl<string | null>(null),
       itemName: new FormControl<string | null>(null),
@@ -82,5 +85,9 @@ export class InventoryCreateComponent {
 
   onBarcodeScanError(error: string): void {
     console.error('Barcode scan error:', error);
+  }
+
+  closeDialog(): void {
+    this.matDialogRef.close();
   }
 }

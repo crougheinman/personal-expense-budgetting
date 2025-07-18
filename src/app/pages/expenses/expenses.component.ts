@@ -18,6 +18,8 @@ export class ExpensesComponent {
             width: '444px',
             closeButtonTxt: 'OK',
             confirmBtn: false,
+            mobileFullscreen: true,
+            showCloseButton: true,
         })
   }
 }

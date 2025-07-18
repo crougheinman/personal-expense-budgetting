@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
+import { DialogService } from '@services';
 import { HomeFacade, HomeFacadeModel } from './home.facade';
 import { Observable, of } from 'rxjs';
 import { ExpensesCreateComponent } from '@components';
@@ -19,7 +19,7 @@ export class Home {
   constructor(
     private facade: HomeFacade,
     private router: Router,
-    private dialog: MatDialog
+    private dialogService: DialogService
   ) { 
     this.vm$ = this.facade.vm$;
   }
@@ -34,9 +34,10 @@ export class Home {
   }
 
   createNewExpense(): void {
-    this.dialog.open(ExpensesCreateComponent, {
+    this.dialogService.open(ExpensesCreateComponent, {
       width: '500px',
-      maxWidth: '90vw'
+      mobileFullscreen: true,
+      showCloseButton: true,
     });
   }
 

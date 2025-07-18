@@ -1,0 +1,62 @@
+<div class="expenses-edit px-4 py-3">
+  <h2>Edit Inventory Item</h2>
+  <mat-divider></mat-divider>
+  <form [formGroup]="inventoryForm" class="pt-4">
+    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+      <mat-label>Store</mat-label>
+      <input #inventoryStore matInput type="text" formControlName="inventoryStore" required />
+      <mat-error *ngIf="inventoryForm.get('inventoryStore')?.hasError('required')">
+      Store is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+      <mat-label>Name</mat-label>
+      <input #inventoryName matInput type="text" formControlName="inventoryName" required />
+      <mat-error *ngIf="inventoryForm.get('inventoryName')?.hasError('required')">
+      Name is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+      <mat-label>Price</mat-label>
+      <input
+      #inventoryPrice
+      matInput
+      type="number"
+      formControlName="inventoryPrice"
+      required
+      />
+      <mat-error *ngIf="inventoryForm.get('inventoryPrice')?.hasError('required')">
+      Price is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+      <mat-label>Description</mat-label>
+      <textarea
+      #inventoryDescription
+      matInput
+      placeholder="Ex. Just anything..."
+      formControlName="inventoryDescription"
+      ></textarea>
+    </mat-form-field>
+  </form>
+  <div class="d-flex justify-content-end gap-2 mt-3">
+    <button 
+      mat-raised-button 
+      color="primary" 
+      (click)="updateInventory()"
+      [disabled]="inventoryForm.invalid">
+      <mat-icon>save</mat-icon>
+      Update
+    </button>
+    <button 
+      mat-raised-button 
+      color="warn" 
+      (click)="deleteInventory()">
+      <mat-icon>delete</mat-icon>
+      Delete
+    </button>
+  </div>
+</div>

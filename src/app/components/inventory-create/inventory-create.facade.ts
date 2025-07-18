@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { InventoryService } from '@app/services/inventory.service';
 import { AppState, selectAuthenticatedUser } from '@app/store';
-import { Expense, Inventory } from '@models'
+import { Inventory } from '@models'
 import { Store } from '@ngrx/store';
-import { ExpensesService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of } from 'rxjs';
 

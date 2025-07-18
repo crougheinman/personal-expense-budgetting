@@ -18,6 +18,8 @@ export class InventoryComponent {
             width: '444px',
             closeButtonTxt: 'OK',
             confirmBtn: false,
+            mobileFullscreen: true,
+            showCloseButton: true,
         })
   }
 }

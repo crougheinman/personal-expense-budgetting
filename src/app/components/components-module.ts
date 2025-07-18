@@ -29,6 +29,8 @@ import { RouterModule } from "@angular/router";
 import { CameraComponent } from "./camera/camera.component";
 import { BarcodeScanner } from './barcode-scanner/barcode-scanner';
 import { InventoryCreateComponent } from "./inventory-create/inventory-create.component";
+import { InventoryListComponent } from "./inventory-list/inventory-list.component";
+import { InventoryEditComponent } from "./inventory-edit/inventory-edit.component";
 
 @NgModule({
   declarations: [
@@ -37,6 +39,8 @@ import { InventoryCreateComponent } from "./inventory-create/inventory-create.co
     SidebarComponent,
     ExpensesEditComponent,
     InventoryCreateComponent,
+    InventoryListComponent,
+    InventoryEditComponent,
     CameraComponent,
     BarcodeScanner,
   ],
@@ -67,6 +71,9 @@ import { InventoryCreateComponent } from "./inventory-create/inventory-create.co
     ExpensesCreateComponent,
     ExpensesEditComponent,
     ExpensesListComponent,
+    InventoryCreateComponent,
+    InventoryListComponent,
+    InventoryEditComponent,
     SidebarComponent,
     AsyncPipe,
     CommonModule,
