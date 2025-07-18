@@ -36,7 +36,6 @@
     "moment": "^2.30.1",
     "momentjs": "^2.0.0",
     "rxjs": "~7.8.0",
-    "tesseract.js": "^5.0.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
