@@ -16,3 +16,14 @@
     font-size: 16px;
   }
 }
+
+.dialog-close-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1000;
+  
+  mat-icon {
+    color: #666;
+  }
+}

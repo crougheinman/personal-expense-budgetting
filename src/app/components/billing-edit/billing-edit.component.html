@@ -1,0 +1,79 @@
+<div class="billing-edit px-4 py-3">
+  <h2 class="text-light">Edit Bill</h2>
+  <mat-divider></mat-divider>
+  <form [formGroup]="billingForm" class="pt-4">
+    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+      <mat-label>Bill Name</mat-label>
+      <input #billName matInput type="text" formControlName="billName" required />
+      <mat-error *ngIf="billingForm.get('billName')?.hasError('required')">
+        Bill name is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+      <mat-label>Amount</mat-label>
+      <input
+        #billPrice
+        matInput
+        type="number"
+        formControlName="billPrice"
+        step="0.01"
+        min="0"
+        required
+      />
+      <span matTextPrefix>₱&nbsp;</span>
+      <mat-error *ngIf="billingForm.get('billPrice')?.hasError('required')">
+        Amount is required
+      </mat-error>
+      <mat-error *ngIf="billingForm.get('billPrice')?.hasError('min')">
+        Amount must be greater than 0
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+      <mat-label>Due Day</mat-label>
+      <input
+        #billDueDay
+        matInput
+        type="number"
+        formControlName="billDueDay"
+        placeholder="e.g., 15"
+        required
+      />
+      <mat-error *ngIf="billingForm.get('billDueDay')?.hasError('required')">
+        Due day is required
+      </mat-error>
+      <mat-error *ngIf="billingForm.get('billDueDay')?.hasError('min')">
+        Due day must be greater than 0
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+      <mat-label>Description</mat-label>
+      <textarea
+        #billDescription
+        matInput
+        placeholder="Additional notes about this bill..."
+        formControlName="billDescription"
+        rows="3"
+      ></textarea>
+    </mat-form-field>
+  </form>
+  <div class="d-flex justify-content-end gap-2 mt-3">
+    <button 
+      mat-raised-button 
+      color="primary" 
+      (click)="updateBill()"
+      [disabled]="billingForm.invalid">
+      <mat-icon>save</mat-icon>
+      Update
+    </button>
+    <button 
+      mat-raised-button 
+      color="warn" 
+      (click)="deleteBill()">
+      <mat-icon>delete</mat-icon>
+      Delete
+    </button>
+  </div>
+</div>

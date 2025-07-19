@@ -1,0 +1,96 @@
+.billing-create {
+  max-width: 600px;
+  margin: 0 auto;
+
+  h2 {
+    margin-bottom: 16px;
+    color: #333;
+    font-weight: 500;
+  }
+
+  .w-100 {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  form {
+    .pt-4 {
+      padding-top: 24px;
+    }
+  }
+
+  .d-flex {
+    display: flex;
+    
+    &.justify-content-end {
+      justify-content: flex-end;
+    }
+    
+    &.gap-2 {
+      gap: 8px;
+    }
+  }
+
+  .mt-3 {
+    margin-top: 24px;
+  }
+
+  button {
+    min-width: 100px;
+    
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+.dialog-close-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1000;
+  
+  mat-icon {
+    color: #666;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .billing-create {
+    padding: 16px;
+    
+    h2 {
+      font-size: 1.25rem;
+    }
+    
+    .w-100 {
+      margin-bottom: 12px;
+    }
+    
+    .d-flex {
+      &.gap-2 {
+        gap: 12px;
+      }
+    }
+  }
+}
+
+// Custom styling for form fields
+mat-form-field {
+  &.w-100 {
+    .mat-mdc-form-field-wrapper {
+      width: 100%;
+    }
+  }
+  
+  .mat-mdc-form-field-hint-wrapper,
+  .mat-mdc-form-field-error-wrapper {
+    padding: 0 16px;
+  }
+}
+
+// Date picker styling
+.mat-datepicker-toggle {
+  color: #666;
+}

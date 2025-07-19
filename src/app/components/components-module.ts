@@ -5,6 +5,9 @@ import { SidebarComponent } from "./custom/sidebar/sidebar.component";
 import { ExpensesCreateComponent } from "./expenses-create/expenses-create.component";
 import { ExpensesListComponent } from "./expenses-list/expenses-list.component";
 import { ExpensesEditComponent } from './expenses-edit/expenses-edit.component';
+import { BillingCreateComponent } from "./billing-create/billing-create.component";
+import { BillingListComponent } from "./billing-list/billing-list.component";
+import { BillingEditComponent } from "./billing-edit/billing-edit.component";
 
 import { ReactiveFormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
@@ -21,6 +24,9 @@ import { MaterialModule } from "../shared/material.module";
     ExpensesListComponent,
     SidebarComponent,
     ExpensesEditComponent,
+    BillingCreateComponent,
+    BillingListComponent,
+    BillingEditComponent,
     InventoryCreateComponent,
     InventoryListComponent,
     InventoryEditComponent,
@@ -38,6 +44,9 @@ import { MaterialModule } from "../shared/material.module";
     ExpensesCreateComponent,
     ExpensesEditComponent,
     ExpensesListComponent,
+    BillingCreateComponent,
+    BillingListComponent,
+    BillingEditComponent,
     InventoryCreateComponent,
     InventoryListComponent,
     InventoryEditComponent,

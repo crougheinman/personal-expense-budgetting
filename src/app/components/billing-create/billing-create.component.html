@@ -1,0 +1,93 @@
+<ng-container *ngIf="vm$ | async as vm">
+  <!-- Close button for mobile fullscreen -->
+  <button
+    *ngIf="showCloseButton"
+    mat-icon-button
+    class="dialog-close-button"
+    (click)="closeDialog()"
+    aria-label="Close dialog"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <div class="billing-create px-4 py-3">
+    <h2 class="text-light">Add New Bill</h2>
+    <mat-divider></mat-divider>
+
+    <form [formGroup]="billingForm" class="pt-4">
+      <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+        <mat-label>Bill Name</mat-label>
+        <input
+          #billName
+          matInput
+          type="text"
+          formControlName="billName"
+          placeholder="e.g., Electricity Bill, Internet Bill"
+          required
+        />
+        <mat-error *ngIf="billingForm.get('billName')?.hasError('required')">
+          Bill name is required
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+        <mat-label>Amount</mat-label>
+        <input
+          #price
+          matInput
+          type="number"
+          formControlName="price"
+          placeholder="0.00"
+          step="0.01"
+          min="0"
+          required
+        />
+        <span matTextPrefix>₱&nbsp;</span>
+        <mat-error *ngIf="billingForm.get('price')?.hasError('required')">
+          Amount is required
+        </mat-error>
+        <mat-error *ngIf="billingForm.get('price')?.hasError('min')">
+          Amount must be greater than 0
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+        <mat-label>Due Day</mat-label>
+        <input
+          #dueDay
+          matInput
+          type="number"
+          formControlName="dueDay"
+          placeholder="e.g., 15"
+          required
+        />
+        <mat-error *ngIf="billingForm.get('dueDay')?.hasError('required')">
+          Due day is required
+        </mat-error>    
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
+        <mat-label>Description (Optional)</mat-label>
+        <textarea
+          #description
+          matInput
+          formControlName="description"
+          placeholder="Additional notes about this bill..."
+          rows="3"
+        ></textarea>
+      </mat-form-field>
+    </form>
+
+    <div class="d-flex justify-content-end">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="addBill(vm)"
+        [disabled]="billingForm.invalid"
+      >
+        <mat-icon>add</mat-icon>
+        Add Bill
+      </button>
+    </div>
+  </div>
+</ng-container>

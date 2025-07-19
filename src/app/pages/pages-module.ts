@@ -8,18 +8,20 @@ import { SignInComponent } from "./auth/sign-in/sign-in.component";
 import { SignUpComponent } from "./auth/sign-up/sign-up.component";
 import { ForgotPasswordComponent } from "./auth/forgot-password/forgot-password.component";
 import { InventoryComponent } from "./inventory/inventory.component";
+import { BillingComponent } from "./billing/billing.component";
 
 @NgModule({
   declarations: [
     ExpensesComponent,
     InventoryComponent,
+    BillingComponent,
     Home,
     NotFoundComponent,
     SignInComponent,
     SignUpComponent,
     ForgotPasswordComponent,
   ],
-  imports: [ComponentsModule, CommonModule,],
+  imports: [ComponentsModule, CommonModule],
   exports: [ComponentsModule, CommonModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

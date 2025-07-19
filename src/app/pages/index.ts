@@ -5,4 +5,5 @@ export * from './auth/sign-up/sign-up.component';
 export * from './expenses/expenses.component';
 export * from './not-found/not-found.component';
 export * from './inventory/inventory.component';
+export * from './billing/billing.component';
 export * from './pages-module';

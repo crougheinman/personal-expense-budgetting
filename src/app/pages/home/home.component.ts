@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { DialogService } from '@services';
 import { HomeFacade, HomeFacadeModel } from './home.facade';
 import { Observable, of } from 'rxjs';
-import { ExpensesCreateComponent, InventoryCreateComponent } from '@components';
+import { BillingCreateComponent, ExpensesCreateComponent, InventoryCreateComponent } from '@components';
 
 @Component({
   selector: 'app-home',
@@ -29,8 +29,11 @@ export class Home {
   }
 
   navigateToBills(): void {
-    // For now, navigate to expenses - bills functionality can be added later
-    this.router.navigate(['/expenses/list']);
+    this.router.navigate(['/billing/list']);
+  }
+
+  navigateToInventory(): void {
+    this.router.navigate(['/inventory/list']);
   }
 
   createNewExpense(): void {
@@ -50,12 +53,14 @@ export class Home {
   }
 
   createNewBill(): void {
-    // For now, navigate to expenses - bills functionality can be added later
-    this.router.navigate(['/expenses/list']);
+    this.dialogService.open(BillingCreateComponent, {
+      width: '500px',
+      mobileFullscreen: true,
+      showCloseButton: true,
+    });
   }
 
   viewAnalytics(): void {
-    // For now, navigate to expenses - analytics can be added later
-    this.router.navigate(['/expenses/list']);
+    this.router.navigate(['/dashboard']);
   }
 }
