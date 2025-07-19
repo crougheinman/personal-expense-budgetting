@@ -6,7 +6,7 @@
       fixedInViewport
       [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
       [mode]="(isHandset$ | async) || !vm.isAuthenticated ? 'over' : 'side'"
-      [opened]="(isHandset$ | async)  || !vm.isAuthenticated === false"
+      [opened]="!(isHandset$ | async) && vm.isAuthenticated"
     >
       <mat-toolbar>PEB</mat-toolbar>
       <mat-divider></mat-divider>

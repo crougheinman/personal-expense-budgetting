@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { InventoryService } from '@app/services/inventory.service';
-import { AppState, selectAuthenticatedUser } from '@app/store';
+import { AppState, selectAuthenticatedUser, setStore } from '@app/store';
 import { Inventory } from '@models'
 import { Store } from '@ngrx/store';
 import { combineLatest, map, Observable, of } from 'rxjs';
@@ -36,6 +36,7 @@ export class InventoryEditFacade {
     }
 
     async editInventoryItem(inventoryItem: Partial<Inventory>): Promise<void> {
+        this.store.dispatch(setStore({ store: inventoryItem.store as string }));
         await this.inventoryService.updateInventoryItem(inventoryItem);
     }
 

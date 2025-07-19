@@ -44,16 +44,15 @@
             #startDate
             matStartDate
             placeholder="Start date"
-            (click)="onStartDateChange($event)"
-            [value]="vm.startDate?.toDate()"
-            
+            (change)="onStartDateChange($event)"
+            [value]="startDate"
           />
           <input
             #endDate
             matEndDate
             placeholder="End date"
-            (click)="onEndDateChange($event)"
-            [value]="vm.endDate?.toDate()"
+            (change)="onEndDateChange($event)"
+            [value]="endDate"
           />
       </mat-date-range-input>
       <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>

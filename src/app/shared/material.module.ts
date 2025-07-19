@@ -18,6 +18,7 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 const MATERIAL_MODULES = [
   MatToolbarModule,
@@ -38,6 +39,7 @@ const MATERIAL_MODULES = [
   MatGridListModule,
   MatProgressSpinnerModule,
   MatDialogModule,
+  MatSnackBarModule,
 ];
 
 @NgModule({

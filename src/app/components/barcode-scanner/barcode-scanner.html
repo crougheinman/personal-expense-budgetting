@@ -1,13 +1,15 @@
 <div class="barcode-scanner">
-  <div class="video-container w-100" *ngIf="isScanning">
-    <video
-      id="barcodeVideoElement"
-      [style.width.px]="300"
-      [style.height.px]="200"
-      [style.border]="'1px solid #ccc'"
-      [style.border-radius.px]="8"
-      [style.box-shadow]="'0 4px 8px rgba(0,0,0,0.1)'"
-    ></video>
+  <div class="video-container" *ngIf="isScanning">
+    <div class="video-wrapper">
+      <video
+        id="barcodeVideoElement"
+        class="responsive-video"
+        [style.cursor]="'crosshair'"
+        autoplay
+        playsinline
+      ></video>
+      <div class="focus-indicator" id="focusIndicator"></div>
+    </div>
   </div>
   
   <div class="controls">
@@ -20,6 +22,18 @@
         <mat-icon>{{ isScanning ? 'stop' : 'videocam' }}</mat-icon>
         {{ isScanning ? 'Stop' : 'Start' }} Scan
     </button>
+    
+    <button 
+        *ngIf="isScanning && canManualFocus"
+        mat-stroked-button
+        color="accent"
+        (click)="triggerFocus()"
+        class="focus-btn"
+        matTooltip="Trigger manual focus"
+    >
+        <mat-icon>center_focus_strong</mat-icon>
+        Focus
+    </button>
   </div>
   
   <div class="result" *ngIf="barcodeResult">
@@ -29,5 +43,7 @@
   <div class="status" *ngIf="isScanning">
     <p>📱 Point camera at a barcode...</p>
     <small>Make sure the barcode is clear and well-lit</small>
+    <br>
+    <small>💡 Tap on the video to focus on a specific area</small>
   </div>
 </div>

@@ -117,12 +117,12 @@ export class ExpensesListFacade {
   }
 
   updateStartDate(value: string): void {
-    this.startDate$.next(Timestamp.fromDate(moment(value).startOf('day').toDate()));
+    this.startDate$.next(Timestamp.fromDate(moment(value).toDate()));
     
   }
 
   updateEndDate(value: string): void {
-    this.endDate$.next(Timestamp.fromDate(moment(value).endOf('day').toDate()));
+    this.endDate$.next(Timestamp.fromDate(moment(value).toDate()));
   }
 
   updateSelectedCategory(category: string): void {

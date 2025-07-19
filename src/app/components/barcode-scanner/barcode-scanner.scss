@@ -3,53 +3,169 @@
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 0;
+  padding: 1rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 
   .video-container {
-    text-align: center;
+    width: 100%;
+    
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      
+      .responsive-video {
+        width: 100%;
+        height: auto;
+        min-height: 200px;
+        max-height: 70vh; // Prevent video from being too tall on small screens
+        object-fit: cover; // Maintain aspect ratio while filling container
+        display: block;
+        user-select: none;
+        border: none;
+        
+        &:focus {
+          outline: 2px solid #4CAF50;
+          outline-offset: 2px;
+        }
+      }
+      
+      // For smaller screens, adjust max height
+      @media (max-width: 768px) {
+        .responsive-video {
+          max-height: 50vh;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .responsive-video {
+          max-height: 40vh;
+          min-height: 150px;
+        }
+      }
+      
+      .focus-indicator {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        border: 2px solid #4CAF50;
+        border-radius: 50%;
+        background-color: rgba(76, 175, 80, 0.2);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -50%) scale(0.5);
+        transition: all 0.3s ease;
+        
+        &.active {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+        
+        &.fade-out {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(1.2);
+        }
+      }
+    }
   }
 
   .controls {
     display: flex;
     gap: 0.5rem;
     justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 400px; // Limit button container width
 
-    .start-btn,
-    .stop-btn {
+    .toggle-btn,
+    .focus-btn {
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      min-width: 120px;
+      flex: 1;
+      max-width: 200px; // Prevent buttons from getting too wide
+    }
+    
+    .focus-btn {
+      mat-icon {
+        font-size: 20px;
+      }
+    }
+    
+    // Stack buttons vertically on very small screens
+    @media (max-width: 300px) {
+      flex-direction: column;
+      
+      .toggle-btn,
+      .focus-btn {
+        width: 100%;
+        max-width: none;
+      }
     }
   }
 
   .result {
     background-color: #e8f5e8;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
     border: 1px solid #4CAF50;
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
 
     p {
       margin: 0;
       color: #2e7d32;
+      word-break: break-all; // Allow long barcodes to wrap
+      font-size: 0.9rem;
+      
+      @media (max-width: 480px) {
+        font-size: 0.8rem;
+      }
     }
   }
 
   .status {
     background-color: #fff3cd;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
     border: 1px solid #ffc107;
     text-align: center;
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
 
     p {
       margin: 0 0 0.25rem 0;
       color: #856404;
       font-weight: 500;
+      font-size: 0.9rem;
+      
+      @media (max-width: 480px) {
+        font-size: 0.85rem;
+      }
     }
 
     small {
       color: #6c5ce7;
       font-style: italic;
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.8rem;
+      
+      @media (max-width: 480px) {
+        font-size: 0.75rem;
+      }
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
     }
   }
 }

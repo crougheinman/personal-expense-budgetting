@@ -14,6 +14,7 @@ import {
   getCategoryDisplayName 
 } from "@app/models";
 import { ExpensesEditComponent } from "../expenses-edit/expenses-edit.component";
+import moment from "moment";
 
 @Component({
   selector: "component-expenses-list",
@@ -28,6 +29,8 @@ export class ExpensesListComponent {
   categories = ['all', ...EXPENSE_CATEGORIES];
   selectedCategory = 'all';
   showCategoryFilter = false;
+  startDate = moment().startOf('month').toISOString();
+  endDate = moment().endOf('month').toISOString();
 
   constructor(
     private facade: ExpensesListFacade,

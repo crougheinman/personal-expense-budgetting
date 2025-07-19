@@ -1,10 +1,11 @@
 import { Injectable } from "@angular/core";
 import {  Inventory } from "@models";
-import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of, startWith } from "rxjs";
+import { BehaviorSubject, combineLatest, distinctUntilChanged, firstValueFrom, map, Observable, of, startWith } from "rxjs";
 import { Store } from "@ngrx/store";
 import { AppState, selectAuthenticatedUser } from "@store";
 import { InventoryService } from "@app/services/inventory.service";
 import { start } from "repl";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 export interface InventoryListFacadeModel {
   inventoryItems?: Inventory[];
@@ -25,7 +26,8 @@ export class InventoryListFacade {
 
   constructor(
     private inventoryService: InventoryService,
-    private store: Store<AppState>
+    private store: Store<AppState>,
+    private snackbarService: MatSnackBar,
   ) {
     this.vm$ = this.buildViewModel();
   }

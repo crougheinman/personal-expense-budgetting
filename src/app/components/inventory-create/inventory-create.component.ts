@@ -83,8 +83,10 @@ export class InventoryCreateComponent {
     }
   }
 
-  onBarcodeScanned(barcode: string): void {
+  async onBarcodeScanned(barcode: string): Promise<void> {
     this.barCodeControl.setValue(barcode);
+    await this.facade.onBarcodeScanned(barcode);
+    this.closeDialog();
   }
 
   onBarcodeScanError(error: string): void {
