@@ -85,13 +85,11 @@ export class InventoryCreateFacade {
     }
   }
 
-  async onBarcodeScanned(barcode: string): Promise<Partial<Inventory>> {
-    // check if the bacode is existing in the inventory by using query
+  async onBarcodeScanned(barcode: string): Promise<Partial<Inventory> | null> {
     const inventoryItem = await firstValueFrom(
       this.inventoryService.getInventoryItemByBarcode(barcode)
     );
     if (inventoryItem.length > 0) {
-      // If found, populate the expense name field with the inventory item name
       const item = inventoryItem[0];
 
       this.bottomSheet.open(InventoryEditComponent, {
@@ -100,7 +98,6 @@ export class InventoryCreateFacade {
         },
       });
     } else {
-      // If not found, you can handle it accordingly (e.g., show a message)
       console.warn("No inventory item found for barcode:", barcode);
       this.snackbarService.open(
         "No inventory item found for this barcode.",
@@ -112,7 +109,7 @@ export class InventoryCreateFacade {
       );
     }
 
-    return {} as Partial<Inventory>;
+    return null;
   }
 
   openCamera(): void {
