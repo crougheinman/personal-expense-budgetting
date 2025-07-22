@@ -8,19 +8,22 @@ A comprehensive personal expense tracking and budgeting application built with A
 
 ### ✅ **Current Features**
 - **Expense Management**: Add, edit, and delete expenses with categorization
+- **Billing Management**: Add, edit, and delete bills with due date tracking
+- **Inventory Management**: Track inventory items with barcode scanning
+- **Barcode Scanner**: Scan barcodes for quick item identification with camera integration
 - **Category Filtering**: Filter expenses by category with toggleable navigation
-- **Smart Search**: Search expenses by name or description
+- **Smart Search**: Search expenses, bills, and inventory by name or description
 - **Expense Analytics**: View total expenses, average amounts, and highest expenses
-- **User Authentication**: Secure login with Firebase Auth
+- **User Authentication**: Secure login with Firebase Auth and user profile management
 - **Responsive Design**: Mobile-friendly interface with Material Design
 - **Real-time Data**: Firebase Firestore integration for real-time updates
+- **Camera Integration**: Built-in camera functionality for barcode scanning
+- **Focus Control**: Advanced camera focus controls including tap-to-focus
 
 ### 🚧 **Planned Essential Features**
 
 #### **Core Financial Management**
 - **Budget Management**: Set monthly/weekly budgets per category with alerts
-- **Recurring Expenses/Bills**: Auto-add recurring payments and bill reminders
-- **Financial Goals & Savings Tracker**: Track savings goals with progress monitoring
 - **Multi-Currency Support**: Support for PHP, USD, EUR with real-time conversion
 
 #### **Smart Analytics & Insights**
@@ -30,7 +33,7 @@ A comprehensive personal expense tracking and budgeting application built with A
 - **Comprehensive Reporting**: Generate PDF reports and tax-ready summaries
 
 #### **Enhanced User Experience**
-- **Receipt Scanner & OCR**: Scan receipts with Google Vision API
+- **Receipt Scanner & OCR**: Scan receipts with Google Vision API (barcode scanning already implemented)
 - **Smart Notifications**: Budget alerts and bill reminders via FCM
 - **Quick Actions**: One-tap expense entry and voice input
 - **Expense Sharing**: Split bills and shared expenses with friends
@@ -85,10 +88,25 @@ src/
 │   ├── components/          # Reusable UI components
 │   │   ├── expenses-list/   # Expense listing and filtering
 │   │   ├── expenses-edit/   # Expense editing
-│   │   └── expenses-create/ # Expense creation
+│   │   ├── expenses-create/ # Expense creation
+│   │   ├── billing-list/    # Bill listing and management
+│   │   ├── billing-edit/    # Bill editing
+│   │   ├── billing-create/  # Bill creation
+│   │   ├── inventory-list/  # Inventory listing
+│   │   ├── inventory-edit/  # Inventory editing
+│   │   ├── inventory-create/# Inventory creation
+│   │   ├── barcode-scanner/ # Barcode scanning component
+│   │   └── camera/          # Camera integration
 │   ├── pages/              # Route components
-│   │   └── home/           # Dashboard home page
+│   │   ├── home/           # Dashboard home page
+│   │   ├── expenses/       # Expenses page
+│   │   ├── billing/        # Bills page
+│   │   └── inventory/      # Inventory page
 │   ├── services/           # Business logic services
+│   │   ├── expenses.service.ts
+│   │   ├── billing.service.ts
+│   │   ├── inventory.service.ts
+│   │   └── firestore.service.ts
 │   ├── models/             # Data models and interfaces
 │   └── store/              # NgRx state management
 ├── environments/           # Environment configurations
@@ -97,17 +115,20 @@ src/
 
 ## Development Roadmap
 
-### **Phase 1 (Current)**
+### **Phase 1 (Completed)**
 - ✅ Basic expense CRUD operations
 - ✅ Category filtering and search
 - ✅ User authentication
 - ✅ Responsive design
+- ✅ Bill management system
+- ✅ Inventory management
+- ✅ Barcode scanning functionality
 
-### **Phase 2 (Next)**
+### **Phase 2 (In Progress)**
 - 🔄 Budget management system
 - 🔄 Receipt scanning with OCR
 - 🔄 Basic analytics dashboard
-- 🔄 Recurring expenses
+- 🔄 Recurring expenses automation
 
 ### **Phase 3 (Future)**
 - 📋 AI-powered insights
