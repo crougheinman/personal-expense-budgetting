@@ -3,6 +3,33 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@app/*": [
+        "src/app/*"
+      ],
+      "@environments/*": [
+        "src/app/environments/*"
+      ],
+      "@pages": [
+        "src/app/pages/index.ts"
+      ],
+      "@components": [
+        "src/app/components/index.ts"
+      ],
+      "@services": [
+        "src/app/services/index.ts"
+      ],
+      "@models": [
+        "src/app/models/index.ts"
+      ],
+      "@store": [
+        "src/app/store/index.ts"
+      ],
+      "@style/vars": [
+        "src/styles/variables"
+      ]
+    },
     "outDir": "./out-tsc/spec",
     "types": [
       "jasmine"
