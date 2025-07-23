@@ -3,6 +3,193 @@
   max-width: 1200px;
   margin: 0 auto;
 
+  // Welcome Section
+  .welcome-section {
+    margin-bottom: 32px;
+
+    .welcome-title {
+      font-size: 2rem;
+      font-weight: 600;
+      margin: 0;
+      color: #ffffff;
+
+      @media (max-width: 768px) {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  // Section Titles
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 16px;
+    color: #ffffff;
+  }
+
+  // Insights Section
+  .insights-section,
+  .additional-insights {
+    margin-bottom: 32px;
+
+    .tip-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+
+      &.secondary {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        box-shadow: 0 8px 32px rgba(240, 147, 251, 0.3);
+      }
+
+      .tip-content {
+        flex: 1;
+
+        h3 {
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin: 0 0 12px 0;
+        }
+
+        p {
+          margin: 0;
+          opacity: 0.9;
+          line-height: 1.5;
+          font-size: 1rem;
+        }
+      }
+
+      .explore-btn {
+        flex-shrink: 0;
+        min-width: 120px;
+
+        &::ng-deep .mat-mdc-button-base {
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.3);
+          }
+        }
+      }
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        text-align: center;
+
+        .explore-btn {
+          min-width: 100%;
+        }
+      }
+    }
+  }
+
+  .action-cards-mobile {
+    min-width: 373px;
+    margin-bottom: 32px;
+  }
+
+  // Quick Actions Section
+  .quick-actions-section {
+
+    .action-cards {
+      .action-card {
+        min-width: 373px;
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+
+        .card-image {
+          height: 200px;
+          position: relative;
+          background-size: cover;
+          background-position: center;
+          display: flex;
+          align-items: flex-end;
+
+          &.expenses-bg {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+          }
+
+          &.billing-bg {
+            background: linear-gradient(45deg, #a8e6cf, #3d5a80);
+          }
+
+          &.inventory-bg {
+            background: linear-gradient(45deg, #ffd93d, #6bcf7f);
+          }
+
+          .card-overlay {
+            background: linear-gradient(
+              to top,
+              rgba(0, 0, 0, 0.7),
+              transparent
+            );
+            color: white;
+            padding: 24px;
+            width: 100%;
+
+            h3 {
+              font-size: 1.5rem;
+              font-weight: 600;
+              margin: 0 0 8px 0;
+            }
+
+            p {
+              margin: 0;
+              opacity: 0.9;
+              font-size: 0.9rem;
+            }
+          }
+        }
+
+        .card-footer {
+          padding: 16px 24px;
+
+          button {
+            width: 100%;
+            border-color: #ddd;
+            color: #666;
+
+            &:hover {
+              background: #f5f5f5;
+              border-color: #ccc;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Responsive improvements
+  @media (max-width: 768px) {
+    padding: 16px;
+
+    .welcome-section {
+      margin-bottom: 24px;
+    }
+
+    .insights-section,
+    .additional-insights,
+    .quick-actions-section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+    }
+  }
+
   .welcome-bar {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -30,17 +217,17 @@
   .mobile-quick-actions {
     margin-bottom: 32px;
     padding: 0 16px;
-    
+
     .action-buttons-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      
+
       @media (min-width: 769px) {
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 16px;
       }
-      
+
       .action-button {
         display: flex;
         flex-direction: column;
@@ -57,7 +244,7 @@
         box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3);
         transition: all 0.3s ease;
         line-height: 1.2;
-        
+
         @media (min-width: 769px) {
           flex-direction: row;
           justify-content: space-between;
@@ -65,17 +252,17 @@
           min-height: 60px;
           font-size: 1rem;
         }
-        
+
         &:hover {
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4);
           background: #00acc1;
         }
-        
+
         span {
           text-align: center;
           margin-top: 4px;
-          
+
           @media (min-width: 769px) {
             flex: 1;
             text-align: left;
@@ -83,23 +270,23 @@
             margin-left: 12px;
           }
         }
-        
+
         .arrow {
           font-size: 16px;
           opacity: 0.8;
           margin-top: 4px;
-          
+
           @media (min-width: 769px) {
             font-size: 20px;
             margin-top: 0;
           }
         }
-        
+
         mat-icon:first-child {
           font-size: 20px;
           width: 20px;
           height: 20px;
-          
+
           @media (min-width: 769px) {
             font-size: 24px;
             width: 24px;
@@ -117,7 +304,7 @@
       font-size: 1.8rem;
       font-weight: 500;
       margin-bottom: 24px;
-      color: #333;
+      color: #ffffff;
     }
 
     .quick-launch-grid {
@@ -153,7 +340,7 @@
 
         .card-icon {
           margin-bottom: 16px;
-          
+
           mat-icon {
             font-size: 48px;
             width: 48px;
@@ -180,7 +367,7 @@
           margin-top: 16px;
           display: flex;
           justify-content: flex-end;
-          
+
           mat-icon {
             color: rgba(255, 255, 255, 0.8);
             transition: transform 0.2s ease;
@@ -216,7 +403,7 @@
       font-size: 1.8rem;
       font-weight: 500;
       margin-bottom: 24px;
-      color: #333;
+      color: #ffffff;
     }
 
     .activity-card {

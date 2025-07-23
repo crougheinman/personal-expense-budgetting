@@ -5,7 +5,7 @@
       class="sidenav"
       fixedInViewport
       [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
-      [mode]="(isHandset$ | async) || !vm.isAuthenticated ? 'over' : 'side'"
+      [mode]="'over'"
       [opened]="!(isHandset$ | async) && vm.isAuthenticated"
     >
       <mat-toolbar>PEB</mat-toolbar>
@@ -30,9 +30,8 @@
       </mat-nav-list>
     </mat-sidenav>
     <mat-sidenav-content>
-      <mat-toolbar color="primary">
+      <mat-toolbar class="main-toolbar" color="primary">
         <button
-          *ngIf="isHandset$ | async"
           type="button"
           aria-label="Toggle sidenav"
           matIconButton

@@ -1,127 +1,81 @@
 <ng-container *ngIf="vm$ | async as vm">
-  <div class="home">
+  <div class="home text-light">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <h1 class="welcome-title">Welcome back, {{ vm.user?.displayName || 'User' }} 👋</h1>
+    </div>
 
-    <!-- Mobile Quick Action Buttons -->
-    <div class="mobile-quick-actions">
-      <div class="action-buttons-grid">
-        <button 
-          mat-raised-button 
-          color="accent" 
-          class="action-button"
-          (click)="createNewExpense()"
-        >
-          <span>Add New Expense</span>
-        </button>
-        
-        <button 
-          mat-raised-button 
-          color="accent" 
-          class="action-button"
-          (click)="createNewItem()"
-        >
-          <span>Add New Item</span>
-        </button>
-        
-        <button 
-          mat-raised-button 
-          color="accent" 
-          class="action-button"
-          (click)="createNewBill()"
-        >
-          <span>Add New Bill</span>
+    <!-- Insights Section -->
+    <div class="insights-section">
+      <h2 class="section-title">Insights</h2>
+      
+      <div class="tip-card">
+        <div class="tip-content">
+          <h3>Tip for today</h3>
+          <p>Spend wisely or shrunk in a cell. Being a financially independent, is not hard.</p>
+        </div>
+        <button mat-raised-button color="primary" class="explore-btn">
+          Explore
         </button>
       </div>
     </div>
 
-    <!-- Quick Launch Section -->
-    <div class="quick-launch-section">
-      <h2 class="text-light">Quick Actions</h2>
-      <div class="quick-launch-grid">
-        <mat-card 
-          class="launch-card expenses-card" 
-          (click)="navigateToExpenses()"
-          tabindex="0"
-          role="button"
-        >
-          <mat-card-content>
-            <div class="card-icon">
-              <mat-icon>receipt_long</mat-icon>
+    <!-- Quick Actions Section -->
+    <div class="quick-actions-section">
+      <h2 class="section-title">Quick Actions</h2>
+      
+      <div class="action-cards row" [ngClass]="{'action-cards-mobile': isHandset$ | async}">
+        <div class="action-card col-3 p-0 mx-2" (click)="navigateToExpenses()">
+          <div class="card-image expenses-bg">
+            <div class="card-overlay">
+              <h3>Add Expenses</h3>
+              <p>Add you expenses in realtime</p>
             </div>
-            <h3>Manage Expenses</h3>
-            <p>View, add, and track your daily expenses</p>
-            <div class="card-action">
-              <mat-icon>arrow_forward</mat-icon>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card 
-          class="launch-card bills-card" 
-          (click)="navigateToBills()"
-          tabindex="0"
-          role="button"
-        >
-          <mat-card-content>
-            <div class="card-icon">
-              <mat-icon>payment</mat-icon>
-            </div>
-            <h3>Bills & Recurring</h3>
-            <p>Manage your bills and recurring payments</p>
-            <div class="card-action">
-              <mat-icon>arrow_forward</mat-icon>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card 
-          class="launch-card create-card" 
-          (click)="navigateToInventory()"
-          tabindex="0"
-          role="button"
-        >
-          <mat-card-content>
-            <div class="card-icon">
-              <mat-icon>inventory</mat-icon>
-            </div>
-            <h3>Manage Inventory</h3>
-            <p>Manage your inventory and stock levels</p>
-            <div class="card-action">
-              <mat-icon>arrow_forward</mat-icon>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card 
-          class="launch-card analytics-card" 
-          (click)="viewAnalytics()"
-          tabindex="0"
-          role="button"
-        >
-          <mat-card-content>
-            <div class="card-icon">
-              <mat-icon>analytics</mat-icon>
-            </div>
-            <h3>Analytics</h3>
-            <p>View your spending patterns and insights</p>
-            <div class="card-action">
-              <mat-icon>arrow_forward</mat-icon>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
-    </div>
-
-    <!-- Recent Activity Section -->
-    <div class="recent-activity-section">
-      <h2>Recent Activity</h2>
-      <mat-card class="activity-card">
-        <mat-card-content>
-          <div class="activity-placeholder">
-            <mat-icon>history</mat-icon>
-            <p>Your recent expenses and activities will appear here</p>
           </div>
-        </mat-card-content>
-      </mat-card>
+          <div class="card-footer">
+            <button mat-stroked-button>Add now</button>
+          </div>
+        </div>
+
+        <div class="action-card  col-3 p-0 mx-2" (click)="navigateToBills()">
+          <div class="card-image billing-bg">
+            <div class="card-overlay">
+              <h3>Add Bills</h3>
+              <p>Manage your bills and due dates</p>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button mat-stroked-button>Add now</button>
+          </div>
+        </div>
+
+        <div class="action-card  col-3 p-0 mx-2" (click)="navigateToInventory()">
+          <div class="card-image inventory-bg">
+            <div class="card-overlay">
+              <h3>Add Inventory</h3>
+              <p>Track your inventory items</p>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button mat-stroked-button>Add now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Insights Section -->
+    <div class="additional-insights">
+      <h2 class="section-title">Insights</h2>
+      
+      <div class="tip-card secondary">
+        <div class="tip-content">
+          <h3>Tip for today</h3>
+          <p>Spend wisely or shrunk in a cell. Being a financially stable is not hard.</p>
+        </div>
+        <button mat-raised-button color="accent" class="explore-btn">
+          Explore
+        </button>
+      </div>
     </div>
   </div>
 </ng-container>
