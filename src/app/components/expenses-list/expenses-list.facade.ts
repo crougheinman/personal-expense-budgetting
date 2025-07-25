@@ -128,4 +128,9 @@ export class ExpensesListFacade {
   updateSelectedCategory(category: string): void {
     this.selectedCategory$.next(category);
   }
+
+  updateDateRange(startDate: string, endDate: string): void {
+    this.startDate$.next(Timestamp.fromDate(moment(startDate).toDate()));
+    this.endDate$.next(Timestamp.fromDate(moment(endDate).toDate()));
+  }
 }

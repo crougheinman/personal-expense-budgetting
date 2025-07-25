@@ -37,27 +37,30 @@
   </div>
 
   <div class="date-filter" *ngIf="showCategoryFilter">
-    <mat-form-field appearance="outline" class="date-field">
-      <mat-label>Enter a date range</mat-label>
-      <mat-date-range-input [rangePicker]="picker">
+    <form [formGroup]="expensesFilterForm">
+      <mat-form-field appearance="outline" class="date-field">
+        <mat-label>Enter a date range</mat-label>
+        <mat-date-range-input [rangePicker]="picker">
           <input
-            #startDate
             matStartDate
             placeholder="Start date"
-            (change)="onStartDateChange($event)"
-            [value]="startDate"
+            formControlName="startDate"
+            (dateChange)="onStartDateChange($event)"
           />
           <input
-            #endDate
             matEndDate
             placeholder="End date"
-            (change)="onEndDateChange($event)"
-            [value]="endDate"
+            formControlName="endDate"
+            (dateChange)="onEndDateChange($event)"
           />
-      </mat-date-range-input>
-      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-      <mat-date-range-picker #picker></mat-date-range-picker>
-    </mat-form-field>
+        </mat-date-range-input>
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="picker"
+        ></mat-datepicker-toggle>
+        <mat-date-range-picker #picker></mat-date-range-picker>
+      </mat-form-field>
+    </form>
   </div>
 
   <div class="search-container">

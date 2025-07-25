@@ -15,6 +15,9 @@ import {
 } from "@app/models";
 import { ExpensesEditComponent } from "../expenses-edit/expenses-edit.component";
 import moment from "moment";
+import { MatDatepickerInputEvent } from "@angular/material/datepicker";
+import { DateRange } from "@angular/material/datepicker";
+import { AbstractControl, FormBuilder, FormControl, FormGroup } from "@angular/forms";
 
 @Component({
   selector: "component-expenses-list",
@@ -31,12 +34,28 @@ export class ExpensesListComponent {
   showCategoryFilter = false;
   startDate = moment().startOf('month').toISOString();
   endDate = moment().endOf('month').toISOString();
+  expensesFilterForm!: FormGroup;
 
   constructor(
     private facade: ExpensesListFacade,
-    private bottomSheet: MatBottomSheet
+    private bottomSheet: MatBottomSheet,
+    private formBuilder: FormBuilder,
   ) {
     this.vm$ = this.facade.vm$;
+    this.expensesFilterForm = this.formBuilder.group({
+      startDate: new FormControl<Date | null>(null),
+      endDate: new FormControl<Date | null>(null),
+    })
+    this.startDateControl.setValue(this.startDate);
+    this.endDateControl.setValue(this.endDate);
+  }
+
+  get startDateControl(): AbstractControl {
+    return this.expensesFilterForm.get("startDate") as AbstractControl;
+  }
+
+  get endDateControl(): AbstractControl {
+    return this.expensesFilterForm.get("endDate") as AbstractControl;
   }
 
   onSearch(ev: Event): void {
@@ -44,14 +63,18 @@ export class ExpensesListComponent {
     this.facade.updateSearchKey(target.value);
   }
 
-  onStartDateChange(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.facade.updateStartDate(target.value);
+  onStartDateChange(event: MatDatepickerInputEvent<Date>): void {
+    if (event.value) {
+      this.startDate = event.value.toISOString();
+      this.facade.updateStartDate(this.startDate);
+    }
   }
 
-  onEndDateChange(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.facade.updateEndDate(target.value);
+  onEndDateChange(event: MatDatepickerInputEvent<Date>): void {
+    if (event.value) {
+      this.endDate = event.value.toISOString();
+      this.facade.updateEndDate(this.endDate);
+    }
   }
 
   onCategoryFilter(category: string): void {
