@@ -24,6 +24,13 @@ export class ExpensesService {
     ) as Observable<Expense | undefined>;
   }
 
+  getExpensesByQuery(queryFn: (q: any) => any): Observable<Expense[]> {
+    return this.firestoreService.getDocumentByQuery(
+      DBPathHelper.getExpensesPath(),
+      queryFn
+    ) as Observable<Expense[]>;
+  }
+
   async addExpenses(data: Partial<Expense>): Promise<void> {
     await this.firestoreService.addDocument(DBPathHelper.getExpensesPath(), {
       ...data,

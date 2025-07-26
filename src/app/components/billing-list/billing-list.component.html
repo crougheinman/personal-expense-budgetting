@@ -36,11 +36,12 @@
         role="listitem"
         *ngFor="let item of vm.billingItems"
         (click)="onItemClick(item)"
+        class="billing-list-item"
       >
         <mat-icon matListItemIcon>description</mat-icon>
         <h3 matListItemTitle>{{ item.name }}</h3>
         <p matListItemLine>{{ item.price | currency : "PHP" : "symbol" : "1.2-2" }}</p>
-        <p matListItemLine *ngIf="item.dueDay">Due: Every {{ item.dueDay }}</p>
+        <span matListItemLine *ngIf="item.dueDay">Due: Every {{ item.dueDay }}</span>
       </mat-list-item>
     </mat-list>
   </div>

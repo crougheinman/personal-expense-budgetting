@@ -46,8 +46,6 @@ export class ExpensesCreateFacade {
     }
 
     async addExpense(expense: Partial<Expense>): Promise<void> {
-
-
         await this.expensesService.addExpenses(expense);
     }
 

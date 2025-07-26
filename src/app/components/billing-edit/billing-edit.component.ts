@@ -1,15 +1,23 @@
-import { ChangeDetectionStrategy, Component, Inject } from "@angular/core";
-import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
+import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from "@angular/core";
+import {
+  AbstractControl,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  Validators,
+} from "@angular/forms";
 import {
   MAT_BOTTOM_SHEET_DATA,
   MatBottomSheetRef,
 } from "@angular/material/bottom-sheet";
 import { BillingEditFacade } from "./billing-edit.facade";
-import { Billing } from "@app/models";
+import { Billing, Expense } from "@app/models";
 import { Timestamp } from "firebase/firestore";
+import { BehaviorSubject, Subject, takeUntil } from "rxjs";
 
 interface InputData {
   id?: string;
+  userId?: string;
   name?: string;
   price?: number;
   description?: string;
@@ -22,9 +30,11 @@ interface InputData {
   templateUrl: "./billing-edit.component.html",
   styleUrl: "./billing-edit.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [BillingEditFacade]
+  providers: [BillingEditFacade],
 })
-export class BillingEditComponent {
+export class BillingEditComponent implements OnDestroy{
+  private onDestroy = new Subject<void>();
+  isNotYetPaid$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   billingForm!: FormGroup;
 
   constructor(
@@ -36,15 +46,39 @@ export class BillingEditComponent {
     const { name, price, description, dueDay } = data;
     this.billingForm = this.formBuilder.group({
       billName: new FormControl<string | null>(null, [Validators.required]),
-      billPrice: new FormControl<number | null>(null, [Validators.required, Validators.min(0)]),
+      billPrice: new FormControl<number | null>(null, [
+        Validators.required,
+        Validators.min(0),
+      ]),
       billDescription: new FormControl<string | null>(null),
       billDueDay: new FormControl<Date | null>(null, [Validators.required]),
     });
-    
+
     this.nameControl.setValue(name);
     this.priceControl.setValue(price);
     this.descriptionControl.setValue(description);
     this.dueDayControl.setValue(dueDay);
+
+    this.facade.getPayment(data as Partial<Billing>)
+      .pipe(takeUntil(this.onDestroy))
+      .subscribe((payments) => {
+        console.log({payments});
+        
+        if (payments.length > 0) {
+          this.isNotYetPaid$.next(false);
+          console.log('paid');
+          
+        } else {
+          this.isNotYetPaid$.next(true);
+          console.log('unpaid');
+          
+        }
+      })
+  }
+
+  ngOnDestroy(): void {
+    this.onDestroy.next();
+    this.onDestroy.complete();
   }
 
   get nameControl(): AbstractControl {
@@ -63,6 +97,29 @@ export class BillingEditComponent {
     return this.billingForm.get("billDueDay") as AbstractControl;
   }
 
+  async payBill(): Promise<void> {
+    if (this.billingForm.invalid) {
+      return;
+    }
+
+    try {
+      const billingData: Partial<Billing> = {
+        id: this.data.id,
+        userId: this.data.userId,
+        name: this.nameControl.value,
+        price: this.priceControl.value,
+        description: this.descriptionControl.value,
+        dueDay: this.dueDayControl.value,
+      };
+
+      this.facade.payBill(billingData);
+
+      this.matBottomSheetRef.dismiss();
+    } catch (error) {
+      console.error("Failed to pay bill:", error);
+    }
+  }
+
   async updateBill(): Promise<void> {
     if (this.billingForm.invalid) {
       return;
@@ -76,11 +133,11 @@ export class BillingEditComponent {
         description: this.descriptionControl.value,
         dueDay: this.dueDayControl.value,
       };
-      
+
       await this.facade.updateBill(billingData);
       this.matBottomSheetRef.dismiss();
     } catch (error) {
-      console.error('Failed to update bill:', error);
+      console.error("Failed to update bill:", error);
     }
   }
 
@@ -89,11 +146,11 @@ export class BillingEditComponent {
       const billingData: Partial<Billing> = {
         id: this.data.id,
       };
-      
+
       await this.facade.deleteBill(billingData);
       this.matBottomSheetRef.dismiss();
     } catch (error) {
-      console.error('Failed to delete bill:', error);
+      console.error("Failed to delete bill:", error);
     }
   }
 }

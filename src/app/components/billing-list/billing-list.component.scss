@@ -207,17 +207,18 @@
 }
 
 .billing-list {
-  mat-list-item {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+  &-item {
+    border: 1px solid rgba(0, 0, 0, 0.08);
     transition: background-color 0.2s ease-in-out;
+    margin-bottom: 16px;
+    box-shadow: 2px 5px 8px 1px rgba(0, 0, 0, 0.08);
+    height: 100vh;
+    max-height: 120px;
     
     &:hover {
       background-color: rgba(0, 0, 0, 0.04);
       cursor: pointer;
-    }
-    
-    &:last-child {
-      border-bottom: none;
     }
   }
 }

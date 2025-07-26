@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Billing } from "@models";
-import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of, startWith } from "rxjs";
+import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of, startWith, switchMap } from "rxjs";
 import { Store } from "@ngrx/store";
 import { AppState, selectAuthenticatedUser } from "@store";
 import { BillingService } from "@app/services/billing.service";
@@ -58,13 +58,13 @@ export class BillingListFacade {
   }
 
   private getBillingItems(): Observable<Billing[]> {
-    return combineLatest([
-      this.billingService.getBills(),
-      this.store.select(selectAuthenticatedUser),
-    ]).pipe(
-      map(([billingItems, user]) => {
-        return billingItems.filter((item) => item.userId === user.id);
-      })
+    return this.store.select(selectAuthenticatedUser).pipe(
+      switchMap((user) => {
+        if (!user) {
+          return of([]);
+        }
+        return this.billingService.getBillsByUserId(user.id as string);
+      }),
     );
   }
 

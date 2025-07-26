@@ -4,6 +4,8 @@ import { Observable } from "rxjs";
 import { FirestoreService } from "./firestore.service";
 import { DBPathHelper } from "@app/models/db-path-helper";
 import { removeNoValuesKeys } from "@app/shared/utils";
+import { query, where } from '@angular/fire/firestore';
+import { map } from "lodash";
 
 @Injectable({
   providedIn: "root",
@@ -14,6 +16,19 @@ export class BillingService {
   getBills(): Observable<Billing[]> {
     return this.firestoreService.getDocument(
       DBPathHelper.getBillsPath()
+    ) as Observable<Billing[]>;
+  }
+
+  getBillsByQuery(queryFn: (q: any) => any): Observable<Billing[]> {
+    return this.firestoreService.getDocumentByQuery(
+      DBPathHelper.getBillsPath(),
+      queryFn
+    ) as Observable<Billing[]>;
+  }
+
+  getBillsByUserId(userId: string): Observable<Billing[]> {
+    return this.getBillsByQuery((collectionRef) =>
+      query(collectionRef, where('userId', '==', userId))
     ) as Observable<Billing[]>;
   }
 

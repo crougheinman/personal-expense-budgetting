@@ -69,6 +69,14 @@
       Update
     </button>
     <button 
+      *ngIf="isNotYetPaid$ | async"
+      mat-raised-button 
+      color="primary" 
+      (click)="payBill()">
+      <mat-icon>receipt</mat-icon>
+      Pay
+    </button>
+    <button 
       mat-raised-button 
       color="warn" 
       (click)="deleteBill()">
