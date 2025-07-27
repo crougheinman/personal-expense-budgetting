@@ -1,19 +1,26 @@
 import { Injectable } from "@angular/core";
-import { Billing } from "@models";
+import { Billing, Expense, ExpenseCategory } from "@models";
 import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of, startWith, switchMap } from "rxjs";
 import { Store } from "@ngrx/store";
 import { AppState, selectAuthenticatedUser } from "@store";
 import { BillingService } from "@app/services/billing.service";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { Timestamp } from "firebase/firestore";
+import { query, where } from "firebase/firestore";
+import moment from "moment";
+import { ExpensesService } from "@app/services";
+import { groupBy, mapValues } from "lodash";
+import { sortByNumericPropertiesAsc } from "@app/shared/utils";
 
 export interface BillingListFacadeModel {
   billingItems?: Billing[];
+  billPayments?: Record<string, Expense> | null;
   filteredCount: number;
   totalCount: number;
 }
 
 export const initialState: BillingListFacadeModel = {
   billingItems: [],
+  billPayments: {},
   filteredCount: 0,
   totalCount: 0,
 };
@@ -25,8 +32,8 @@ export class BillingListFacade {
 
   constructor(
     private billingService: BillingService,
+    private expensesService: ExpensesService,
     private store: Store<AppState>,
-    private snackbarService: MatSnackBar,
   ) {
     this.vm$ = this.buildViewModel();
   }
@@ -35,8 +42,9 @@ export class BillingListFacade {
     return combineLatest([
       this.getBillingItems(),
       this.searchKey$.asObservable().pipe(distinctUntilChanged()),
+      this.getBillingExpensesForThisMonth(),
     ]).pipe(
-      map(([billingItems, searchKey]) => {
+      map(([billingItems, searchKey, billingExpenses]) => {
         let filteredItems = billingItems;
         
         // Filter by search key
@@ -46,15 +54,48 @@ export class BillingListFacade {
             (item.description && item.description.toLowerCase().includes(searchKey.toLowerCase()))
           );
         }
+
+        filteredItems = sortByNumericPropertiesAsc(filteredItems, 'dueDay');
+
+        const billingExpenseMap: Record<string, Expense> | null = mapValues(groupBy(billingExpenses, 'billingId'), expenses => expenses[0]);
         
         return {
           billingItems: filteredItems,
+          billPayments: billingExpenseMap,
           filteredCount: filteredItems.length,
           totalCount: billingItems.length,
         };
       }),
       startWith(initialState),
     );
+  }
+
+  private getBillingExpensesForThisMonth(): Observable<Expense[]> {
+      const startOfMonth = moment().startOf("month").toDate();
+      const endOfMonth = moment().endOf("month").toDate();
+    return this.store.select(selectAuthenticatedUser).pipe(
+      switchMap((user) => {
+        if (!user) {
+          return of([]);
+        }
+        return this.billingService.getBillsByUserId(user.id as string).pipe(
+          switchMap((bills) => {
+            const billIds = bills.map(bill => bill.id);
+            return this.expensesService.getExpensesByQuery((collectionRef) =>
+              query(
+                collectionRef,
+                where("billingId", "in", billIds),
+                where("expenseDate", ">=", Timestamp.fromDate(startOfMonth)),
+                where("expenseDate", "<=", Timestamp.fromDate(endOfMonth)),
+                where("userId", "==", user.id),
+                where("category", "==", ExpenseCategory.BILLS),
+              )
+            );
+          })
+        );
+      }),
+    );
+
   }
 
   private getBillingItems(): Observable<Billing[]> {

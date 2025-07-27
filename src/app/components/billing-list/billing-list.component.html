@@ -31,7 +31,7 @@
   </div>
 
   <div class="billing-list">
-    <mat-list role="listbox">
+    <mat-list>
       <mat-list-item
         role="listitem"
         *ngFor="let item of vm.billingItems"
@@ -40,8 +40,22 @@
       >
         <mat-icon matListItemIcon>description</mat-icon>
         <h3 matListItemTitle>{{ item.name }}</h3>
-        <p matListItemLine>{{ item.price | currency : "PHP" : "symbol" : "1.2-2" }}</p>
-        <span matListItemLine *ngIf="item.dueDay">Due: Every {{ item.dueDay }}</span>
+        <div matListItemLine>
+          <div class="float-start">
+            <div class="billing-list-item-due-date" *ngIf="item.dueDay"
+              >Due: Every {{ item.dueDay }}</div
+            >
+            
+          {{ item.price | currency : "PHP" : "symbol" : "1.2-2" }}
+          </div>
+          <div class="float-end">
+            <mat-chip
+              class="billing-list-item-payment-status"
+              *ngIf="vm.billPayments && vm.billPayments[item.id]"
+              >Paid</mat-chip
+            >
+          </div>
+        </div>
       </mat-list-item>
     </mat-list>
   </div>

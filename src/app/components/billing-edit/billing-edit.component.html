@@ -2,6 +2,11 @@
   <h2 class="text-light">Edit Bill</h2>
   <mat-divider></mat-divider>
   <form [formGroup]="billingForm" class="pt-4">
+    <div *ngIf="!(isNotYetPaid$ | async)" class="alert alert-success mb-3" role="alert">
+      <mat-icon class="me-2">check_circle</mat-icon>
+      This bill has been paid.
+    </div>
+
     <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
       <mat-label>Bill Name</mat-label>
       <input #billName matInput type="text" formControlName="billName" required />
