@@ -16,6 +16,8 @@ export interface BillingListFacadeModel {
   billPayments?: Record<string, Expense> | null;
   filteredCount: number;
   totalCount: number;
+  totalAmount: number;
+  remainingBalance: number;
 }
 
 export const initialState: BillingListFacadeModel = {
@@ -23,6 +25,8 @@ export const initialState: BillingListFacadeModel = {
   billPayments: {},
   filteredCount: 0,
   totalCount: 0,
+  totalAmount: 0,
+  remainingBalance: 0,
 };
 
 @Injectable()
@@ -59,11 +63,22 @@ export class BillingListFacade {
 
         const billingExpenseMap: Record<string, Expense> | null = mapValues(groupBy(billingExpenses, 'billingId'), expenses => expenses[0]);
         
+        // Calculate total amount of all bills
+        const totalAmount = billingItems.reduce((sum, item) => sum + (item.price || 0), 0);
+        
+        // Calculate total paid amount this month
+        const totalPaidAmount = billingExpenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
+        
+        // Calculate remaining balance
+        const remainingBalance = totalAmount - totalPaidAmount;
+        
         return {
           billingItems: filteredItems,
           billPayments: billingExpenseMap,
           filteredCount: filteredItems.length,
           totalCount: billingItems.length,
+          totalAmount: totalAmount,
+          remainingBalance: remainingBalance,
         };
       }),
       startWith(initialState),

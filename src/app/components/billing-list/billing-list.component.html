@@ -9,6 +9,22 @@
           <mat-card-subtitle>Total Bills</mat-card-subtitle>
         </mat-card-header>
       </mat-card>
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-card-title>
+            {{ vm.totalAmount | currency : "PHP" : "symbol" : "1.2-2" }}
+          </mat-card-title>
+          <mat-card-subtitle>Total Amount</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-card-title>
+            {{ vm.remainingBalance | currency : "PHP" : "symbol" : "1.2-2" }}
+          </mat-card-title>
+          <mat-card-subtitle>Remaining Balance</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
     </div>
   </div>
 
