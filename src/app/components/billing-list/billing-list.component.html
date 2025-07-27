@@ -56,16 +56,16 @@
       >
         <mat-icon matListItemIcon>description</mat-icon>
         <h3 matListItemTitle>{{ item.name }}</h3>
-        <div matListItemLine>
+        <div class="pt-2" matListItemLine>
           <div class="float-start">
+          <strong class="billing-list-item-price">{{ item.price | currency : "PHP" : "symbol" : "1.2-2" }}</strong>
             <div class="billing-list-item-due-date" *ngIf="item.dueDay"
               >Due: Every {{ item.dueDay }}</div
             >
-            
-          {{ item.price | currency : "PHP" : "symbol" : "1.2-2" }}
           </div>
           <div class="float-end">
             <mat-chip
+              [style.background-color]="'green'"
               class="billing-list-item-payment-status"
               *ngIf="vm.billPayments && vm.billPayments[item.id]"
               >Paid</mat-chip
