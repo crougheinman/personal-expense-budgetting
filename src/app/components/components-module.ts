@@ -8,6 +8,7 @@ import { ExpensesEditComponent } from './expenses-edit/expenses-edit.component';
 import { BillingCreateComponent } from "./billing-create/billing-create.component";
 import { BillingListComponent } from "./billing-list/billing-list.component";
 import { BillingEditComponent } from "./billing-edit/billing-edit.component";
+import { ConfirmationDialogComponent } from "./confirmation-dialog/confirmation-dialog.component";
 
 import { ReactiveFormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
@@ -27,6 +28,7 @@ import { MaterialModule } from "../shared/material.module";
     BillingCreateComponent,
     BillingListComponent,
     BillingEditComponent,
+    ConfirmationDialogComponent,
     InventoryCreateComponent,
     InventoryListComponent,
     InventoryEditComponent,
@@ -47,6 +49,7 @@ import { MaterialModule } from "../shared/material.module";
     BillingCreateComponent,
     BillingListComponent,
     BillingEditComponent,
+    ConfirmationDialogComponent,
     InventoryCreateComponent,
     InventoryListComponent,
     InventoryEditComponent,

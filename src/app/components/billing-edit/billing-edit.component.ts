@@ -10,10 +10,12 @@ import {
   MAT_BOTTOM_SHEET_DATA,
   MatBottomSheetRef,
 } from "@angular/material/bottom-sheet";
+import { MatDialog } from "@angular/material/dialog";
 import { BillingEditFacade } from "./billing-edit.facade";
 import { Billing, Expense } from "@app/models";
 import { Timestamp } from "firebase/firestore";
 import { BehaviorSubject, Subject, takeUntil } from "rxjs";
+import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 
 interface InputData {
   id?: string;
@@ -41,7 +43,8 @@ export class BillingEditComponent implements OnDestroy{
     @Inject(MAT_BOTTOM_SHEET_DATA) public data: InputData,
     private facade: BillingEditFacade,
     private formBuilder: FormBuilder,
-    private matBottomSheetRef: MatBottomSheetRef<BillingEditComponent>
+    private matBottomSheetRef: MatBottomSheetRef<BillingEditComponent>,
+    private dialog: MatDialog
   ) {
     const { name, price, description, dueDay } = data;
     this.billingForm = this.formBuilder.group({
@@ -142,15 +145,29 @@ export class BillingEditComponent implements OnDestroy{
   }
 
   async deleteBill(): Promise<void> {
-    try {
-      const billingData: Partial<Billing> = {
-        id: this.data.id,
-      };
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Bill',
+        message: `Are you sure you want to delete "${this.nameControl.value}"? This action cannot be undone.`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    });
 
-      await this.facade.deleteBill(billingData);
-      this.matBottomSheetRef.dismiss();
-    } catch (error) {
-      console.error("Failed to delete bill:", error);
-    }
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (result) {
+        try {
+          const billingData: Partial<Billing> = {
+            id: this.data.id,
+          };
+
+          await this.facade.deleteBill(billingData);
+          this.matBottomSheetRef.dismiss();
+        } catch (error) {
+          console.error("Failed to delete bill:", error);
+        }
+      }
+    });
   }
 }

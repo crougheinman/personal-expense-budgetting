@@ -5,6 +5,7 @@ export * from './expenses-edit/expenses-edit.component';
 export * from './billing-create/billing-create.component';
 export * from './billing-list/billing-list.component';
 export * from './billing-edit/billing-edit.component';
+export * from './confirmation-dialog/confirmation-dialog.component';
 export * from './inventory-create/inventory-create.component';
 export * from './inventory-list/inventory-list.component';
 export * from './inventory-edit/inventory-edit.component';
