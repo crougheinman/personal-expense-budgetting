@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { InventoryService } from '@app/services/inventory.service';
-import { AppState, selectAuthenticatedUser } from '@app/store';
+import { AppState, selectAddMode, selectAuthenticatedUser, setAddMode } from '@app/store';
 import { Expense } from '@models'
 import { Store } from '@ngrx/store';
 import { ExpensesService } from '@services';
@@ -9,12 +9,14 @@ import { BehaviorSubject, combineLatest, distinctUntilChanged, firstValueFrom, m
 
 export interface ExpensesCreateFacadeModel {
     userId: string | undefined,
-    cameraOpened: boolean;
+    cameraOpened: boolean,
+    addMode: boolean,
 };
 
 export const initialState: ExpensesCreateFacadeModel = {
     userId: '',
     cameraOpened: false,
+    addMode: false,
 };
 
 @Injectable()
@@ -34,19 +36,35 @@ export class ExpensesCreateFacade {
     private buildViewModel(): Observable<ExpensesCreateFacadeModel> {
         return combineLatest([
             this.store.select(selectAuthenticatedUser),
+            this.store.select(selectAddMode),
             this.cameraOpened$.asObservable().pipe(distinctUntilChanged()),
         ]).pipe(
-            map(([user, cameraOpened]) => {
+            map(([user, addMode, cameraOpened]) => {
                 return {
                     userId: user.id,
+                    addMode,
                     cameraOpened,
                 }
             })
         );
     }
 
-    async addExpense(expense: Partial<Expense>): Promise<void> {
+    async addExpense(expense: Partial<Expense>, isAddStore: boolean): Promise<void> {
         await this.expensesService.addExpenses(expense);
+
+        if (isAddStore) {
+            this.inventoryService.addInventoryItem({
+                name: expense.name || '',
+                price: expense.amount || 0,
+            });
+
+            this.snackbarService.open('Expense added and inventory item created.', 'Close', {
+                duration: 3000,
+                panelClass: ['success-snackbar']
+            });
+
+            this.store.dispatch(setAddMode({ addMode: false }));
+        }
     }
 
     async onBarcodeScanned(barcode: string): Promise<Partial<Expense>> {
@@ -62,8 +80,9 @@ export class ExpensesCreateFacade {
                 description: item.description,
             };
         } else {
+            this.store.dispatch(setAddMode({ addMode: true }));
             // If not found, you can handle it accordingly (e.g., show a message)
-            console.warn('No inventory item found for barcode:', barcode);
+            console.warn('No inventory item found for barcode, adding a new item at the inventory.');
             this.snackbarService.open('No inventory item found for this barcode.', 'Close', {
                 duration: 3000,
                 panelClass: ['warning-snackbar']

@@ -61,14 +61,14 @@ export class BarcodeScanner implements AfterViewInit, OnDestroy {
             this.stopScan();
           } else if (err) {
             if (err.name !== 'NotFoundException') {
-              console.error('Barcode scan error:', err);
+              // console.error('Barcode scan error:', err);
               this.error.emit('Scanner error: ' + err.message);
             }
           }
         });
       }
     }).catch((err) => {
-      console.error('Camera access error:', err);
+      // console.error('Camera access error:', err);
       this.error.emit('Camera access denied or not available');
       this.scanning = false;
       this.isScanning = false;

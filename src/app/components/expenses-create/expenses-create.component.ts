@@ -24,6 +24,7 @@ export class ExpensesCreateComponent {
   vm$: Observable<ExpensesCreateFacadeModel> = of(initialState);
   capturedImageUrl: string | null = null;
   showCloseButton: boolean = false;
+  imageDetected: boolean = false;
 
   constructor(
     private facade: ExpensesCreateFacade,
@@ -55,7 +56,7 @@ export class ExpensesCreateComponent {
       name: this.nameControl.value,
       amount: this.amountControl.value,
       expenseDate: Timestamp.fromDate(moment().toDate()),
-    });
+    }, vm.addMode);
     this.matDialogRef.close();
   }
 
@@ -69,7 +70,8 @@ export class ExpensesCreateComponent {
   }
 
   onBarcodeScanError(error: string): void {
-    console.error('Barcode scan error:', error);
+    // Handle barcode scan error
+    this.imageDetected = false;
   }
 
   closeDialog(): void {

@@ -53,7 +53,6 @@ export class ExpensesListFacade {
       this.selectedCategory$.asObservable().pipe(distinctUntilChanged()),
     ]).pipe(
       map(([expenses, searchKey, startDate, endDate, selectedCategory]) => {
-        const totalValue = expenses.reduce((sum, expense) => sum + expense.amount, 0);
         let filteredExpenses = expenses;
         
         // Filter by search key
@@ -86,6 +85,8 @@ export class ExpensesListFacade {
         const highestExpense = filteredExpenses.length > 0 
           ? Math.max(...filteredExpenses.map(expense => expense.amount)) 
           : 0;
+
+        const totalValue = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
         
         return {
           expenses: filteredExpenses,
