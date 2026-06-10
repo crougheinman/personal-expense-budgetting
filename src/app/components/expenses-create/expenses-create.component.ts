@@ -10,6 +10,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { Observable, of } from "rxjs";
 import moment from "moment";
 import { Timestamp } from "firebase/firestore";
+import { GeminiScanResult } from "@services";
 
 @Component({
   selector: "app-expenses-create.component",
@@ -60,17 +61,19 @@ export class ExpensesCreateComponent {
     this.matDialogRef.close();
   }
 
-  async onBarcodeScanned(barcode: string): Promise<void> {
-    // Handle the scanned barcode - populate the expense name field
-    const scannedData = await this.facade.onBarcodeScanned(barcode);
-    if (scannedData) {
-      this.nameControl.setValue(scannedData.name);
-      this.amountControl.setValue(scannedData.amount);
+  // Auto-fill the expense from the product Gemini identified in the photo.
+  onItemDetected(item: GeminiScanResult): void {
+    this.imageDetected = true;
+    if (item.name) {
+      this.nameControl.setValue(item.name);
+    }
+    if (item.price != null) {
+      this.amountControl.setValue(item.price.toString());
     }
   }
 
-  onBarcodeScanError(error: string): void {
-    // Handle barcode scan error
+  onScanError(error: string): void {
+    // Handle product scan error
     this.imageDetected = false;
   }
 

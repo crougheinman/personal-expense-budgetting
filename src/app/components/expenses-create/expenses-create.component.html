@@ -14,11 +14,11 @@
     <h2 class="text-light">Add Expense</h2>
     <mat-divider></mat-divider>
     
-    <!-- Barcode Scanner Component -->
-    <app-barcode-scanner 
-      (scanned)="onBarcodeScanned($event)"
-      (error)="onBarcodeScanError($event)">
-    </app-barcode-scanner>
+    <!-- AI Product Scanner (Google Gemini) -->
+    <app-product-scanner
+      (detected)="onItemDetected($event)"
+      (error)="onScanError($event)">
+    </app-product-scanner>
     
     <form [formGroup]="expensesForm" class="pt-4">
       <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
@@ -58,7 +58,7 @@
       </mat-form-field>
     </form>
     
-    <div class="d-flex justify-content-end">
+    <div class="form-actions">
       <button
         mat-raised-button
         color="primary"

@@ -1,6 +1,17 @@
 <ng-container>
+  <button
+    mat-fab
+    class="voice-fab"
+    (click)="openVoiceExpenseDialog()"
+    aria-label="Add expense by voice"
+    title="Add expense by voice"
+  >
+    <mat-icon>mic</mat-icon>
+  </button>
   <button mat-fab color="accent" class="floating-btn" (click)="openAddExpenseDialog()">
     <mat-icon>add</mat-icon>
   </button>
-  <component-expenses-list></component-expenses-list>
+  <div class="page-constrained">
+    <component-expenses-list></component-expenses-list>
+  </div>
 </ng-container>

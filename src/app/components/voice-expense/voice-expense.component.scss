@@ -1,0 +1,137 @@
+@use 'variables' as *;
+
+.voice-expense {
+  position: relative;
+  padding: 24px 20px 18px;
+  text-align: center;
+  color: $color-text;
+
+  .ve-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 18px 0;
+  }
+
+  // Tappable mic orb
+  .mic-orb {
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    margin: 6px auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid $color-accent;
+    background: $color-accent-soft;
+    color: $color-accent;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease;
+
+    mat-icon {
+      font-size: 38px;
+      width: 38px;
+      height: 38px;
+    }
+
+    &:hover {
+      transform: scale(1.04);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    &.listening {
+      background: $color-accent;
+      color: $color-accent-on;
+      border-color: $color-accent;
+      animation: ve-pulse 1.4s ease-out infinite;
+    }
+  }
+
+  .ve-hint {
+    margin: 0 0 10px;
+    color: $color-text-muted;
+    font-size: 0.9rem;
+    line-height: 1.4;
+
+    small {
+      display: block;
+      margin-top: 2px;
+      color: $color-text-faint;
+    }
+  }
+
+  .ve-transcript {
+    margin: 6px 0 10px;
+    font-size: 1rem;
+    font-style: italic;
+    color: $color-text;
+  }
+
+  .ve-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 6px 0 10px;
+    font-size: 0.85rem;
+    color: $color-error;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .ve-fields {
+    margin-top: 8px;
+    text-align: left;
+  }
+
+  .ve-unsupported {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 0 8px;
+    color: $color-text-muted;
+
+    mat-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+      color: $color-accent;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+  }
+
+  .form-actions {
+    justify-content: center;
+  }
+
+  .dialog-close-button {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    color: $color-text-muted;
+  }
+}
+
+@keyframes ve-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(124, 92, 255, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(124, 92, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(124, 92, 255, 0);
+  }
+}

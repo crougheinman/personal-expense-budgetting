@@ -1,12 +1,26 @@
+@use 'variables' as *;
+
+.voice-fab {
+    position: fixed;
+    bottom: 92px;
+    right: 24px;
+    z-index: 1000;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    background: $color-surface-2;
+    color: $color-accent;
+    border: 1px solid $color-accent;
+}
+
 .floating-btn{
     position: fixed;
     bottom: 24px;
     right: 24px;
     z-index: 1000;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
     border-radius: 50%;
-    background: #1976d2;
-    color: #fff;
+    background: $color-accent;
+    color: $color-accent-on;
     width: 56px;
     height: 56px;
     display: flex;

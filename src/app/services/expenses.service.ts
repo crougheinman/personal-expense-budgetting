@@ -4,6 +4,7 @@ import { Observable } from "rxjs";
 import { FirestoreService } from "./firestore.service";
 import { DBPathHelper } from "@app/models/db-path-helper";
 import { removeNoValuesKeys } from "@app/shared/utils";
+import { query, where } from "@angular/fire/firestore";
 
 @Injectable({
   providedIn: "root",
@@ -29,6 +30,12 @@ export class ExpensesService {
       DBPathHelper.getExpensesPath(),
       queryFn
     ) as Observable<Expense[]>;
+  }
+
+  getExpensesByUserId(userId: string): Observable<Expense[]> {
+    return this.getExpensesByQuery((collectionRef) =>
+      query(collectionRef, where("userId", "==", userId))
+    );
   }
 
   async addExpenses(data: Partial<Expense>): Promise<void> {

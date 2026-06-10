@@ -1,0 +1,40 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Per-owner access: every record carries a `userId` equal to the
+    // Firebase Auth UID of its owner (set on create in the app). A signed-in
+    // user may only read/modify their own records, and may only create
+    // records stamped with their own UID.
+    //
+    // The list queries are scoped with where('userId','==', auth.uid), so
+    // Firestore can serve them under these rules. A single equality filter
+    // needs no composite index.
+
+    function isOwner() {
+      return request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
+    function isCreatingOwn() {
+      return request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+    }
+
+    match /expenses/{docId} {
+      allow read, update, delete: if isOwner();
+      allow create: if isCreatingOwn();
+    }
+
+    match /bills/{docId} {
+      allow read, update, delete: if isOwner();
+      allow create: if isCreatingOwn();
+    }
+
+    match /inventory/{docId} {
+      allow read, update, delete: if isOwner();
+      allow create: if isCreatingOwn();
+    }
+  }
+}

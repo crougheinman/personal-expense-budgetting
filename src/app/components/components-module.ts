@@ -13,10 +13,11 @@ import { ConfirmationDialogComponent } from "./confirmation-dialog/confirmation-
 import { ReactiveFormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { CameraComponent } from "./camera/camera.component";
-import { BarcodeScanner } from './barcode-scanner/barcode-scanner';
+import { ProductScanner } from './product-scanner/product-scanner';
 import { InventoryCreateComponent } from "./inventory-create/inventory-create.component";
 import { InventoryListComponent } from "./inventory-list/inventory-list.component";
 import { InventoryEditComponent } from "./inventory-edit/inventory-edit.component";
+import { VoiceExpenseComponent } from "./voice-expense/voice-expense.component";
 import { MaterialModule } from "../shared/material.module";
 
 @NgModule({
@@ -33,7 +34,8 @@ import { MaterialModule } from "../shared/material.module";
     InventoryListComponent,
     InventoryEditComponent,
     CameraComponent,
-    BarcodeScanner,
+    ProductScanner,
+    VoiceExpenseComponent,
   ],
   imports: [
     AsyncPipe,

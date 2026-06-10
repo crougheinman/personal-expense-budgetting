@@ -34,13 +34,24 @@
     <mat-list role="listbox">
       <mat-list-item
         role="listitem"
+        class="inventory-row"
         *ngFor="let item of vm.inventoryItems"
         (click)="onItemClick(item)"
       >
-        {{ item.price | currency : "PHP" : "symbol" : "1.2-2" }}
-        <mat-icon matListItemIcon>folder</mat-icon>
-        <h3 matListItemTitle>{{ item.name }}</h3>
+        <mat-icon matListItemIcon class="inventory-icon">inventory_2</mat-icon>
+        <span matListItemTitle class="inventory-name">{{ item.name }}</span>
+        <span matListItemLine class="inventory-store" *ngIf="item.store">{{
+          item.store
+        }}</span>
+        <span matListItemMeta class="inventory-price">{{
+          item.price | currency : "PHP" : "symbol" : "1.2-2"
+        }}</span>
       </mat-list-item>
     </mat-list>
+
+    <div class="empty-list" *ngIf="vm.inventoryItems && vm.inventoryItems.length === 0">
+      <mat-icon>inventory_2</mat-icon>
+      <p>No inventory items to show.</p>
+    </div>
   </div>
 </ng-container>

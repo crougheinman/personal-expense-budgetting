@@ -109,15 +109,26 @@
     <mat-list role="listbox">
       <mat-list-item
         role="listitem"
+        class="expense-row"
         *ngFor="let expense of vm.expenses"
         (click)="onClick(expense)"
       >
-        {{ expense.amount | currency : "PHP" : "symbol" : "1.2-2" }}
-        <mat-icon matListItemIcon>{{
+        <mat-icon matListItemIcon class="expense-icon">{{
           getExpenseIcon(expense.category ?? "default")
         }}</mat-icon>
-        <h3 matListItemTitle>{{ expense.name }}</h3>
+        <span matListItemTitle class="expense-name">{{ expense.name }}</span>
+        <span matListItemLine class="expense-category">{{
+          getCategoryDisplayName(expense.category ?? "default")
+        }}</span>
+        <span matListItemMeta class="expense-amount">{{
+          expense.amount | currency : "PHP" : "symbol" : "1.2-2"
+        }}</span>
       </mat-list-item>
     </mat-list>
+
+    <div class="empty-list" *ngIf="vm.expenses && vm.expenses.length === 0">
+      <mat-icon>receipt_long</mat-icon>
+      <p>No expenses to show.</p>
+    </div>
   </div>
 </ng-container>

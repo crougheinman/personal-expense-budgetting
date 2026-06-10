@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { DialogService } from '@services';
-import { ExpensesCreateComponent } from '@app/components';
+import { ExpensesCreateComponent, VoiceExpenseComponent } from '@app/components';
 
 @Component({
   selector: 'pages-expenses',
@@ -21,6 +21,14 @@ export class ExpensesComponent {
             mobileFullscreen: true,
             showCloseButton: true,
         })
+  }
+
+  openVoiceExpenseDialog(): void {
+    this.dialogService.open(VoiceExpenseComponent, {
+      width: '420px',
+      mobileFullscreen: false,
+      showCloseButton: true,
+    });
   }
 }
 

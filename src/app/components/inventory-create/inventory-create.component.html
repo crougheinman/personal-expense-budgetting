@@ -14,30 +14,13 @@
     <h2 class="text-light">Add Inventory Item</h2>
     <mat-divider></mat-divider>
     
-    <!-- Barcode Scanner Component -->
-    <app-barcode-scanner 
-      (scanned)="onBarcodeScanned($event)"
-      (error)="onBarcodeScanError($event)">
-    </app-barcode-scanner>
-    
+    <!-- AI Product Scanner (Google Gemini) -->
+    <app-product-scanner
+      (detected)="onItemDetected($event)"
+      (error)="onScanError($event)">
+    </app-product-scanner>
+
     <form [formGroup]="inventoryForm" class="pt-4">
-      <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
-        <mat-label>Barcode</mat-label>
-        <input
-          #barCode
-          matInput
-          type="text"
-          formControlName="barCode"
-          required
-          readonly="true"
-        />
-        <mat-error
-          *ngIf="inventoryForm.get('barCode')?.hasError('required')"
-        >
-          Barcode is required
-        </mat-error>
-      </mat-form-field>
-      
       <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
         <mat-label>Item Name</mat-label>
         <input
@@ -89,7 +72,7 @@
       </mat-form-field>
     </form>
     
-    <div class="d-flex justify-content-end">
+    <div class="form-actions">
       <button
         mat-raised-button
         color="primary"

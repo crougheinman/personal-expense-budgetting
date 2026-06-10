@@ -1,0 +1,71 @@
+<div class="product-scanner">
+  <div class="video-container" *ngIf="isScanning">
+    <div class="video-wrapper">
+      <video
+        id="productScannerVideo"
+        class="responsive-video"
+        autoplay
+        playsinline
+        muted
+      ></video>
+      <div class="scan-frame"></div>
+      <div class="processing-overlay" *ngIf="isProcessing">
+        <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+        <span>Identifying with Gemini…</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button
+      *ngIf="!isScanning"
+      mat-raised-button
+      color="primary"
+      (click)="startScan()"
+      class="scan-btn"
+    >
+      <mat-icon>photo_camera</mat-icon>
+      Scan Product
+    </button>
+
+    <button
+      *ngIf="isScanning"
+      mat-raised-button
+      color="primary"
+      (click)="captureAndIdentify()"
+      [disabled]="isProcessing"
+      class="scan-btn"
+    >
+      <mat-icon>center_focus_strong</mat-icon>
+      Capture
+    </button>
+
+    <button
+      *ngIf="isScanning"
+      mat-stroked-button
+      (click)="stopScan()"
+      [disabled]="isProcessing"
+      class="cancel-btn"
+    >
+      <mat-icon>close</mat-icon>
+      Cancel
+    </button>
+  </div>
+
+  <!-- Result: product name and price -->
+  <div class="result" *ngIf="result">
+    <div class="result-row">
+      <mat-icon>label</mat-icon>
+      <span><strong>Product:</strong> {{ result.name || 'Unknown' }}</span>
+    </div>
+    <div class="result-row">
+      <mat-icon>sell</mat-icon>
+      <span><strong>Price:</strong> {{ result.price != null ? result.price : 'Not detected' }}</span>
+    </div>
+  </div>
+
+  <div class="status" *ngIf="isScanning && !isProcessing">
+    <p><mat-icon>center_focus_strong</mat-icon> Point the camera at a product</p>
+    <small>Tap <strong>Capture</strong> to identify it with Google Gemini.</small>
+  </div>
+</div>

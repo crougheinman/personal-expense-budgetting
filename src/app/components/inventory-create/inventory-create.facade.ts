@@ -13,13 +13,10 @@ import {
   BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
-  firstValueFrom,
   map,
   Observable,
   of,
 } from "rxjs";
-import { MatBottomSheet } from "@angular/material/bottom-sheet";
-import { InventoryEditComponent } from "../inventory-edit/inventory-edit.component";
 
 export interface InventoryCreateFacadeModel {
   userId: string | undefined;
@@ -41,8 +38,7 @@ export class InventoryCreateFacade {
   constructor(
     private inventoryService: InventoryService,
     private store: Store<AppState>,
-    private snackbarService: MatSnackBar,
-    private bottomSheet: MatBottomSheet
+    private snackbarService: MatSnackBar
   ) {
     this.vm$ = this.buildViewModel();
   }
@@ -83,33 +79,6 @@ export class InventoryCreateFacade {
       );
       throw error; // Re-throw to allow component to handle if needed
     }
-  }
-
-  async onBarcodeScanned(barcode: string): Promise<Partial<Inventory> | null> {
-    const inventoryItem = await firstValueFrom(
-      this.inventoryService.getInventoryItemByBarcode(barcode)
-    );
-    if (inventoryItem.length > 0) {
-      const item = inventoryItem[0];
-
-      this.bottomSheet.open(InventoryEditComponent, {
-        data: {
-          ...item,
-        },
-      });
-    } else {
-      console.warn("No inventory item found for barcode:", barcode);
-      this.snackbarService.open(
-        "No inventory item found for this barcode.",
-        "Close",
-        {
-          duration: 3000,
-          panelClass: ["warning-snackbar"],
-        }
-      );
-    }
-
-    return null;
   }
 
   openCamera(): void {

@@ -1,56 +1,57 @@
+@use 'variables' as *;
+
 .billing-summary-container {
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 2px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 2px;
-
-    &:hover {
-      background: rgba(0, 0, 0, 0.3);
-    }
-  }
-
   .billing-summary-cards {
     display: flex;
-    gap: 12px;
-    padding-bottom: 4px;
-    min-width: max-content;
+    gap: 10px;
 
     .summary-card {
-      flex-shrink: 0;
-      min-width: 160px;
-      transition: transform 0.2s ease-in-out;
+      flex: 1 1 0;
+      min-width: 0;
+      background: $color-surface;
+      border: 1px solid $color-border;
+      border-radius: 12px;
+      box-shadow: none;
+      transition: border-color 0.2s ease, transform 0.2s ease;
 
       &:hover {
         transform: translateY(-2px);
+        border-color: $color-accent;
       }
 
       mat-card-header {
-        padding: 16px;
+        padding: 12px 14px;
+        display: block;
       }
 
       mat-card-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 4px;
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 2px;
+        color: $color-accent;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       mat-card-subtitle {
-        font-size: 0.875rem;
-        opacity: 0.7;
+        font-size: 0.72rem;
+        color: $color-text-muted;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      @media (max-width: 600px) {
+        mat-card-header {
+          padding: 10px;
+        }
+        mat-card-title {
+          font-size: 1rem;
+        }
+        mat-card-subtitle {
+          font-size: 0.68rem;
+        }
       }
     }
   }
@@ -117,11 +118,11 @@
       }
 
       &.mdc-evolution-chip--selected {
-        background-color: var(--mdc-theme-primary, #1976d2);
-        color: white;
+        background-color: $color-accent;
+        color: $color-accent-on;
 
         mat-icon {
-          color: white;
+          color: $color-accent-on;
         }
       }
 
@@ -155,7 +156,7 @@
 
     .mat-form-field-flex {
       border-radius: 4px;
-      background-color: #f5f5f5;
+      background-color: $color-surface-3;
     }
 
     .mat-form-field-outline {
@@ -183,7 +184,7 @@
     transition: all 0.2s ease;
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.04);
+      background-color: $color-surface-2;
       transform: scale(1.1);
     }
 
@@ -201,32 +202,158 @@
   text-align: center;
 
   small {
-    color: rgba(0, 0, 0, 0.6);
+    color: $color-text-muted;
     font-style: italic;
   }
 }
 
 .billing-list {
-  &-item {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    transition: background-color 0.2s ease-in-out;
-    margin-bottom: 16px;
-    box-shadow: 2px 5px 8px 1px rgba(0, 0, 0, 0.08);
-    height: 100vh !important;
-    max-height: 115px;
+  height: calc(100vh - var(--header-height, 120px));
+  overflow-y: auto;
+  padding: 2px;
 
-    &-price {
-      font-weight: 600;
-      font-size: 1.2rem;
+  .bills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
     }
-    &-due-date {
-      margin-top: 20px;
-      font-size: 0.875rem;
-    }
+  }
+
+  // Professional bill card
+  .bill-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease,
+      box-shadow 0.2s ease;
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.04);
-      cursor: pointer;
+      border-color: $color-accent;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.4);
     }
+
+    .bill-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .bill-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        background: $color-accent-soft;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        mat-icon {
+          color: $color-accent;
+        }
+      }
+
+      // Status badge — Pending by default, success when paid this month
+      .bill-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.66rem;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        padding: 3px 9px;
+        border-radius: 7px;
+        color: $color-warn;
+        background: rgba(201, 161, 74, 0.14);
+        border: 1px solid $color-warn;
+
+        mat-icon {
+          font-size: 14px;
+          width: 14px;
+          height: 14px;
+        }
+
+        &.paid {
+          color: $color-success;
+          background: rgba(79, 157, 105, 0.15);
+          border-color: $color-success;
+        }
+      }
+    }
+
+    .bill-name {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: $color-text;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bill-amount {
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1.1;
+      color: $color-text;
+    }
+
+    .bill-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: $color-text-muted;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: $color-accent;
+      }
+    }
+
+    .bill-desc {
+      margin: 0;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: $color-text-muted;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+}
+
+.empty-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 48px 16px;
+  color: $color-text-muted;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: $color-accent;
+    opacity: 0.8;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
   }
 }

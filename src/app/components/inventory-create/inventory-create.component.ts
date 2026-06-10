@@ -11,6 +11,7 @@ import { tap, Observable, of } from "rxjs";
 import moment from "moment";
 import { Timestamp } from "firebase/firestore";
 import { Inventory } from "@app/models";
+import { GeminiScanResult } from "@services";
 
 @Component({
   selector: "app-inventory-create",
@@ -34,12 +35,10 @@ export class InventoryCreateComponent {
   ) {
     this.showCloseButton = data?.showCloseButton || false;
     this.inventoryForm = this.formBuilder.group({
-      barCode: new FormControl<string | null>(null),
       itemName: new FormControl<string | null>(null),
       price: new FormControl<string | null>(null),
       store: new FormControl<string | null>(null),
     });
-    this.barCodeControl.setValue("");
     this.nameControl.setValue("");
     this.vm$ = this.facade.vm$.pipe(
       tap((vm) => {
@@ -48,10 +47,6 @@ export class InventoryCreateComponent {
         
       })
     );
-  }
-
-  get barCodeControl(): AbstractControl {
-    return this.inventoryForm.get("barCode") as AbstractControl;
   }
 
   get nameControl(): AbstractControl {
@@ -71,7 +66,6 @@ export class InventoryCreateComponent {
       const inventoryData: Partial<Inventory> = {
         userId: vm.userId,
         name: this.nameControl.value,
-        barCode: this.barCodeControl.value,
         price: this.priceControl.value,
         store: this.storeControl.value,
       };
@@ -83,16 +77,18 @@ export class InventoryCreateComponent {
     }
   }
 
-  async onBarcodeScanned(barcode: string): Promise<void> {
-    this.barCodeControl.setValue(barcode);
-    const result = await this.facade.onBarcodeScanned(barcode);
-    if (result) {
-      this.closeDialog();
+  // Auto-fill the form from the product Gemini identified in the photo.
+  onItemDetected(item: GeminiScanResult): void {
+    if (item.name) {
+      this.nameControl.setValue(item.name);
+    }
+    if (item.price != null) {
+      this.priceControl.setValue(item.price);
     }
   }
 
-  onBarcodeScanError(error: string): void {
-    console.error('Barcode scan error:', error);
+  onScanError(error: string): void {
+    console.error('Product scan error:', error);
   }
 
   closeDialog(): void {

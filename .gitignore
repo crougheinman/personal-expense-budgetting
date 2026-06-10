@@ -45,3 +45,6 @@ Thumbs.db
 .firebase
 *-debug.log
 .runtimeconfig.json
+
+# Local environment with secrets (copy environment.template.ts -> environment.ts)
+/src/app/environments/environment.ts

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { DialogService } from '@services';
-import { HomeFacade, HomeFacadeModel } from './home.facade';
+import { HomeFacade, HomeFacadeModel, PebbyReport, initialState } from './home.facade';
 import { map, Observable, of, shareReplay } from 'rxjs';
 import { BillingCreateComponent, ExpensesCreateComponent, InventoryCreateComponent } from '@components';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
@@ -15,7 +15,8 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
   providers: [HomeFacade],
 })
 export class Home {
-  vm$: Observable<HomeFacadeModel> = of({});
+  vm$: Observable<HomeFacadeModel> = of(initialState);
+  pebby$: Observable<PebbyReport> = of({ status: 'loading', message: '' });
   isHandset$: Observable<boolean>;
   
   constructor(
@@ -30,6 +31,11 @@ export class Home {
     );
 
     this.vm$ = this.facade.vm$;
+    this.pebby$ = this.facade.pebby$;
+  }
+
+  refreshPebby(): void {
+    this.facade.refresh();
   }
 
   navigateToExpenses(): void {

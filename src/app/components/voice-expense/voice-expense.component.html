@@ -1,0 +1,106 @@
+<div class="voice-expense">
+  <button
+    mat-icon-button
+    class="dialog-close-button"
+    (click)="close()"
+    aria-label="Close"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <h2 class="ve-title">Add expense by voice</h2>
+
+  <!-- Browser doesn't support speech recognition -->
+  <ng-container *ngIf="status === 'unsupported'; else supported">
+    <div class="ve-unsupported">
+      <mat-icon>mic_off</mat-icon>
+      <p>
+        Voice input isn't supported in this browser. Try Chrome on desktop or
+        Android.
+      </p>
+    </div>
+    <div class="form-actions">
+      <button mat-stroked-button (click)="close()">Close</button>
+    </div>
+  </ng-container>
+
+  <ng-template #supported>
+    <!-- Mic orb (tap to start/stop) -->
+    <button
+      type="button"
+      class="mic-orb"
+      [class.listening]="status === 'listening'"
+      [disabled]="status === 'adding'"
+      (click)="status === 'listening' ? stopListening() : retry()"
+      aria-label="Toggle microphone"
+    >
+      <mat-icon>{{ status === 'listening' ? 'mic' : 'mic_none' }}</mat-icon>
+    </button>
+
+    <p class="ve-hint" *ngIf="status === 'listening'">
+      Listening… say the item and its price
+      <small>e.g. “Coffee 150”</small>
+    </p>
+    <p class="ve-hint" *ngIf="status === 'idle'">
+      Tap the mic, then say the item and its price.
+    </p>
+
+    <p class="ve-transcript" *ngIf="transcript">“{{ transcript }}”</p>
+
+    <p class="ve-error" *ngIf="status === 'error'">
+      <mat-icon>error_outline</mat-icon> {{ errorMessage }}
+    </p>
+
+    <!-- Parsed, editable result -->
+    <div class="ve-fields" *ngIf="status === 'parsed' || status === 'adding'">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Item</mat-label>
+        <input matInput [value]="name" (input)="onNameInput($event)" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Amount</mat-label>
+        <span matTextPrefix>₱&nbsp;</span>
+        <input
+          matInput
+          type="number"
+          [value]="amount"
+          (input)="onAmountInput($event)"
+        />
+      </mat-form-field>
+    </div>
+
+    <div class="form-actions">
+      <button
+        *ngIf="status === 'listening'"
+        mat-stroked-button
+        (click)="stopListening()"
+      >
+        <mat-icon>stop</mat-icon> Stop
+      </button>
+
+      <button
+        *ngIf="status === 'parsed' || status === 'error'"
+        mat-stroked-button
+        (click)="retry()"
+      >
+        <mat-icon>refresh</mat-icon> Try again
+      </button>
+
+      <button
+        *ngIf="status === 'parsed' || status === 'adding'"
+        mat-raised-button
+        color="primary"
+        (click)="add()"
+        [disabled]="status === 'adding' || !name || amount == null"
+      >
+        <mat-progress-spinner
+          *ngIf="status === 'adding'"
+          diameter="18"
+          mode="indeterminate"
+        ></mat-progress-spinner>
+        <mat-icon *ngIf="status !== 'adding'">add</mat-icon>
+        {{ status === 'adding' ? 'Adding…' : 'Add expense' }}
+      </button>
+    </div>
+  </ng-template>
+</div>

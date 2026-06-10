@@ -1,0 +1,60 @@
+<div class="settings">
+  <div class="settings-header">
+    <h1>Settings</h1>
+    <p>Manage how your budgeting app works.</p>
+  </div>
+
+  <!-- Expenses settings -->
+  <section class="setting-section">
+    <div class="section-title">
+      <mat-icon>receipt_long</mat-icon>
+      <h2>Expenses</h2>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-info">
+        <h3>Auto-categorize with AI</h3>
+        <p>
+          Pebby reads the name of every expense that doesn't have a category yet
+          and assigns the most fitting one automatically.
+        </p>
+        <p
+          class="setting-status"
+          *ngIf="message"
+          [class.is-error]="status === 'error'"
+          [class.is-done]="status === 'done'"
+        >
+          <mat-icon>{{
+            status === 'error'
+              ? 'error_outline'
+              : status === 'done'
+              ? 'check_circle'
+              : 'autorenew'
+          }}</mat-icon>
+          {{ message }}
+        </p>
+      </div>
+
+      <button
+        mat-raised-button
+        color="primary"
+        class="run-btn"
+        (click)="runAutoCategorize()"
+        [disabled]="status === 'running' || !geminiConfigured"
+      >
+        <mat-progress-spinner
+          *ngIf="status === 'running'"
+          diameter="18"
+          mode="indeterminate"
+        ></mat-progress-spinner>
+        <mat-icon *ngIf="status !== 'running'">auto_awesome</mat-icon>
+        {{ status === 'running' ? 'Analyzing…' : 'Run analysis' }}
+      </button>
+    </div>
+
+    <div class="setting-note" *ngIf="!geminiConfigured">
+      <mat-icon>info</mat-icon>
+      <span>Add a Google Gemini API key in the environment to enable AI features.</span>
+    </div>
+  </section>
+</div>

@@ -9,6 +9,7 @@ export * from './confirmation-dialog/confirmation-dialog.component';
 export * from './inventory-create/inventory-create.component';
 export * from './inventory-list/inventory-list.component';
 export * from './inventory-edit/inventory-edit.component';
-export * from './barcode-scanner/barcode-scanner';
+export * from './product-scanner/product-scanner';
+export * from './voice-expense/voice-expense.component';
 export * from './camera/camera.component';
 export * from './components-module';

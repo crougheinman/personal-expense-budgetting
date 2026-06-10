@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { ExpensesService } from "@services";
 import { Expense } from "@models";
-import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of } from "rxjs";
+import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of, switchMap } from "rxjs";
 import { Store } from "@ngrx/store";
 import { AppState, selectAuthenticatedUser } from "@store";
 import moment from "moment";
@@ -103,13 +103,20 @@ export class ExpensesListFacade {
   }
 
   private getUserExpenses(): Observable<Expense[]> {
-    return combineLatest([
-      this.expensesService.getExpenses(),
-      this.store.select(selectAuthenticatedUser),
-    ]).pipe(
-      map(([expenses, user]) => {
-        return expenses.filter((expense) => expense.userId === user.id);
-      })
+    return this.store.select(selectAuthenticatedUser).pipe(
+      switchMap((user) => {
+        if (!user?.id) {
+          return of([] as Expense[]);
+        }
+        return this.expensesService.getExpensesByUserId(user.id);
+      }),
+      // Server query is filtered by userId (no orderBy, so no index needed);
+      // sort newest-first on the client.
+      map((expenses) =>
+        [...expenses].sort(
+          (a, b) => (b.updated?.seconds ?? 0) - (a.updated?.seconds ?? 0)
+        )
+      )
     );
   }
 

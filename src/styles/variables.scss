@@ -1,5 +1,33 @@
+// Spacing scale
 $size-1: 16px;
 $size-2: 20px;
 $size-3: 24px;
 $size-4: 32px;
 $size-5: 40px;
+
+// ---------------------------------------------------------------------------
+// Dark-matte palette with a subtle dark-violet accent
+// ---------------------------------------------------------------------------
+// Surfaces go from the page background up to elevated cards. They are kept
+// desaturated and matte (no glossy gradients) with the faintest violet tint.
+$color-bg: #121017; // page background (matte near-black)
+$color-surface: #1a1722; // cards / panels
+$color-surface-2: #221d2e; // elevated surface / hover
+$color-surface-3: #2a2438; // inputs, chips
+$color-border: #322c42; // hairline borders / dividers
+
+// Dark violet accent — used sparingly for emphasis only.
+$color-accent: #7c5cff; // primary violet accent
+$color-accent-strong: #6a45f0; // pressed / stronger violet
+$color-accent-soft: rgba(124, 92, 255, 0.14); // tinted backgrounds
+$color-accent-on: #ffffff; // text/icon on a filled accent
+
+// Text
+$color-text: #ece9f1; // primary text on dark
+$color-text-muted: #a59fb5; // secondary text
+$color-text-faint: #6f6982; // disabled / hints
+
+// Status (muted so they sit calmly on the matte background)
+$color-success: #4f9d69;
+$color-error: #d05c63;
+$color-warn: #c9a14a;

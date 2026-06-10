@@ -9,12 +9,14 @@ import { SignUpComponent } from "./auth/sign-up/sign-up.component";
 import { ForgotPasswordComponent } from "./auth/forgot-password/forgot-password.component";
 import { InventoryComponent } from "./inventory/inventory.component";
 import { BillingComponent } from "./billing/billing.component";
+import { SettingsComponent } from "./settings/settings.component";
 
 @NgModule({
   declarations: [
     ExpensesComponent,
     InventoryComponent,
     BillingComponent,
+    SettingsComponent,
     Home,
     NotFoundComponent,
     SignInComponent,

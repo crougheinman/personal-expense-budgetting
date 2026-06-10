@@ -1,10 +1,9 @@
 import { Injectable } from "@angular/core";
 import {  Inventory } from "@models";
-import { BehaviorSubject, combineLatest, distinctUntilChanged, firstValueFrom, map, Observable, of, startWith } from "rxjs";
+import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of, startWith, switchMap } from "rxjs";
 import { Store } from "@ngrx/store";
 import { AppState, selectAuthenticatedUser } from "@store";
 import { InventoryService } from "@app/services/inventory.service";
-import { start } from "repl";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
 export interface InventoryListFacadeModel {
@@ -59,13 +58,20 @@ export class InventoryListFacade {
   }
 
   private getInventoryItems(): Observable<Inventory[]> {
-    return combineLatest([
-      this.inventoryService.getInventoryItems(),
-      this.store.select(selectAuthenticatedUser),
-    ]).pipe(
-      map(([inventoryItems, user]) => {
-        return inventoryItems.filter((item) => item.userId === user.id);
-      })
+    return this.store.select(selectAuthenticatedUser).pipe(
+      switchMap((user) => {
+        if (!user?.id) {
+          return of([] as Inventory[]);
+        }
+        return this.inventoryService.getInventoryItemsByUserId(user.id);
+      }),
+      // Server query is filtered by userId (no orderBy, so no index needed);
+      // sort newest-first on the client.
+      map((items) =>
+        [...items].sort(
+          (a, b) => (b.updated?.seconds ?? 0) - (a.updated?.seconds ?? 0)
+        )
+      )
     );
   }
 

@@ -1,475 +1,334 @@
+@use 'variables' as *;
+
 .home {
   padding: 20px;
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
+  color: $color-text;
 
   // Welcome Section
   .welcome-section {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 
     .welcome-title {
       font-size: 2rem;
       font-weight: 600;
       margin: 0;
-      color: #ffffff;
+      color: $color-text;
 
       @media (max-width: 768px) {
         font-size: 1.5rem;
       }
     }
+
+    .welcome-subtitle {
+      margin: 6px 0 0 0;
+      color: $color-text-muted;
+      font-size: 1rem;
+    }
   }
 
-  // Section Titles
-  .section-title {
-    font-size: 1.25rem;
-    font-weight: 500;
-    margin-bottom: 16px;
-    color: #ffffff;
-  }
+  // Pebby — AI spending reporter ---------------------------------------------
+  .pebby-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: linear-gradient(135deg, $color-accent-soft 0%, $color-surface 70%);
+    border: 1px solid $color-border;
+    border-left: 3px solid $color-accent;
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 24px;
 
-  // Insights Section
-  .insights-section,
-  .additional-insights {
-    margin-bottom: 32px;
-
-    .tip-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 24px;
-      border-radius: 16px;
+    .pebby-avatar {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: $color-accent;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 20px;
-      box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+      justify-content: center;
 
-      &.secondary {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        box-shadow: 0 8px 32px rgba(240, 147, 251, 0.3);
-      }
-
-      .tip-content {
-        flex: 1;
-
-        h3 {
-          font-size: 1.5rem;
-          font-weight: 600;
-          margin: 0 0 12px 0;
-        }
-
-        p {
-          margin: 0;
-          opacity: 0.9;
-          line-height: 1.5;
-          font-size: 1rem;
-        }
-      }
-
-      .explore-btn {
-        flex-shrink: 0;
-        min-width: 120px;
-
-        &::ng-deep .mat-mdc-button-base {
-          background: rgba(255, 255, 255, 0.2);
-          color: white;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-
-          &:hover {
-            background: rgba(255, 255, 255, 0.3);
-          }
-        }
-      }
-
-      @media (max-width: 768px) {
-        flex-direction: column;
-        text-align: center;
-
-        .explore-btn {
-          min-width: 100%;
-        }
+      mat-icon {
+        color: $color-accent-on;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
       }
     }
-  }
 
-  .action-cards-mobile {
-    min-width: 373px;
-    margin-bottom: 32px;
-  }
+    .pebby-body {
+      min-width: 0;
+      flex: 1;
 
-  // Quick Actions Section
-  .quick-actions-section {
-
-    .action-cards {
-      .action-card {
-        min-width: 373px;
-        background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        cursor: pointer;
-
-        .card-image {
-          height: 200px;
-          position: relative;
-          background-size: cover;
-          background-position: center;
-          display: flex;
-          align-items: flex-end;
-
-          &.expenses-bg {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-          }
-
-          &.billing-bg {
-            background: linear-gradient(45deg, #a8e6cf, #3d5a80);
-          }
-
-          &.inventory-bg {
-            background: linear-gradient(45deg, #ffd93d, #6bcf7f);
-          }
-
-          .card-overlay {
-            background: linear-gradient(
-              to top,
-              rgba(0, 0, 0, 0.7),
-              transparent
-            );
-            color: white;
-            padding: 24px;
-            width: 100%;
-
-            h3 {
-              font-size: 1.5rem;
-              font-weight: 600;
-              margin: 0 0 8px 0;
-            }
-
-            p {
-              margin: 0;
-              opacity: 0.9;
-              font-size: 0.9rem;
-            }
-          }
-        }
-
-        .card-footer {
-          padding: 16px 24px;
-
-          button {
-            width: 100%;
-            border-color: #ddd;
-            color: #666;
-
-            &:hover {
-              background: #f5f5f5;
-              border-color: #ccc;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // Responsive improvements
-  @media (max-width: 768px) {
-    padding: 16px;
-
-    .welcome-section {
-      margin-bottom: 24px;
-    }
-
-    .insights-section,
-    .additional-insights,
-    .quick-actions-section {
-      margin-bottom: 24px;
-    }
-
-    .section-title {
-      font-size: 1.1rem;
-    }
-  }
-
-  .welcome-bar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    margin-bottom: 32px;
-    border-radius: 12px;
-    overflow: hidden;
-
-    mat-card-header {
-      padding: 24px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 2.5rem;
-      font-weight: 300;
-      margin-bottom: 8px;
-    }
-
-    mat-card-subtitle {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 1.1rem;
-    }
-  }
-
-  .mobile-quick-actions {
-    margin-bottom: 32px;
-    padding: 0 16px;
-
-    .action-buttons-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-
-      @media (min-width: 769px) {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 16px;
-      }
-
-      .action-button {
+      .pebby-name {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        justify-content: end;
-        padding: 16px 8px;
-        min-height: 80px;
-        border-radius: 12px;
-        background: #00bcd4;
-        color: white;
-        font-size: 0.75rem;
-        font-weight: 500;
-        text-transform: none;
-        box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3);
-        transition: all 0.3s ease;
-        line-height: 1.2;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: $color-text;
+        margin-bottom: 4px;
 
-        @media (min-width: 769px) {
-          flex-direction: row;
-          justify-content: space-between;
-          padding: 16px 20px;
-          min-height: 60px;
-          font-size: 1rem;
+        .pebby-tag {
+          font-size: 0.65rem;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+          color: $color-accent;
+          background: $color-accent-soft;
+          border: 1px solid $color-accent;
+          border-radius: 6px;
+          padding: 1px 6px;
+        }
+      }
+
+      .pebby-text {
+        margin: 0;
+        font-size: 0.92rem;
+        line-height: 1.45;
+        color: $color-text;
+
+        &.muted {
+          color: $color-text-muted;
         }
 
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4);
-          background: #00acc1;
+        &.is-loading {
+          animation: pebby-pulse 1.2s ease-in-out infinite;
         }
+      }
+    }
 
-        span {
-          text-align: center;
-          margin-top: 4px;
+    .pebby-refresh {
+      flex-shrink: 0;
+      align-self: flex-start;
+      color: $color-accent;
 
-          @media (min-width: 769px) {
-            flex: 1;
-            text-align: left;
-            margin-top: 0;
-            margin-left: 12px;
-          }
-        }
-
-        .arrow {
-          font-size: 16px;
-          opacity: 0.8;
-          margin-top: 4px;
-
-          @media (min-width: 769px) {
-            font-size: 20px;
-            margin-top: 0;
-          }
-        }
-
-        mat-icon:first-child {
-          font-size: 20px;
-          width: 20px;
-          height: 20px;
-
-          @media (min-width: 769px) {
-            font-size: 24px;
-            width: 24px;
-            height: 24px;
-          }
-        }
+      .spinning {
+        animation: pebby-spin 0.9s linear infinite;
       }
     }
   }
 
-  .quick-launch-section {
-    margin-bottom: 40px;
-
-    h2 {
-      font-size: 1.8rem;
-      font-weight: 500;
-      margin-bottom: 24px;
-      color: #ffffff;
-    }
-
-    .quick-launch-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-
-      .launch-card {
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border-radius: 12px;
-        overflow: hidden;
-        position: relative;
-        min-height: 180px;
-
-        &:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-        }
-
-        &:focus {
-          outline: 2px solid #667eea;
-          outline-offset: 2px;
-        }
-
-        mat-card-content {
-          padding: 24px;
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-          position: relative;
-        }
-
-        .card-icon {
-          margin-bottom: 16px;
-
-          mat-icon {
-            font-size: 48px;
-            width: 48px;
-            height: 48px;
-            color: white;
-          }
-        }
-
-        h3 {
-          margin: 0 0 8px 0;
-          font-size: 1.4rem;
-          font-weight: 600;
-          color: white;
-        }
-
-        p {
-          margin: 0;
-          color: rgba(255, 255, 255, 0.9);
-          flex-grow: 1;
-          line-height: 1.5;
-        }
-
-        .card-action {
-          margin-top: 16px;
-          display: flex;
-          justify-content: flex-end;
-
-          mat-icon {
-            color: rgba(255, 255, 255, 0.8);
-            transition: transform 0.2s ease;
-          }
-        }
-
-        &:hover .card-action mat-icon {
-          transform: translateX(4px);
-        }
-
-        // Card-specific colors
-        &.expenses-card {
-          background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-        }
-
-        &.bills-card {
-          background: linear-gradient(135deg, #4834d4 0%, #686de0 100%);
-        }
-
-        &.create-card {
-          background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%);
-        }
-
-        &.analytics-card {
-          background: linear-gradient(135deg, #5f27cd 0%, #a55eea 100%);
-        }
-      }
-    }
+  @keyframes pebby-pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
   }
 
-  .recent-activity-section {
-    h2 {
-      font-size: 1.8rem;
-      font-weight: 500;
-      margin-bottom: 24px;
-      color: #ffffff;
+  @keyframes pebby-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  // Summary stat cards -------------------------------------------------------
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 12px;
     }
 
-    .activity-card {
-      border-radius: 12px;
-      min-height: 200px;
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: $color-surface;
+      border: 1px solid $color-border;
+      border-radius: 14px;
+      padding: 16px;
 
-      mat-card-content {
-        padding: 32px;
-      }
-
-      .activity-placeholder {
+      .stat-icon {
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        border-radius: 11px;
+        background: $color-accent-soft;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        text-align: center;
-        color: #666;
-        height: 150px;
 
         mat-icon {
-          font-size: 48px;
-          width: 48px;
-          height: 48px;
-          margin-bottom: 16px;
-          opacity: 0.5;
+          color: $color-accent;
+        }
+      }
+
+      .stat-meta {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+
+        .stat-label {
+          font-size: 0.8rem;
+          color: $color-text-muted;
         }
 
-        p {
-          margin: 0;
-          font-size: 1.1rem;
+        .stat-value {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: $color-text;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+
+          @media (max-width: 768px) {
+            font-size: 1.1rem;
+          }
         }
       }
     }
   }
 
-  // Mobile responsiveness
+  // Analytics cards ----------------------------------------------------------
+  .analytics-card {
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+
+    .analytics-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+
+      mat-icon {
+        color: $color-accent;
+      }
+
+      h2 {
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin: 0;
+        color: $color-text;
+      }
+    }
+  }
+
+  // Monthly bar chart
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    height: 160px;
+
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+
+      .bar-track {
+        flex: 1;
+        width: 100%;
+        max-width: 46px;
+        display: flex;
+        align-items: flex-end;
+        background: $color-surface-3;
+        border-radius: 8px 8px 4px 4px;
+        overflow: hidden;
+      }
+
+      .bar-fill {
+        width: 100%;
+        min-height: 4px;
+        border-radius: 8px 8px 4px 4px;
+        background: linear-gradient(180deg, $color-accent 0%, $color-accent-strong 100%);
+        transition: height 0.4s ease;
+      }
+
+      .bar-label {
+        margin-top: 8px;
+        font-size: 0.75rem;
+        color: $color-text-muted;
+      }
+    }
+  }
+
+  // Category breakdown
+  .category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    .category-row {
+      .category-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 6px;
+        gap: 8px;
+
+        .category-name {
+          font-size: 0.9rem;
+          color: $color-text;
+          font-weight: 500;
+        }
+
+        .category-amount {
+          font-size: 0.8rem;
+          color: $color-text-muted;
+          white-space: nowrap;
+        }
+      }
+
+      .category-bar {
+        height: 8px;
+        background: $color-surface-3;
+        border-radius: 6px;
+        overflow: hidden;
+
+        .category-bar-fill {
+          height: 100%;
+          min-width: 4px;
+          border-radius: 6px;
+          background: linear-gradient(90deg, $color-accent-strong 0%, $color-accent 100%);
+          transition: width 0.4s ease;
+        }
+      }
+    }
+  }
+
+  // Empty state
+  .empty-analytics {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+    padding: 48px 20px;
+    background: $color-surface;
+    border: 1px dashed $color-border;
+    border-radius: 16px;
+    color: $color-text-muted;
+
+    mat-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+      color: $color-accent;
+      margin-bottom: 6px;
+    }
+
+    h3 {
+      margin: 0;
+      color: $color-text;
+      font-size: 1.1rem;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+  }
+
   @media (max-width: 768px) {
     padding: 16px;
-
-    .welcome-bar {
-      h1 {
-        font-size: 2rem;
-      }
-    }
-
-    .quick-launch-grid {
-      grid-template-columns: 1fr;
-      gap: 16px;
-    }
-
-    .launch-card {
-      min-height: 150px;
-
-      mat-card-content {
-        padding: 20px;
-      }
-
-      .card-icon mat-icon {
-        font-size: 36px;
-        width: 36px;
-        height: 36px;
-      }
-
-      h3 {
-        font-size: 1.2rem;
-      }
-    }
   }
 }

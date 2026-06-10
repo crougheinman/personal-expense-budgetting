@@ -9,16 +9,15 @@ A comprehensive personal expense tracking and budgeting application built with A
 ### ✅ **Current Features**
 - **Expense Management**: Add, edit, and delete expenses with categorization
 - **Billing Management**: Add, edit, and delete bills with due date tracking
-- **Inventory Management**: Track inventory items with barcode scanning
-- **Barcode Scanner**: Scan barcodes for quick item identification with camera integration
+- **Inventory Management**: Track inventory items with AI-assisted item capture
+- **AI Product Scanner**: Point the camera at a product and let **Google Gemini** identify its **name and price**
 - **Category Filtering**: Filter expenses by category with toggleable navigation
 - **Smart Search**: Search expenses, bills, and inventory by name or description
 - **Expense Analytics**: View total expenses, average amounts, and highest expenses
 - **User Authentication**: Secure login with Firebase Auth and user profile management
-- **Responsive Design**: Mobile-friendly interface with Material Design
+- **Responsive Design**: Mobile-friendly interface with a dark-matte Material theme
 - **Real-time Data**: Firebase Firestore integration for real-time updates
-- **Camera Integration**: Built-in camera functionality for barcode scanning
-- **Focus Control**: Advanced camera focus controls including tap-to-focus
+- **Camera Integration**: Built-in camera capture feeding the Gemini vision model
 
 ### 🚧 **Planned Essential Features**
 
@@ -33,7 +32,7 @@ A comprehensive personal expense tracking and budgeting application built with A
 - **Comprehensive Reporting**: Generate PDF reports and tax-ready summaries
 
 #### **Enhanced User Experience**
-- **Receipt Scanner & OCR**: Scan receipts with Google Vision API (barcode scanning already implemented)
+- **Receipt Scanner & OCR**: Scan receipts with Google Vision API (AI product scanning already implemented)
 - **Smart Notifications**: Budget alerts and bill reminders via FCM
 - **Quick Actions**: One-tap expense entry and voice input
 - **Expense Sharing**: Split bills and shared expenses with friends
@@ -47,6 +46,53 @@ A comprehensive personal expense tracking and budgeting application built with A
 - **Bank Integration**: Auto-import transactions (when available in Philippines)
 - **Investment Tracking**: Monitor stocks, crypto, and mutual funds
 - **GCash Integration**: Transaction history import (when API becomes available)
+
+## Google Gemini API Key
+
+The item scanner uses the **Google Gemini** vision model to identify products
+from a photo. You need a (free) Gemini API key for it to work.
+
+### How to get an API key
+
+1. Go to **[Google AI Studio](https://aistudio.google.com/app/apikey)** and sign
+   in with your Google account.
+2. Click **"Create API key"** (you can create it in a new project or pick an
+   existing Google Cloud project).
+3. Copy the generated key — it looks like `AIzaSy...`.
+
+> Keep this key private. Do **not** commit it to a public repository.
+
+### Where to put the key
+
+`src/app/environments/environment.ts` is **git-ignored** so your keys are never
+committed. Create it once from the tracked template, then paste your key in:
+
+```bash
+cp src/app/environments/environment.template.ts src/app/environments/environment.ts
+```
+
+Then open `src/app/environments/environment.ts` and set the `geminiApiKey` field:
+
+```ts
+export const environment = {
+  production: false,
+
+  // Google Gemini (AI scanning)
+  geminiApiKey: "PASTE_YOUR_GEMINI_API_KEY_HERE",
+  geminiModel: "gemini-2.5-flash", // any vision-capable Gemini model
+
+  firebaseConfig: {
+    /* ... */
+  },
+};
+```
+
+Restart `ng serve` after editing the file. The **Start Scan → Identify** flow in
+the Add Expense and Add Inventory dialogs will now send the captured frame to
+Gemini and auto-fill the form with the detected item details.
+
+> **Note:** If the key is left blank, the scanner stays disabled and shows a
+> "Gemini API key is missing" message instead of crashing.
 
 ## Development server
 
@@ -95,7 +141,7 @@ src/
 │   │   ├── inventory-list/  # Inventory listing
 │   │   ├── inventory-edit/  # Inventory editing
 │   │   ├── inventory-create/# Inventory creation
-│   │   ├── barcode-scanner/ # Barcode scanning component
+│   │   ├── product-scanner/ # AI product scanner (Google Gemini)
 │   │   └── camera/          # Camera integration
 │   ├── pages/              # Route components
 │   │   ├── home/           # Dashboard home page
@@ -122,7 +168,7 @@ src/
 - ✅ Responsive design
 - ✅ Bill management system
 - ✅ Inventory management
-- ✅ Barcode scanning functionality
+- ✅ AI product scanning (Google Gemini)
 
 ### **Phase 2 (In Progress)**
 - 🔄 Budget management system

@@ -1,29 +1,65 @@
+@use 'variables' as *;
+
 .main-content {
   padding-top: 65px;
 }
 
 .sidenav-container {
   height: 100%;
+  background-color: $color-bg;
 }
 
 .sidenav {
   width: 200px;
+  background-color: $color-surface;
+  border-right: 1px solid $color-border;
 }
 
 .sidenav .mat-toolbar {
   background: inherit;
+  color: $color-text;
+  font-weight: 600;
+  letter-spacing: 1px;
 }
 
-.mat-toolbar.mat-primary {
+// Top app bar stays matte; violet is reserved for accents only.
+.mat-toolbar.mat-primary,
+.main-toolbar {
   position: fixed;
   top: 0;
   z-index: 1;
+  background-color: $color-surface;
+  color: $color-text;
+  border-bottom: 1px solid $color-border;
+}
+
+// Navigation items
+.mat-nav-list {
+  .mat-mdc-list-item {
+    color: $color-text-muted;
+    border-radius: 8px;
+    margin: 2px 8px;
+
+    .mat-icon {
+      color: $color-text-muted;
+    }
+
+    &:hover {
+      background-color: $color-surface-2;
+      color: $color-text;
+    }
+  }
 }
 
 .active {
-  background-color: --mat-sys-primary;
-  color: white!important;
-  border-radius: 5px;
+  background-color: $color-accent-soft !important;
+  color: $color-accent !important;
+  border-radius: 8px;
+
+  .mat-icon,
+  [matListItemIcon] {
+    color: $color-accent !important;
+  }
 }
 
 .spacer {
@@ -67,7 +103,7 @@
       .user-name {
         font-weight: 500;
         font-size: 14px;
-        color: rgba(0, 0, 0, 0.87);
+        color: $color-text;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -75,7 +111,7 @@
 
       .user-email {
         font-size: 12px;
-        color: rgba(0, 0, 0, 0.6);
+        color: $color-text-muted;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -89,13 +125,14 @@
 }
 
 .logout-item {
-  color: #f44336;
+  color: $color-error;
 
   mat-icon {
-    color: #f44336;
+    color: $color-error;
   }
 }
 
 mat-sidenav-content {
-  margin-left: 0px!important; // prevent user avatar from pushing right
+  margin-left: 0px !important; // prevent user avatar from pushing right
+  background-color: $color-bg;
 }

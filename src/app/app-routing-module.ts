@@ -7,6 +7,7 @@ import {
   Home,
   InventoryComponent,
   NotFoundComponent,
+  SettingsComponent,
   SignInComponent,
   SignUpComponent,
 } from "@pages";
@@ -50,6 +51,14 @@ const routes: Routes = [
     children: [
       { path: "", redirectTo: "list", pathMatch: "full" },
       { path: "list", component: BillingComponent },
+    ],
+    canActivate: [AuthGuard],
+  },
+  {
+    path: "settings",
+    children: [
+      { path: "", redirectTo: "expenses", pathMatch: "full" },
+      { path: "expenses", component: SettingsComponent },
     ],
     canActivate: [AuthGuard],
   },

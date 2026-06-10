@@ -6,4 +6,5 @@ export * from './expenses/expenses.component';
 export * from './not-found/not-found.component';
 export * from './inventory/inventory.component';
 export * from './billing/billing.component';
+export * from './settings/settings.component';
 export * from './pages-module';

@@ -47,32 +47,45 @@
   </div>
 
   <div class="billing-list">
-    <mat-list>
-      <mat-list-item
-        role="listitem"
+    <div class="bills-grid">
+      <article
+        class="bill-card"
         *ngFor="let item of vm.billingItems"
         (click)="onItemClick(item)"
-        class="billing-list-item"
       >
-        <mat-icon matListItemIcon>description</mat-icon>
-        <h3 matListItemTitle>{{ item.name }}</h3>
-        <div class="pt-2" matListItemLine>
-          <div class="float-start">
-          <strong class="billing-list-item-price">{{ item.price | currency : "PHP" : "symbol" : "1.2-2" }}</strong>
-            <div class="billing-list-item-due-date" *ngIf="item.dueDay"
-              >Due: Every {{ item.dueDay }}</div
-            >
-          </div>
-          <div class="float-end">
-            <mat-chip
-              [style.background-color]="'green'"
-              class="billing-list-item-payment-status"
-              *ngIf="vm.billPayments && vm.billPayments[item.id]"
-              >Paid</mat-chip
-            >
-          </div>
+        <div class="bill-card-head">
+          <div class="bill-icon"><mat-icon>description</mat-icon></div>
+          <span
+            class="bill-status"
+            [class.paid]="vm.billPayments && vm.billPayments[item.id]"
+          >
+            <mat-icon>{{
+              vm.billPayments && vm.billPayments[item.id]
+                ? 'check_circle'
+                : 'schedule'
+            }}</mat-icon>
+            {{ vm.billPayments && vm.billPayments[item.id] ? 'Paid' : 'Pending' }}
+          </span>
         </div>
-      </mat-list-item>
-    </mat-list>
+
+        <h3 class="bill-name" [title]="item.name">{{ item.name }}</h3>
+
+        <div class="bill-amount">
+          {{ item.price | currency : "PHP" : "symbol" : "1.2-2" }}
+        </div>
+
+        <div class="bill-meta">
+          <mat-icon>event</mat-icon>
+          <span>Due on day {{ item.dueDay }}</span>
+        </div>
+
+        <p class="bill-desc" *ngIf="item.description">{{ item.description }}</p>
+      </article>
+    </div>
+
+    <div class="empty-list" *ngIf="vm.billingItems && vm.billingItems.length === 0">
+      <mat-icon>description</mat-icon>
+      <p>No bills to show.</p>
+    </div>
   </div>
 </ng-container>

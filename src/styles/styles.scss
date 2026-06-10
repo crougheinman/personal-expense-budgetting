@@ -1,9 +1,39 @@
 @use 'variables.scss' as *;
-@use '@angular/material/' as mat;
-@use '@angular/material/prebuilt-themes/purple-green.css';
+@use '@angular/material' as mat;
 @import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&display=swap');
 
-html, body {
+// ---------------------------------------------------------------------------
+// Material 3 theme — dark, with the violet palette as the accent.
+// ---------------------------------------------------------------------------
+html {
+  color-scheme: dark;
+
+  @include mat.theme((
+    color: (
+      theme-type: dark,
+      primary: mat.$violet-palette,
+      tertiary: mat.$violet-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+
+  // Nudge the generated M3 system colours toward a flatter, matte look and a
+  // slightly deeper violet accent than the stock palette.
+  --mat-sys-background: #{$color-bg};
+  --mat-sys-surface: #{$color-surface};
+  --mat-sys-surface-container: #{$color-surface};
+  --mat-sys-surface-container-low: #{$color-surface};
+  --mat-sys-surface-container-high: #{$color-surface-2};
+  --mat-sys-surface-container-highest: #{$color-surface-2};
+  --mat-sys-on-surface: #{$color-text};
+  --mat-sys-on-surface-variant: #{$color-text-muted};
+  --mat-sys-outline: #{$color-border};
+  --mat-sys-outline-variant: #{$color-border};
+}
+
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -12,6 +42,12 @@ html, body {
 body {
   display: flex;
   flex-direction: column;
+  background-color: $color-bg;
+  color: $color-text;
+  // Keep Bootstrap's variables in sync with the dark theme.
+  --bs-body-bg: #{$color-bg};
+  --bs-body-color: #{$color-text};
+  --bs-border-color: #{$color-border};
 }
 
 app-root {
@@ -23,24 +59,82 @@ app-root {
   padding: $size-1;
   flex: 1 0 auto;
   min-height: 100vh;
+  background-color: $color-bg;
 }
 
 footer {
   flex-shrink: 0;
 }
 
-// Snackbar styles
+// Generic helpers ------------------------------------------------------------
+.text-light {
+  color: $color-text !important;
+}
+
+// Centered page container — matches the Settings page width so the list pages
+// (expenses, bills, inventory) line up consistently.
+.page-constrained {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+// Dialog form action row — right-aligned on desktop, full-width stacked on
+// mobile. Shared by the create/edit dialogs.
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+
+  button {
+    min-width: 140px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+a {
+  color: $color-accent;
+
+  &:hover {
+    color: $color-accent-strong;
+  }
+}
+
+// Snackbar styles ------------------------------------------------------------
 .success-snackbar {
-  background-color: #4caf50 !important;
-  color: white !important;
+  --mdc-snackbar-container-color: #{$color-surface-2};
+  --mdc-snackbar-supporting-text-color: #{$color-text};
+  --mat-snack-bar-button-color: #{$color-success};
+  border-left: 3px solid $color-success;
 }
 
 .error-snackbar {
-  background-color: #f44336 !important;
-  color: white !important;
+  --mdc-snackbar-container-color: #{$color-surface-2};
+  --mdc-snackbar-supporting-text-color: #{$color-text};
+  --mat-snack-bar-button-color: #{$color-error};
+  border-left: 3px solid $color-error;
 }
 
-// Mobile fullscreen dialog styles
+.warning-snackbar {
+  --mdc-snackbar-container-color: #{$color-surface-2};
+  --mdc-snackbar-supporting-text-color: #{$color-text};
+  --mat-snack-bar-button-color: #{$color-warn};
+  border-left: 3px solid $color-warn;
+}
+
+// Mobile fullscreen dialog styles --------------------------------------------
 .mobile-fullscreen-dialog {
   .mat-mdc-dialog-container {
     padding: 0 !important;
@@ -54,7 +148,7 @@ footer {
     top: 0 !important;
     left: 0 !important;
   }
-  
+
   .mat-mdc-dialog-content {
     padding: 0 !important;
     margin: 0 !important;
@@ -63,14 +157,15 @@ footer {
   }
 }
 
-// Close button styles for dialogs
+// Close button styles for dialogs --------------------------------------------
 .dialog-close-button {
   position: absolute;
   top: 8px;
   right: 8px;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
+  background: $color-surface-3;
+  color: $color-text;
+  border: 1px solid $color-border;
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -78,12 +173,12 @@ footer {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+
   &:hover {
-    background: rgba(255, 255, 255, 1);
+    background: $color-surface-2;
   }
-  
+
   mat-icon {
     font-size: 20px;
     width: 20px;
