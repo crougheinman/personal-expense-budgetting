@@ -106,6 +106,21 @@ export class ExpensesListComponent {
     return getExpenseCategoryIcon(category);
   }
 
+  /** Formats an hour (0-23) as a 12-hour label, e.g. "9 AM", "1 PM". */
+  formatHour(hour: number): string {
+    const period = hour < 12 ? "AM" : "PM";
+    const h = hour % 12 === 0 ? 12 : hour % 12;
+    return `${h} ${period}`;
+  }
+
+  previousDay(): void {
+    this.facade.previousDay();
+  }
+
+  nextDay(): void {
+    this.facade.nextDay();
+  }
+
   getAmountClass(amount: number): string {
     if (amount < 0) {
       return 'negative';

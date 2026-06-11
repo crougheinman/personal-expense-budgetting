@@ -7,6 +7,12 @@ import { AppState, selectAuthenticatedUser } from "@store";
 import moment from "moment";
 import { Timestamp } from "firebase/firestore";
 
+export interface HourlyBar {
+  hour: number; // 0-23
+  amount: number;
+  height: number; // 0-100, relative bar height
+}
+
 export interface ExpensesListFacadeModel {
   expenses?: Expense[];
   totalValue: number;
@@ -16,6 +22,13 @@ export interface ExpensesListFacadeModel {
   highestExpense: number;
   startDate: Timestamp | null;
   endDate: Timestamp | null;
+  // The selected day's spending bucketed by hour (independent of list filters).
+  hourly: HourlyBar[];
+  dayTotal: number;
+  dayCount: number;
+  dayLabel: string;
+  isToday: boolean;
+  canGoNext: boolean;
 }
 
 export const initialState: ExpensesListFacadeModel = {
@@ -27,6 +40,12 @@ export const initialState: ExpensesListFacadeModel = {
   highestExpense: 0,
   startDate: null,
   endDate: null,
+  hourly: [],
+  dayTotal: 0,
+  dayCount: 0,
+  dayLabel: "Today",
+  isToday: true,
+  canGoNext: false,
 };
 
 @Injectable()
@@ -36,6 +55,8 @@ export class ExpensesListFacade {
   selectedCategory$: BehaviorSubject<string> = new BehaviorSubject<string>('all');
   startDate$: BehaviorSubject<Timestamp> = new BehaviorSubject<Timestamp>(Timestamp.fromDate(moment().startOf('month').toDate()));
   endDate$: BehaviorSubject<Timestamp> = new BehaviorSubject<Timestamp>(Timestamp.fromDate(moment().endOf('month').toDate()));
+  // Hero day navigation: 0 = today, -1 = yesterday, etc. (never positive).
+  dayOffset$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
 
   constructor(
     private expensesService: ExpensesService,
@@ -51,8 +72,9 @@ export class ExpensesListFacade {
       this.startDate$.asObservable().pipe(distinctUntilChanged()),
       this.endDate$.asObservable().pipe(distinctUntilChanged()),
       this.selectedCategory$.asObservable().pipe(distinctUntilChanged()),
+      this.dayOffset$.asObservable().pipe(distinctUntilChanged()),
     ]).pipe(
-      map(([expenses, searchKey, startDate, endDate, selectedCategory]) => {
+      map(([expenses, searchKey, startDate, endDate, selectedCategory, dayOffset]) => {
         let filteredExpenses = expenses;
         
         // Filter by search key
@@ -69,13 +91,18 @@ export class ExpensesListFacade {
           );
         }
 
-        // Filter by date range
-        if (startDate && endDate) {
-          filteredExpenses = filteredExpenses.filter((expense) => {
-            const expenseDate = expense.expenseDate ? expense.expenseDate : new Date();
-            return expenseDate >= startDate && expenseDate <= endDate;
-          });
-        }
+        // Scope the list (and its summary metrics) to the day selected via the
+        // hero's prev/next arrows, so changing the day updates the items, count,
+        // total amount and highest expense together.
+        const day = moment().add(dayOffset, "days");
+        const dayStart = day.clone().startOf("day");
+        const dayEnd = day.clone().endOf("day");
+        filteredExpenses = filteredExpenses.filter((expense) => {
+          const date = this.dateOf(expense);
+          return date
+            ? moment(date).isBetween(dayStart, dayEnd, undefined, "[]")
+            : false;
+        });
 
         // Calculate additional metrics
         const averageAmount = filteredExpenses.length > 0 
@@ -87,7 +114,13 @@ export class ExpensesListFacade {
           : 0;
 
         const totalValue = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-        
+
+        // Selected day's spending by hour — from the UNFILTERED user expenses.
+        const { hourly, dayTotal, dayCount } = this.buildHourly(
+          expenses,
+          dayOffset
+        );
+
         return {
           expenses: filteredExpenses,
           totalValue,
@@ -97,9 +130,71 @@ export class ExpensesListFacade {
           highestExpense,
           startDate,
           endDate,
+          hourly,
+          dayTotal,
+          dayCount,
+          dayLabel: this.dayLabel(dayOffset),
+          isToday: dayOffset === 0,
+          canGoNext: dayOffset < 0, // can't navigate into the future
         };
       })
     );
+  }
+
+  /**
+   * Buckets a single day's expenses into 24 hourly bars, normalised to bar
+   * heights. `offset` is days relative to today (0 = today, -1 = yesterday).
+   */
+  private buildHourly(
+    expenses: Expense[],
+    offset: number
+  ): { hourly: HourlyBar[]; dayTotal: number; dayCount: number } {
+    const day = moment().add(offset, "days");
+    const startOfDay = day.clone().startOf("day");
+    const endOfDay = day.clone().endOf("day");
+    const buckets = Array.from({ length: 24 }, (_, hour) => ({
+      hour,
+      amount: 0,
+    }));
+    let dayCount = 0;
+
+    for (const expense of expenses) {
+      const date = this.dateOf(expense);
+      if (!date) {
+        continue;
+      }
+      const m = moment(date);
+      if (m.isSameOrAfter(startOfDay) && m.isSameOrBefore(endOfDay)) {
+        buckets[m.hour()].amount += expense.amount || 0;
+        dayCount++;
+      }
+    }
+
+    const max = Math.max(...buckets.map((b) => b.amount), 1);
+    const hourly = buckets.map((b) => ({
+      hour: b.hour,
+      amount: b.amount,
+      height: Math.round((b.amount / max) * 100),
+    }));
+    const dayTotal = buckets.reduce((sum, b) => sum + b.amount, 0);
+
+    return { hourly, dayTotal, dayCount };
+  }
+
+  private dayLabel(offset: number): string {
+    if (offset === 0) return "Today";
+    if (offset === -1) return "Yesterday";
+    return moment().add(offset, "days").format("ddd, MMM D");
+  }
+
+  private dateOf(expense: Expense): Date | null {
+    if (expense.expenseDate) {
+      return expense.expenseDate.toDate();
+    }
+    if (expense.created) {
+      return expense.created.toDate();
+    }
+    return null;
   }
 
   private getUserExpenses(): Observable<Expense[]> {
@@ -118,6 +213,17 @@ export class ExpensesListFacade {
         )
       )
     );
+  }
+
+  previousDay(): void {
+    this.dayOffset$.next(this.dayOffset$.value - 1);
+  }
+
+  nextDay(): void {
+    // Don't navigate past today.
+    if (this.dayOffset$.value < 0) {
+      this.dayOffset$.next(this.dayOffset$.value + 1);
+    }
   }
 
   updateSearchKey(value: string) : void {

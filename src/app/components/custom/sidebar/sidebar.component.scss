@@ -1,86 +1,328 @@
 @use 'variables' as *;
 
-.main-content {
-  padding-top: 65px;
-}
+$nav-width: 240px;
+$bar-height: $nav-bar-height;
+$mheader-height: 56px;
 
-.sidenav-container {
-  height: 100%;
+// ---------------------------------------------------------------------------
+// Routed content offsets
+// ---------------------------------------------------------------------------
+.shell-content {
+  display: block;
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: $size-1;
   background-color: $color-bg;
+
+  // Offsets for the fixed chrome only apply while the nav is shown (i.e. when
+  // authenticated). On auth screens the content fills the viewport.
+  &.is-authed {
+    padding-top: calc(#{$mheader-height} + #{$size-1});
+    padding-bottom: calc(#{$bar-height} + #{$size-1} + env(safe-area-inset-bottom, 0px));
+
+    @media (min-width: 768px) {
+      margin-left: $nav-width;
+      padding-top: $size-1;
+      padding-bottom: $size-1;
+    }
+  }
 }
 
-.sidenav {
-  width: 200px;
-  background-color: $color-surface;
-  border-right: 1px solid $color-border;
-}
-
-.sidenav .mat-toolbar {
-  background: inherit;
-  color: $color-text;
-  font-weight: 600;
-  letter-spacing: 1px;
-}
-
-// Top app bar stays matte; violet is reserved for accents only.
-.mat-toolbar.mat-primary,
-.main-toolbar {
+// ---------------------------------------------------------------------------
+// Mobile top header (brand + account menu)
+// ---------------------------------------------------------------------------
+.m-header {
   position: fixed;
   top: 0;
-  z-index: 1;
-  background-color: $color-surface;
-  color: $color-text;
+  left: 0;
+  right: 0;
+  height: $mheader-height;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 0 16px;
+  background: $color-surface;
   border-bottom: 1px solid $color-border;
-}
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 
-// Navigation items
-.mat-nav-list {
-  .mat-mdc-list-item {
-    color: $color-text-muted;
-    border-radius: 8px;
-    margin: 2px 8px;
+  .brand-mark {
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: $color-text;
+  }
 
-    .mat-icon {
-      color: $color-text-muted;
-    }
+  .m-header__user {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
 
-    &:hover {
-      background-color: $color-surface-2;
+  .m-theme-toggle {
+    width: 44px;
+    height: 44px;
+
+    mat-icon {
       color: $color-text;
     }
   }
-}
 
-.active {
-  background-color: $color-accent-soft !important;
-  color: $color-accent !important;
-  border-radius: 8px;
-
-  .mat-icon,
-  [matListItemIcon] {
-    color: $color-accent !important;
+  @media (min-width: 768px) {
+    display: none;
   }
 }
 
-.spacer {
-  flex: 1 1 auto;
-}
+// ---------------------------------------------------------------------------
+// Primary navigation — bottom bar (mobile) / left sidebar (desktop)
+// ---------------------------------------------------------------------------
+.app-nav {
+  box-sizing: border-box;
+  background: $color-surface;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 
-.user-menu {
-  margin-right: 8px;
+  // ---- Mobile: fixed bottom bar ----
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100; // above page FABs (z 1000) so nav taps are never blocked
+  height: calc(#{$bar-height} + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-top: 1px solid $color-border;
+  display: flex;
+  flex-direction: column;
 
-  .user-avatar-button {
-    padding: 4px;
-    transition: transform 0.2s ease;
+  .app-nav__brand,
+  .app-nav__footer {
+    display: none;
+  }
+
+  .app-nav__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: stretch;
+    height: $bar-height;
+
+    li {
+      flex: 1 1 0;
+      display: flex;
+    }
+  }
+
+  .nav-item {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    text-decoration: none;
+    color: $color-text-muted;
+    font-size: 0.66rem;
+    font-weight: 500;
+    padding: 6px 2px;
+    min-height: 48px;
+    transition: color 0.2s ease, background-color 0.2s ease;
+
+    mat-icon {
+      font-size: 23px;
+      width: 23px;
+      height: 23px;
+    }
+
+    .nav-label {
+      line-height: 1;
+    }
 
     &:hover {
-      transform: scale(1.05);
+      color: $color-text;
     }
 
-    .user-avatar {
-      cursor: pointer;
+    &.active {
+      color: $color-accent-text;
+
+      mat-icon {
+        color: $color-accent-text;
+      }
+
+      // top indicator pill
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 26px;
+        height: 3px;
+        border-radius: 0 0 3px 3px;
+        background: $color-accent;
+      }
     }
   }
+
+  // ---- Desktop: fixed left sidebar ----
+  @media (min-width: 768px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: auto;
+    width: $nav-width;
+    height: 100%;
+    border-top: none;
+    border-right: 1px solid $color-border;
+    padding: 16px 12px;
+
+    .app-nav__brand {
+      display: block;
+      font-weight: 700;
+      letter-spacing: 1px;
+      font-size: 1.25rem;
+      color: $color-text;
+      padding: 8px 12px 16px;
+    }
+
+    .app-nav__items {
+      flex: 1;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: stretch;
+      height: auto;
+      gap: 4px;
+      overflow-y: auto;
+
+      li {
+        flex: 0 0 auto;
+      }
+    }
+
+    .nav-item {
+      flex: 0 0 auto;
+      flex-direction: row;
+      justify-content: flex-start;
+      gap: 14px;
+      font-size: 0.92rem;
+      padding: 12px 14px;
+      border-radius: 10px;
+      min-height: 48px;
+
+      .nav-label {
+        line-height: 1.2;
+      }
+
+      &:hover {
+        background-color: $color-surface-2;
+        color: $color-text;
+      }
+
+      &.active {
+        background-color: $color-accent-soft;
+        color: $color-accent-text;
+        font-weight: 600; // non-color cue for the active item
+
+        mat-icon {
+          color: $color-accent-text;
+        }
+
+        &::before {
+          display: none;
+        }
+      }
+    }
+
+    .app-nav__footer {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-top: 12px;
+      margin-top: 8px;
+      border-top: 1px solid $color-border;
+
+      .nav-user {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        color: $color-text;
+        padding: 6px 10px;
+
+        .user-avatar {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+
+        .nav-user__name {
+          font-size: 0.9rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+
+      .theme-toggle {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid $color-border;
+        background: transparent;
+        color: $color-text;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease,
+          border-color 0.2s ease;
+
+        mat-icon {
+          color: $color-accent;
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+
+        &:hover {
+          background-color: $color-surface-2;
+          border-color: $color-accent;
+        }
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Keyboard focus indicators (custom <a>/<button> elements have none by default)
+// ---------------------------------------------------------------------------
+.nav-item:focus-visible,
+.theme-toggle:focus-visible,
+.nav-user:focus-visible,
+.user-avatar-button:focus-visible {
+  outline: 2px solid $color-accent;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+// ---------------------------------------------------------------------------
+// Account menu (overlay content — component-scoped styles still apply)
+// ---------------------------------------------------------------------------
+.user-avatar-button {
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .user-menu-header {
@@ -88,16 +330,17 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 0;
-    cursor: default !important;
+    padding: 8px 4px;
 
     .menu-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
       flex-shrink: 0;
     }
 
     .user-details {
-      display: flex;
-      flex-direction: column;
       min-width: 0;
 
       .user-name {
@@ -118,10 +361,6 @@
       }
     }
   }
-
-  &:hover {
-    background-color: transparent !important;
-  }
 }
 
 .logout-item {
@@ -130,9 +369,4 @@
   mat-icon {
     color: $color-error;
   }
-}
-
-mat-sidenav-content {
-  margin-left: 0px !important; // prevent user avatar from pushing right
-  background-color: $color-bg;
 }

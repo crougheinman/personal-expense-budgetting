@@ -5,29 +5,39 @@ $size-3: 24px;
 $size-4: 32px;
 $size-5: 40px;
 
-// ---------------------------------------------------------------------------
-// Dark-matte palette with a subtle dark-violet accent
-// ---------------------------------------------------------------------------
-// Surfaces go from the page background up to elevated cards. They are kept
-// desaturated and matte (no glossy gradients) with the faintest violet tint.
-$color-bg: #121017; // page background (matte near-black)
-$color-surface: #1a1722; // cards / panels
-$color-surface-2: #221d2e; // elevated surface / hover
-$color-surface-3: #2a2438; // inputs, chips
-$color-border: #322c42; // hairline borders / dividers
+// Layout — mobile bottom nav bar height (shared so FAB offsets never drift).
+$nav-bar-height: 64px;
 
-// Dark violet accent — used sparingly for emphasis only.
-$color-accent: #7c5cff; // primary violet accent
-$color-accent-strong: #6a45f0; // pressed / stronger violet
-$color-accent-soft: rgba(124, 92, 255, 0.14); // tinted backgrounds
-$color-accent-on: #ffffff; // text/icon on a filled accent
+// ---------------------------------------------------------------------------
+// Color tokens
+// ---------------------------------------------------------------------------
+// These now reference RUNTIME CSS custom properties so the whole app can switch
+// between the dark-matte and light themes at runtime. The concrete values for
+// each theme live in styles.scss, scoped to `[data-bs-theme="dark|light"]`.
+// Every component that uses `$color-*` therefore adapts automatically.
+$color-bg: var(--app-bg);
+$color-surface: var(--app-surface);
+$color-surface-2: var(--app-surface-2);
+$color-surface-3: var(--app-surface-3);
+$color-border: var(--app-border);
+
+// Dark violet accent
+$color-accent: var(--app-accent);
+$color-accent-strong: var(--app-accent-strong);
+$color-accent-soft: var(--app-accent-soft);
+$color-accent-on: var(--app-accent-on);
+// Accent tuned for text/icon contrast on surfaces (brighter in dark mode).
+$color-accent-text: var(--app-accent-text);
 
 // Text
-$color-text: #ece9f1; // primary text on dark
-$color-text-muted: #a59fb5; // secondary text
-$color-text-faint: #6f6982; // disabled / hints
+$color-text: var(--app-text);
+$color-text-muted: var(--app-text-muted);
+$color-text-faint: var(--app-text-faint);
 
-// Status (muted so they sit calmly on the matte background)
-$color-success: #4f9d69;
-$color-error: #d05c63;
-$color-warn: #c9a14a;
+// Status
+$color-success: var(--app-success);
+$color-error: var(--app-error);
+$color-warn: var(--app-warn);
+
+// Elevation shadow colour (softer/lighter in light mode).
+$color-shadow: var(--app-shadow);

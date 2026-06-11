@@ -3,14 +3,20 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&display=swap');
 
 // ---------------------------------------------------------------------------
-// Material 3 theme — dark, with the violet palette as the accent.
+// Material 3 + Bootstrap theme.
+//
+// The app supports a runtime light/dark toggle driven by the
+// `data-bs-theme="light|dark"` attribute on <html> (set pre-paint in index.html
+// and at runtime by ThemeService). Material reads `--mat-sys-*`, Bootstrap reads
+// `--bs-*`; both are forwarded to our own `--app-*` tokens whose values are
+// redefined per theme below — so a single attribute flips the whole app.
 // ---------------------------------------------------------------------------
 html {
-  color-scheme: dark;
-
+  // Emit Material structural/typography/density + adaptive color tokens once.
+  // Omitting `theme-type` makes the non-overridden color tokens follow
+  // `color-scheme` (set per theme below).
   @include mat.theme((
     color: (
-      theme-type: dark,
       primary: mat.$violet-palette,
       tertiary: mat.$violet-palette,
     ),
@@ -18,18 +24,104 @@ html {
     density: 0,
   ));
 
-  // Nudge the generated M3 system colours toward a flatter, matte look and a
-  // slightly deeper violet accent than the stock palette.
-  --mat-sys-background: #{$color-bg};
-  --mat-sys-surface: #{$color-surface};
-  --mat-sys-surface-container: #{$color-surface};
-  --mat-sys-surface-container-low: #{$color-surface};
-  --mat-sys-surface-container-high: #{$color-surface-2};
-  --mat-sys-surface-container-highest: #{$color-surface-2};
-  --mat-sys-on-surface: #{$color-text};
-  --mat-sys-on-surface-variant: #{$color-text-muted};
-  --mat-sys-outline: #{$color-border};
-  --mat-sys-outline-variant: #{$color-border};
+  // Forward Material system colours to our palette. These resolve per theme
+  // because the referenced --app-* values switch with [data-bs-theme].
+  --mat-sys-background: var(--app-bg);
+  --mat-sys-surface: var(--app-surface);
+  --mat-sys-surface-container: var(--app-surface);
+  --mat-sys-surface-container-low: var(--app-surface);
+  --mat-sys-surface-container-high: var(--app-surface-2);
+  --mat-sys-surface-container-highest: var(--app-surface-2);
+  --mat-sys-on-surface: var(--app-text);
+  --mat-sys-on-surface-variant: var(--app-text-muted);
+  --mat-sys-outline: var(--app-border);
+  --mat-sys-outline-variant: var(--app-border);
+  --mat-sys-primary: var(--app-accent);
+  --mat-sys-on-primary: var(--app-accent-on);
+  --mat-sys-error: var(--app-error);
+  --mat-sys-on-error: #ffffff;
+}
+
+// Dark (default matte) theme -------------------------------------------------
+:root[data-bs-theme="dark"] {
+  color-scheme: dark;
+  --app-bg: #121017;
+  --app-surface: #1a1722;
+  --app-surface-2: #221d2e;
+  --app-surface-3: #2a2438;
+  --app-border: #322c42;
+  --app-accent: #7c5cff;
+  --app-accent-strong: #6a45f0;
+  --app-accent-soft: rgba(124, 92, 255, 0.16);
+  --app-accent-on: #ffffff;
+  --app-accent-text: #a78bff; // brighter for >=4.5:1 active-text contrast on dark
+  --app-text: #ece9f1;
+  --app-text-muted: #a59fb5;
+  --app-text-faint: #6f6982;
+  --app-success: #4f9d69;
+  --app-error: #d05c63;
+  --app-warn: #c9a14a;
+  --app-shadow: rgba(0, 0, 0, 0.45);
+  // Bootstrap surfaces (higher specificity than Bootstrap's own [data-bs-theme]).
+  --bs-body-bg: var(--app-bg);
+  --bs-body-color: var(--app-text);
+  --bs-border-color: var(--app-border);
+}
+
+// Light theme ---------------------------------------------------------------
+:root[data-bs-theme="light"] {
+  color-scheme: light;
+  --app-bg: #f5f4fa;
+  --app-surface: #ffffff;
+  --app-surface-2: #f1eff8;
+  --app-surface-3: #e8e5f2;
+  --app-border: #e1ddec;
+  --app-accent: #6a45f0;
+  --app-accent-strong: #5733d4;
+  --app-accent-soft: rgba(106, 69, 240, 0.10);
+  --app-accent-on: #ffffff;
+  --app-accent-text: #5733d4; // deeper for active-text contrast on light
+  --app-text: #1b1925;
+  --app-text-muted: #5d5870;
+  --app-text-faint: #8a8599;
+  --app-success: #2f8f54;
+  --app-error: #c0392f;
+  --app-warn: #b07d20;
+  --app-shadow: rgba(60, 50, 90, 0.16);
+  --bs-body-bg: var(--app-bg);
+  --bs-body-color: var(--app-text);
+  --bs-border-color: var(--app-border);
+}
+
+// Smooth the cross-theme color shift to avoid harsh flicker on toggle.
+body,
+.mat-mdc-card,
+.mat-toolbar,
+.mat-mdc-list-item,
+.mat-mdc-dialog-container,
+.mat-mdc-form-field,
+.stat-card,
+.bill-card,
+.summary-card,
+.pebby-card,
+.analytics-card,
+.setting-section,
+.empty-list,
+.expense-row,
+.inventory-row {
+  transition: background-color 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+// Respect users who prefer reduced motion.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 html,
@@ -44,10 +136,6 @@ body {
   flex-direction: column;
   background-color: $color-bg;
   color: $color-text;
-  // Keep Bootstrap's variables in sync with the dark theme.
-  --bs-body-bg: #{$color-bg};
-  --bs-body-color: #{$color-text};
-  --bs-border-color: #{$color-border};
 }
 
 app-root {

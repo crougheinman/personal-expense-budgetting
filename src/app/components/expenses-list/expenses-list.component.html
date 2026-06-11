@@ -1,4 +1,76 @@
 <ng-container *ngIf="vm$ | async as vm" class="expenses-list-container">
+  <!-- Hero: a day's spending, by hour (navigable with the arrows) -->
+  <section class="today-hero" aria-label="Spending by hour">
+    <div class="today-hero__head">
+      <div class="today-hero__meta">
+        <span class="today-hero__label">{{ vm.dayLabel }}</span>
+        <span class="today-hero__total">{{
+          vm.dayTotal | currency : "PHP" : "symbol" : "1.2-2"
+        }}</span>
+      </div>
+      <span class="today-hero__count" *ngIf="vm.dayCount > 0">
+        {{ vm.dayCount }} expense{{ vm.dayCount === 1 ? '' : 's' }}
+      </span>
+    </div>
+
+    <div class="today-hero__graph">
+      <button
+        type="button"
+        class="day-nav"
+        (click)="previousDay()"
+        aria-label="Previous day"
+        title="Previous day"
+      >
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+
+      <div class="today-hero__chart-wrap">
+        <ng-container *ngIf="vm.dayCount > 0; else noDay">
+          <div class="today-hero__chart">
+            <div
+              class="hour-bar"
+              *ngFor="let bar of vm.hourly"
+              [title]="formatHour(bar.hour) + ' — ' + (bar.amount | currency : 'PHP' : 'symbol' : '1.0-0')"
+            >
+              <div class="hour-bar__track">
+                <div class="hour-bar__fill" [style.height.%]="bar.height"></div>
+              </div>
+            </div>
+          </div>
+          <div class="today-hero__axis" aria-hidden="true">
+            <span>12a</span>
+            <span>6a</span>
+            <span>12p</span>
+            <span>6p</span>
+            <span>11p</span>
+          </div>
+        </ng-container>
+
+        <ng-template #noDay>
+          <div class="today-hero__empty">
+            <mat-icon>bar_chart</mat-icon>
+            <span>{{
+              vm.isToday
+                ? 'No expenses logged today yet.'
+                : 'No expenses on ' + vm.dayLabel + '.'
+            }}</span>
+          </div>
+        </ng-template>
+      </div>
+
+      <button
+        type="button"
+        class="day-nav"
+        (click)="nextDay()"
+        [disabled]="!vm.canGoNext"
+        aria-label="Next day"
+        title="Next day"
+      >
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+  </section>
+
   <div id="expenses-summary" class="expenses-summary-container mt-2 mb-3">
     <div class="expenses-summary-cards">
       <mat-card class="summary-card">
@@ -26,33 +98,6 @@
         </mat-card-header>
       </mat-card>
     </div>
-  </div>
-
-  <div class="date-filter" *ngIf="showCategoryFilter">
-    <form [formGroup]="expensesFilterForm">
-      <mat-form-field appearance="outline" class="date-field">
-        <mat-label>Enter a date range</mat-label>
-        <mat-date-range-input [rangePicker]="picker">
-          <input
-            matStartDate
-            placeholder="Start date"
-            formControlName="startDate"
-            (dateChange)="onStartDateChange($event)"
-          />
-          <input
-            matEndDate
-            placeholder="End date"
-            formControlName="endDate"
-            (dateChange)="onEndDateChange($event)"
-          />
-        </mat-date-range-input>
-        <mat-datepicker-toggle
-          matIconSuffix
-          [for]="picker"
-        ></mat-datepicker-toggle>
-        <mat-date-range-picker #picker></mat-date-range-picker>
-      </mat-form-field>
-    </form>
   </div>
 
   <div class="search-container">
@@ -99,11 +144,6 @@
     </div>
   </div>
 
-  <div class="results-info mb-2" *ngIf="vm.filteredCount !== vm.totalCount">
-    <small class="text-light">
-      Showing {{ vm.filteredCount }} of {{ vm.totalCount }} expenses
-    </small>
-  </div>
 
   <div class="expenses-list">
     <mat-list role="listbox">

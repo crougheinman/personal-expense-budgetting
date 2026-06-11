@@ -1,3 +1,5 @@
+@use 'variables' as *;
+
 .inventory-create {
   .camera-section {
     display: flex;
@@ -41,8 +43,8 @@
   top: 8px;
   right: 8px;
   z-index: 1000;
-  
+
   mat-icon {
-    color: #666;
+    color: $color-text-muted;
   }
 }

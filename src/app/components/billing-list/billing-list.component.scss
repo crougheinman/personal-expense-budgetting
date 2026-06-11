@@ -75,7 +75,7 @@
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    scrollbar-color: color-mix(in srgb, var(--app-text) 28%, transparent) transparent;
 
     &::-webkit-scrollbar {
       height: 4px;

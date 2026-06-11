@@ -1,15 +1,23 @@
 @use 'variables' as *;
 
+// Page action FABs sit in the bottom-right rail. On mobile they must clear the
+// fixed bottom nav bar; on desktop (sidebar on the left) the default offsets
+// are fine.
 .voice-fab {
     position: fixed;
     bottom: 92px;
     right: 24px;
     z-index: 1000;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 14px $color-shadow;
     border-radius: 50%;
     background: $color-surface-2;
     color: $color-accent;
     border: 1px solid $color-accent;
+
+    @media (max-width: 767.98px) {
+        // above the add FAB (which is itself lifted above the bar)
+        bottom: calc(#{$nav-bar-height} + 16px + 56px + 12px + env(safe-area-inset-bottom, 0px));
+    }
 }
 
 .floating-btn{
@@ -17,7 +25,7 @@
     bottom: 24px;
     right: 24px;
     z-index: 1000;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 14px $color-shadow;
     border-radius: 50%;
     background: $color-accent;
     color: $color-accent-on;
@@ -27,4 +35,8 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
+
+    @media (max-width: 767.98px) {
+        bottom: calc(#{$nav-bar-height} + 16px + env(safe-area-inset-bottom, 0px));
+    }
 }

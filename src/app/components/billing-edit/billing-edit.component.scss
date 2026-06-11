@@ -1,10 +1,12 @@
+@use 'variables' as *;
+
 .billing-edit {
   max-width: 600px;
   margin: 0 auto;
 
   h2 {
     margin-bottom: 16px;
-    color: #333;
+    color: $color-text;
     font-weight: 500;
   }
 
@@ -81,7 +83,7 @@ mat-form-field {
 
 // Date picker styling
 .mat-datepicker-toggle {
-  color: #666;
+  color: $color-text-muted;
 }
 
 // Button styling

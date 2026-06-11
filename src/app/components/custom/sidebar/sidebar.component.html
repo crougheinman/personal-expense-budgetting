@@ -1,119 +1,182 @@
 <ng-container *ngIf="vm$ | async as vm">
-  <mat-sidenav-container class="sidenav-container">
-    <mat-sidenav
-      #drawer
-      class="sidenav"
-      fixedInViewport
-      [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
-      [mode]="'over'"
-      [opened]="!(isHandset$ | async) && vm.isAuthenticated"
-    >
-      <mat-toolbar>PEB</mat-toolbar>
-      <mat-divider></mat-divider>
-      <mat-nav-list>
-        <a mat-list-item routerLinkActive="active" routerLink="dashboard">
-          <mat-icon matListItemIcon>dashboard</mat-icon>
-          <span matListItemTitle>Dashboard</span>
-        </a>
-        <a mat-list-item routerLinkActive="active" routerLink="expenses">
-          <mat-icon matListItemIcon>receipt</mat-icon>
-          <span matListItemTitle>Expenses</span>
-        </a>
-        <a mat-list-item routerLinkActive="active" routerLink="billing">
-          <mat-icon matListItemIcon>description</mat-icon>
-          <span matListItemTitle>Bills</span>
-        </a>
-        <a mat-list-item routerLinkActive="active" routerLink="inventory">
-          <mat-icon matListItemIcon>inventory</mat-icon>
-          <span matListItemTitle>Inventory</span>
-        </a>
-        <a mat-list-item routerLinkActive="active" routerLink="settings">
-          <mat-icon matListItemIcon>settings</mat-icon>
-          <span matListItemTitle>Settings</span>
-        </a>
-      </mat-nav-list>
-    </mat-sidenav>
-    <mat-sidenav-content>
-      <mat-toolbar class="main-toolbar" color="primary">
-        <button
-          type="button"
-          aria-label="Toggle sidenav"
-          matIconButton
-          (click)="drawer.toggle()"
-        >
-          <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
-        </button>
-        <span class="spacer"></span>
-        
-        <!-- User Menu Dropdown -->
-        <div *ngIf="vm.user?.photoURL" class="user-menu">
-          <button 
-            mat-icon-button 
-            [matMenuTriggerFor]="userMenu" 
-            class="user-avatar-button"
-            aria-label="User menu"
-          >
-            <mat-avatar class="user-avatar">
-              <img 
-                [src]="vm.user.photoURL" 
-                alt="User Avatar" 
-                style="width:40px; height:40px; border-radius:50%; object-fit:cover;"
-              >
-            </mat-avatar>
-          </button>
-          
-          <mat-menu #userMenu="matMenu" xPosition="before">
-            <div class="user-menu-header" mat-menu-item disabled>
-              <div class="user-info">
-                <mat-avatar class="menu-avatar">
-                  <img 
-                    [src]="vm.user.photoURL" 
-                    alt="User Avatar" 
-                    style="width:32px; height:32px; border-radius:50%; object-fit:cover;"
-                  >
-                </mat-avatar>
-                <div class="user-details">
-                  <div class="user-name text-light">{{ vm.user.displayName || 'User' }}</div>
-                  <div class="user-email">{{ vm.user.email }}</div>
-                </div>
-              </div>
-            </div>
-            
-            <mat-divider></mat-divider>
-            
-            <button mat-menu-item (click)="viewProfile()">
-              <mat-icon>person</mat-icon>
-              <span>Profile</span>
-            </button>
-            
-            <button mat-menu-item (click)="openSettings()">
-              <mat-icon>settings</mat-icon>
-              <span>Settings</span>
-            </button>
-            
-            <mat-divider></mat-divider>
-            
-            <button mat-menu-item (click)="logout()" class="logout-item">
-              <mat-icon>logout</mat-icon>
-              <span>Logout</span>
-            </button>
-          </mat-menu>
-        </div>
+  <!-- Mobile top header: brand + account menu (authenticated only) -->
+  <header class="m-header" *ngIf="vm.isAuthenticated">
+    <span class="brand-mark">PEB</span>
+    <div class="m-header__user">
+      <button
+        *ngIf="theme$ | async as theme"
+        mat-icon-button
+        class="m-theme-toggle"
+        type="button"
+        (click)="toggleTheme()"
+        [attr.aria-pressed]="theme === 'dark'"
+        [attr.aria-label]="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+      >
+        <mat-icon>{{ theme === 'dark' ? 'dark_mode' : 'light_mode' }}</mat-icon>
+      </button>
+      <button
+        *ngIf="vm.user?.photoURL"
+        mat-icon-button
+        [matMenuTriggerFor]="userMenu"
+        class="user-avatar-button"
+        aria-label="Account menu"
+      >
+        <img class="user-avatar" [src]="vm.user.photoURL" alt="" />
+      </button>
+      <button
+        *ngIf="!vm.user?.photoURL"
+        mat-icon-button
+        class="user-avatar-button"
+        (click)="logout()"
+        aria-label="Logout"
+      >
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </header>
 
-        <!-- Fallback logout button if no photo -->
-        <button 
-          *ngIf="vm.isAuthenticated && !vm.user?.photoURL" 
-          matIconButton 
-          aria-label="Logout" 
-          (click)="logout()"
+  <!-- Primary navigation: left sidebar (>=768px) / bottom bar (<768px) -->
+  <nav
+    class="app-nav"
+    role="navigation"
+    aria-label="Primary"
+    *ngIf="vm.isAuthenticated"
+  >
+    <div class="app-nav__brand">PEB</div>
+
+    <ul class="app-nav__items">
+      <li>
+        <a
+          class="nav-item"
+          routerLink="/dashboard/home"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
         >
-          <mat-icon>logout</mat-icon>
-        </button>
-      </mat-toolbar>
-      <!-- Add Content Here -->
-      <div class="main-content">
-        <router-outlet></router-outlet>
+          <mat-icon>dashboard</mat-icon>
+          <span class="nav-label">Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="nav-item"
+          routerLink="/expenses/list"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+        >
+          <mat-icon>receipt_long</mat-icon>
+          <span class="nav-label">Expenses</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="nav-item"
+          routerLink="/billing/list"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+        >
+          <mat-icon>description</mat-icon>
+          <span class="nav-label">Bills</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="nav-item"
+          routerLink="/inventory/list"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+        >
+          <mat-icon>inventory_2</mat-icon>
+          <span class="nav-label">Inventory</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="nav-item"
+          routerLink="/settings/expenses"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+        >
+          <mat-icon>settings</mat-icon>
+          <span class="nav-label">Settings</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Desktop footer: account + theme toggle -->
+    <div class="app-nav__footer">
+      <button
+        *ngIf="vm.user?.photoURL"
+        mat-button
+        class="nav-user"
+        [matMenuTriggerFor]="userMenu"
+        aria-label="Account menu"
+      >
+        <img class="user-avatar" [src]="vm.user.photoURL" alt="" />
+        <span class="nav-user__name">{{ vm.user.displayName || 'User' }}</span>
+      </button>
+      <button
+        *ngIf="!vm.user?.photoURL"
+        mat-button
+        class="nav-user"
+        (click)="logout()"
+      >
+        <mat-icon>logout</mat-icon>
+        <span class="nav-user__name">Logout</span>
+      </button>
+
+      <button
+        *ngIf="theme$ | async as theme"
+        class="theme-toggle"
+        type="button"
+        (click)="toggleTheme()"
+        [attr.aria-pressed]="theme === 'dark'"
+        [attr.aria-label]="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+      >
+        <mat-icon>{{ theme === 'dark' ? 'dark_mode' : 'light_mode' }}</mat-icon>
+        <span>{{ theme === 'dark' ? 'Switch to light' : 'Switch to dark' }}</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Routed content (offsets only applied while the nav chrome is shown) -->
+  <main class="shell-content" [class.is-authed]="vm.isAuthenticated">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Shared account menu (triggered from header + sidebar footer) -->
+  <mat-menu #userMenu="matMenu" xPosition="before">
+    <div class="user-menu-header" mat-menu-item disabled>
+      <div class="user-info">
+        <img
+          *ngIf="vm.user?.photoURL"
+          class="menu-avatar"
+          [src]="vm.user.photoURL"
+          alt=""
+        />
+        <div class="user-details">
+          <div class="user-name">{{ vm.user.displayName || 'User' }}</div>
+          <div class="user-email">{{ vm.user.email }}</div>
+        </div>
       </div>
-    </mat-sidenav-content>
-  </mat-sidenav-container>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <button mat-menu-item (click)="viewProfile()">
+      <mat-icon>person</mat-icon>
+      <span>Profile</span>
+    </button>
+
+    <button mat-menu-item (click)="openSettings()">
+      <mat-icon>settings</mat-icon>
+      <span>Settings</span>
+    </button>
+
+    <mat-divider></mat-divider>
+
+    <button mat-menu-item (click)="logout()" class="logout-item">
+      <mat-icon>logout</mat-icon>
+      <span>Logout</span>
+    </button>
+  </mat-menu>
 </ng-container>

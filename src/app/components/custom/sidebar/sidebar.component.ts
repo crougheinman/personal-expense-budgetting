@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
-import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { BreakpointObserver } from "@angular/cdk/layout";
 import { Observable } from "rxjs";
 import { map, shareReplay } from "rxjs/operators";
-import { AuthService } from "@services";
+import { Router } from "@angular/router";
+import { AuthService, ThemeService, AppTheme } from "@services";
 import { SidebarFacade, SidebarFacadeModel } from "./sidebar-facade";
 
 @Component({
@@ -11,23 +12,34 @@ import { SidebarFacade, SidebarFacadeModel } from "./sidebar-facade";
   styleUrl: "./sidebar.component.scss",
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [SidebarFacade]
+  providers: [SidebarFacade],
 })
 export class SidebarComponent {
   isHandset$: Observable<boolean>;
   vm$: Observable<SidebarFacadeModel>;
+  theme$: Observable<AppTheme>;
 
   constructor(
-    private breakpointObserver: BreakpointObserver, 
+    private breakpointObserver: BreakpointObserver,
     private authService: AuthService,
-    private facade: SidebarFacade,
+    private themeService: ThemeService,
+    private router: Router,
+    private facade: SidebarFacade
   ) {
-    this.isHandset$ = this.breakpointObserver.observe(Breakpoints.Handset).pipe(
-      map((result) => result.matches),
-      shareReplay(),
-    );
+    // Match the 768px CSS breakpoint used for the bottom-bar / sidebar swap.
+    this.isHandset$ = this.breakpointObserver
+      .observe("(max-width: 767.98px)")
+      .pipe(
+        map((result) => result.matches),
+        shareReplay()
+      );
 
     this.vm$ = this.facade.vm$;
+    this.theme$ = this.themeService.theme$;
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggle();
   }
 
   async logout(): Promise<void> {
@@ -36,11 +48,10 @@ export class SidebarComponent {
 
   viewProfile(): void {
     // TODO: Implement profile view functionality
-    console.log('View profile clicked');
+    console.log("View profile clicked");
   }
 
   openSettings(): void {
-    // TODO: Implement settings functionality
-    console.log('Settings clicked');
+    this.router.navigate(["/settings/expenses"]);
   }
 }

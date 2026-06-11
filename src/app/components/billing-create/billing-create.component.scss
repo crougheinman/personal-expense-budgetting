@@ -1,10 +1,12 @@
+@use 'variables' as *;
+
 .billing-create {
   max-width: 600px;
   margin: 0 auto;
 
   h2 {
     margin-bottom: 16px;
-    color: #333;
+    color: $color-text;
     font-weight: 500;
   }
 
@@ -49,9 +51,9 @@
   top: 8px;
   right: 8px;
   z-index: 1000;
-  
+
   mat-icon {
-    color: #666;
+    color: $color-text-muted;
   }
 }
 
@@ -92,5 +94,5 @@ mat-form-field {
 
 // Date picker styling
 .mat-datepicker-toggle {
-  color: #666;
+  color: $color-text-muted;
 }

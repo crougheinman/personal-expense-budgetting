@@ -1,5 +1,16 @@
 import { Injectable } from "@angular/core";
 import { environment } from "@app/environments/environment";
+import { LocalAiService } from "./local-ai.service";
+
+/** Thrown when the cloud Gemini API rejects a request for exceeding its quota. */
+export class GeminiLimitError extends Error {
+  constructor(detail = "") {
+    super(
+      `Gemini usage limit reached.${detail ? " " + detail : ""}`.trim()
+    );
+    this.name = "GeminiLimitError";
+  }
+}
 
 /**
  * Result returned by Gemini after looking at a captured photo of a product.
@@ -45,6 +56,8 @@ const PEBBY_PROMPT =
   providedIn: "root",
 })
 export class GeminiService {
+  constructor(private localAi: LocalAiService) {}
+
   /** True when an API key has been configured in the environment. */
   get isConfigured(): boolean {
     return !!environment.geminiApiKey;
@@ -80,11 +93,20 @@ export class GeminiService {
    * metrics and returns a short, friendly piece of advice.
    */
   async getSpendingReport(summary: string): Promise<string> {
-    const text = await this.generate(
-      [{ text: `${PEBBY_PROMPT}\n\nSpending summary:\n${summary}` }],
-      { temperature: 0.6, maxOutputTokens: 200 }
-    );
-    return text.trim();
+    const prompt = `${PEBBY_PROMPT}\n\nSpending summary:\n${summary}`;
+    try {
+      const text = await this.generate([{ text: prompt }], {
+        temperature: 0.6,
+        maxOutputTokens: 200,
+      });
+      return text.trim();
+    } catch (err) {
+      const local = await this.tryLocal(err, prompt);
+      if (local !== null) {
+        return local.trim();
+      }
+      throw err;
+    }
   }
 
   /**
@@ -117,22 +139,61 @@ export class GeminiService {
       "choose the single best-fitting category from THIS EXACT LIST: " +
       `${allowedCategories.join(", ")}. Use only a value from that list — if ` +
       'nothing fits, use "default". Respond as a JSON array of {id, category}, ' +
-      "one entry per expense, keeping the same id.\n\nExpenses:\n" +
+      "one entry per expense, keeping the same id. Output only the JSON array, " +
+      "with no extra text.\n\nExpenses:\n" +
       JSON.stringify(items);
 
-    const text = await this.generate([{ text: prompt }], {
-      responseMimeType: "application/json",
-      responseSchema: schema,
-      temperature: 0,
-    });
+    let text: string;
+    try {
+      text = await this.generate([{ text: prompt }], {
+        responseMimeType: "application/json",
+        responseSchema: schema,
+        temperature: 0,
+      });
+    } catch (err) {
+      const local = await this.tryLocal(err, prompt);
+      if (local === null) {
+        throw err;
+      }
+      text = local;
+    }
 
-    const parsed = JSON.parse(text);
-    return Array.isArray(parsed) ? parsed : [];
+    try {
+      const parsed = JSON.parse(this.extractJson(text));
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   }
 
   // ---------------------------------------------------------------------------
   // Internal
   // ---------------------------------------------------------------------------
+
+  /**
+   * If the given error is a cloud usage-limit error and an on-device model is
+   * available, runs the prompt locally and returns the text. Returns null when
+   * no local fallback should be used (caller then rethrows the original error).
+   */
+  private async tryLocal(err: unknown, prompt: string): Promise<string | null> {
+    if (!(err instanceof GeminiLimitError)) {
+      return null;
+    }
+    if (!(await this.localAi.isAvailable())) {
+      return null;
+    }
+    try {
+      return await this.localAi.generateText(prompt);
+    } catch {
+      return null;
+    }
+  }
+
+  /** Pulls a JSON payload out of model text that may be wrapped in code fences. */
+  private extractJson(text: string): string {
+    const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    return (fenced ? fenced[1] : text).trim();
+  }
 
   /** Shared call to the Gemini generateContent endpoint; returns the text part. */
   private async generate(parts: any[], generationConfig: any): Promise<string> {
@@ -159,6 +220,9 @@ export class GeminiService {
 
     if (!response.ok) {
       const detail = await this.readError(response);
+      if (response.status === 429) {
+        throw new GeminiLimitError(detail);
+      }
       throw new Error(`Gemini request failed (${response.status}). ${detail}`);
     }
 

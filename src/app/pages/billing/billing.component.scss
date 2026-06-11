@@ -5,7 +5,7 @@
     bottom: 24px;
     right: 24px;
     z-index: 1000;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 14px $color-shadow;
     border-radius: 50%;
     background: $color-accent;
     color: $color-accent-on;
@@ -15,4 +15,8 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
+
+    @media (max-width: 767.98px) {
+        bottom: calc(#{$nav-bar-height} + 16px + env(safe-area-inset-bottom, 0px));
+    }
 }
