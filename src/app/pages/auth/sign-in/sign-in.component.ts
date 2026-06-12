@@ -15,11 +15,16 @@ export class SignInComponent implements OnInit {
   vm$: Observable<SignInFacadeModel>;
   authform!: FormGroup;
   auth = inject(Auth);
+  /** "signin" logs into an existing account; "register" creates one. */
+  mode: "signin" | "register" = "signin";
 
   constructor(private facade: SignInFacade) {
     this.authform = new FormGroup({
-      email: new FormControl("", Validators.required),
-      password: new FormControl("", Validators.required),
+      email: new FormControl("", [Validators.required, Validators.email]),
+      password: new FormControl("", [
+        Validators.required,
+        Validators.minLength(6),
+      ]),
     });
 
     this.vm$ = this.facade.vm$;
@@ -30,9 +35,21 @@ export class SignInComponent implements OnInit {
     this.facade.handleRedirectResult();
   }
 
-  async onSignIn(): Promise<void> {
+  toggleMode(): void {
+    this.mode = this.mode === "signin" ? "register" : "signin";
+  }
+
+  async onSubmit(): Promise<void> {
+    if (this.authform.invalid) {
+      this.authform.markAllAsTouched();
+      return;
+    }
     const { email, password } = this.authform.value;
-    await this.facade.signInWithEmail(email, password);
+    if (this.mode === "register") {
+      await this.facade.registerWithEmail(email, password);
+    } else {
+      await this.facade.signInWithEmail(email, password);
+    }
   }
 
   async onSignInWithGoogle(): Promise<void> {

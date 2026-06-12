@@ -268,7 +268,8 @@ export class GeminiService {
   async scanReceipt(
     base64: string,
     mimeType: string,
-    categories: string[]
+    categories: string[],
+    onProvider?: (name: string) => void
   ): Promise<ReceiptScanResult> {
     const schema = {
       type: "OBJECT",
@@ -316,7 +317,8 @@ export class GeminiService {
         responseMimeType: "application/json",
         responseSchema: schema,
         temperature: 0,
-      }
+      },
+      onProvider
     );
 
     return this.normalizeReceipt(JSON.parse(this.extractJson(text)));
@@ -385,16 +387,22 @@ export class GeminiService {
    * Groq). A Gemini *quota* failure is re-raised when every fallback also fails,
    * so text callers can still drop to the on-device model via tryLocal().
    */
-  private async generate(parts: any[], generationConfig: any): Promise<string> {
+  private async generate(
+    parts: any[],
+    generationConfig: any,
+    onProvider?: (name: string) => void
+  ): Promise<string> {
     try {
+      onProvider?.("Gemini");
       return await this.generateGemini(parts, generationConfig);
     } catch (err) {
       let lastErr: unknown = err;
       for (const fallback of this.fallbackProviders()) {
         try {
-          return await fallback(parts, generationConfig);
+          onProvider?.(fallback.name);
+          return await fallback.run(parts, generationConfig);
         } catch (fbErr) {
-          console.warn("AI fallback failed:", fbErr);
+          console.warn(`AI fallback (${fallback.name}) failed:`, fbErr);
           lastErr = fbErr;
         }
       }
@@ -406,19 +414,23 @@ export class GeminiService {
     }
   }
 
-  /** Configured cloud fallbacks, in priority order. */
-  private fallbackProviders(): Array<
-    (parts: any[], cfg: any) => Promise<string>
-  > {
-    const providers: Array<(parts: any[], cfg: any) => Promise<string>> = [];
+  /** Configured cloud fallbacks, in priority order (named for UI progress). */
+  private fallbackProviders(): Array<{
+    name: string;
+    run: (parts: any[], cfg: any) => Promise<string>;
+  }> {
+    const providers: Array<{
+      name: string;
+      run: (parts: any[], cfg: any) => Promise<string>;
+    }> = [];
     if (this.openRouterConfigured) {
-      providers.push((p, c) => this.generateOpenRouter(p, c));
+      providers.push({ name: "OpenRouter", run: (p, c) => this.generateOpenRouter(p, c) });
     }
     if (this.groqConfigured) {
-      providers.push((p, c) => this.generateGroq(p, c));
+      providers.push({ name: "Groq", run: (p, c) => this.generateGroq(p, c) });
     }
     if (this.nvidiaConfigured) {
-      providers.push((p, c) => this.generateNvidia(p, c));
+      providers.push({ name: "NVIDIA", run: (p, c) => this.generateNvidia(p, c) });
     }
     return providers;
   }

@@ -32,9 +32,16 @@
           <div class="today-hero__chart">
             <div
               class="hour-bar"
+              [class.active]="activeHour === bar.hour"
               *ngFor="let bar of vm.hourly"
-              [title]="formatHour(bar.hour) + ' — ' + (bar.amount | currency : 'PHP' : 'symbol' : '1.0-0')"
+              (mouseenter)="onBarEnter(bar.hour)"
+              (mouseleave)="onBarLeave()"
+              (click)="onBarToggle(bar.hour)"
             >
+              <div class="hour-bar__tip" *ngIf="activeHour === bar.hour">
+                <strong>{{ bar.amount | currency : "PHP" : "symbol" : "1.2-2" }}</strong>
+                <span>{{ formatHour(bar.hour) }}</span>
+              </div>
               <div class="hour-bar__track">
                 <div class="hour-bar__fill" [style.height.%]="bar.height"></div>
               </div>

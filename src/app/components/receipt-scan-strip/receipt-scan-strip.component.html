@@ -1,0 +1,21 @@
+<div
+  class="rs-strip"
+  *ngIf="showStrip"
+  (click)="reopen()"
+  (keydown.enter)="reopen()"
+  role="button"
+  tabindex="0"
+  aria-label="Receipt scanning in progress — tap to view"
+>
+  <span class="rs-strip__shimmer" aria-hidden="true"></span>
+  <mat-icon class="rs-strip__icon">document_scanner</mat-icon>
+  <div class="rs-strip__text">
+    <span class="rs-strip__title">Processing receipt…</span>
+    <span class="rs-strip__sub">{{ state.fileName || 'Reading with AI' }}</span>
+  </div>
+  <mat-progress-spinner
+    diameter="20"
+    mode="indeterminate"
+    class="rs-strip__spinner"
+  ></mat-progress-spinner>
+</div>

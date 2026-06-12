@@ -2,6 +2,8 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  OnDestroy,
+  OnInit,
 } from "@angular/core";
 import {
   FormArray,
@@ -10,26 +12,19 @@ import {
   Validators,
 } from "@angular/forms";
 import { MatDialogRef } from "@angular/material/dialog";
+import { Subscription } from "rxjs";
 import moment from "moment";
 import { EXPENSE_CATEGORIES } from "@models";
-import { GeminiLimitError, ReceiptScanResult } from "@services";
+import { ReceiptScanService, ReceiptScanState } from "@services";
 import { ReceiptScannerFacade } from "./receipt-scanner.facade";
 
-type ReceiptStatus =
+type ReceiptView =
   | "upload"
   | "processing"
   | "review"
   | "empty"
   | "saving"
   | "error";
-
-const ACCEPTED_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-  "application/pdf",
-];
 
 @Component({
   selector: "app-receipt-scanner",
@@ -39,47 +34,155 @@ const ACCEPTED_TYPES = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [ReceiptScannerFacade],
 })
-export class ReceiptScannerComponent {
-  status: ReceiptStatus = "upload";
-  previewUrl: string | null = null;
-  isPdf = false;
-  fileName = "";
-  errorMessage = "";
+export class ReceiptScannerComponent implements OnInit, OnDestroy {
+  state: ReceiptScanState;
+  saving = false;
   isDragging = false;
   zoomed = false;
   bulkCategory = "";
 
   readonly categories = EXPENSE_CATEGORIES;
-
   form: FormGroup;
+
+  // Robot animation: which provider's robot is on screen + swap phase.
+  displayProvider = "";
+  robotPhase: "idle" | "out" | "in" = "idle";
+
+  private sub?: Subscription;
+  private swapTimers: ReturnType<typeof setTimeout>[] = [];
 
   constructor(
     private fb: FormBuilder,
     private facade: ReceiptScannerFacade,
+    private scanService: ReceiptScanService,
     private dialogRef: MatDialogRef<ReceiptScannerComponent>,
     private cdr: ChangeDetectorRef
   ) {
     this.form = this.fb.group({ items: this.fb.array([]) });
+    this.state = this.scanService.snapshot;
+  }
+
+  ngOnInit(): void {
+    this.scanService.setDialogOpen(true);
+    this.sub = this.scanService.state.subscribe((s) => {
+      this.state = s;
+      if (s.status === "ready" && s.result && this.itemsArray.length === 0) {
+        this.buildForm();
+      }
+      if (s.status === "idle") {
+        this.itemsArray.clear();
+      }
+      this.syncRobot(s);
+      this.cdr.detectChanges();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+    this.clearSwapTimers();
+    this.scanService.setDialogOpen(false);
+  }
+
+  /** CSS tint class for the current robot (per provider). */
+  get robotClass(): string {
+    return "rp-" + (this.displayProvider || "Gemini").toLowerCase();
+  }
+
+  /** Swaps robots when the active provider changes: collapse old, enter new. */
+  private syncRobot(s: ReceiptScanState): void {
+    if (s.status !== "processing") {
+      if (s.status === "idle") {
+        this.displayProvider = "";
+        this.robotPhase = "idle";
+      }
+      return;
+    }
+    const provider = s.activeProvider;
+    if (!provider || provider === this.displayProvider) {
+      return;
+    }
+    this.clearSwapTimers();
+
+    if (!this.displayProvider) {
+      // First robot walks in.
+      this.displayProvider = provider;
+      this.robotPhase = "in";
+      this.after(520, () => (this.robotPhase = "idle"));
+      return;
+    }
+
+    // Hand-off: collapse the current robot, then bring the next one in.
+    this.robotPhase = "out";
+    this.after(460, () => {
+      this.displayProvider = provider;
+      this.robotPhase = "in";
+      this.after(520, () => (this.robotPhase = "idle"));
+    });
+  }
+
+  private after(ms: number, fn: () => void): void {
+    this.swapTimers.push(
+      setTimeout(() => {
+        fn();
+        this.cdr.detectChanges();
+      }, ms)
+    );
+  }
+
+  private clearSwapTimers(): void {
+    this.swapTimers.forEach((t) => clearTimeout(t));
+    this.swapTimers = [];
+  }
+
+  // ---- Derived view ----
+  get view(): ReceiptView {
+    if (this.saving) {
+      return "saving";
+    }
+    switch (this.state.status) {
+      case "idle":
+        return "upload";
+      case "processing":
+        return "processing";
+      case "ready":
+        return "review";
+      case "empty":
+        return "empty";
+      default:
+        return "error";
+    }
   }
 
   get geminiConfigured(): boolean {
     return this.facade.geminiConfigured;
   }
 
+  get previewUrl(): string | null {
+    return this.state.previewUrl;
+  }
+  get isPdf(): boolean {
+    return this.state.isPdf;
+  }
+  get fileName(): string {
+    return this.state.fileName;
+  }
+  get errorMessage(): string {
+    return this.state.errorMessage;
+  }
+
   get itemsArray(): FormArray {
     return this.form.get("items") as FormArray;
   }
-
   get itemControls(): FormGroup[] {
     return this.itemsArray.controls as FormGroup[];
   }
 
-  // ---- File input ----------------------------------------------------------
+  // ---- File input ----
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) {
-      this.handleFile(file);
+      this.scanService.startScan(file);
     }
     input.value = "";
   }
@@ -103,80 +206,21 @@ export class ReceiptScannerComponent {
     this.isDragging = false;
     const file = event.dataTransfer?.files?.[0];
     if (file) {
-      this.handleFile(file);
-    } else {
-      this.cdr.detectChanges();
+      this.scanService.startScan(file);
     }
-  }
-
-  private async handleFile(file: File): Promise<void> {
-    if (!ACCEPTED_TYPES.includes(file.type)) {
-      this.fail("Please upload a JPEG, PNG, or PDF receipt.");
-      return;
-    }
-    if (!this.geminiConfigured) {
-      this.fail("Add a Google Gemini API key to scan receipts.");
-      return;
-    }
-
-    let read: { base64: string; dataUrl: string };
-    try {
-      read = await this.readFile(file);
-    } catch {
-      this.fail("Could not read the file.");
-      return;
-    }
-
-    this.fileName = file.name;
-    this.isPdf = file.type === "application/pdf";
-    this.previewUrl = read.dataUrl;
-    this.zoomed = false;
-    this.errorMessage = "";
-    this.status = "processing";
     this.cdr.detectChanges();
+  }
 
-    try {
-      const result = await this.facade.scan(read.base64, file.type);
-      this.buildForm(result);
-      this.status = this.itemControls.length > 0 ? "review" : "empty";
-    } catch (err) {
-      this.status = "error";
-      this.errorMessage = this.describeScanError(err);
-    } finally {
-      this.cdr.detectChanges();
+  /** Hide the dialog but keep the scan running in the background. */
+  minimize(): void {
+    this.dialogRef.close("minimized");
+  }
+
+  private buildForm(): void {
+    const result = this.state.result;
+    if (!result) {
+      return;
     }
-  }
-
-  /**
-   * Turns a scan failure into a clear, user-facing message. The on-device model
-   * is text-only, so it can't read a receipt image — there's no local backup for
-   * scanning, and we say so honestly when the cloud quota is exhausted.
-   */
-  private describeScanError(err: unknown): string {
-    if (err instanceof GeminiLimitError) {
-      return (
-        "The AI scanning service is over its usage limit right now. Receipt " +
-        "scanning needs to read the image, which the on-device AI can't do, so " +
-        "there's no offline backup for it. Please wait a minute and try again — " +
-        "or add the items manually."
-      );
-    }
-    return err instanceof Error ? err.message : "Could not read the receipt.";
-  }
-
-  private readFile(file: File): Promise<{ base64: string; dataUrl: string }> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        resolve({ dataUrl, base64: dataUrl.split(",")[1] ?? "" });
-      };
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(file);
-    });
-  }
-
-  private buildForm(result: ReceiptScanResult): void {
     const fallbackDate = result.date || moment().format("YYYY-MM-DD");
     this.itemsArray.clear();
     for (const item of result.items) {
@@ -193,7 +237,7 @@ export class ReceiptScannerComponent {
     }
   }
 
-  // ---- Review interactions -------------------------------------------------
+  // ---- Review interactions ----
   isUncertain(group: FormGroup, field: string): boolean {
     const flags = group.get("uncertain")?.value as string[] | undefined;
     return !!flags && flags.includes(field);
@@ -233,7 +277,6 @@ export class ReceiptScannerComponent {
   }
 
   onRowSelectChange(): void {
-    // checkbox CVA already updated the model; refresh footer totals.
     this.cdr.detectChanges();
   }
 
@@ -251,7 +294,7 @@ export class ReceiptScannerComponent {
     this.cdr.detectChanges();
   }
 
-  // ---- Save / close --------------------------------------------------------
+  // ---- Save / close ----
   async bulkAdd(): Promise<void> {
     const selected = this.itemControls.filter((g) => g.get("selected")?.value);
     if (selected.length === 0) {
@@ -266,7 +309,7 @@ export class ReceiptScannerComponent {
       return;
     }
 
-    this.status = "saving";
+    this.saving = true;
     this.cdr.detectChanges();
     try {
       const items = selected.map((g) => ({
@@ -276,23 +319,21 @@ export class ReceiptScannerComponent {
         date: g.get("date")?.value || null,
       }));
       const count = await this.facade.bulkAdd(items);
+      this.scanService.reset();
       this.dialogRef.close(count);
     } catch {
-      this.status = "review";
-      this.errorMessage = "Failed to add the expenses. Please try again.";
+      this.saving = false;
+      this.scanService.setError("Failed to add the expenses. Please try again.");
       this.cdr.detectChanges();
     }
   }
 
+  /** Discard the current scan and return to the upload step. */
   reset(): void {
     this.itemsArray.clear();
-    this.previewUrl = null;
-    this.isPdf = false;
-    this.fileName = "";
-    this.errorMessage = "";
     this.bulkCategory = "";
     this.zoomed = false;
-    this.status = "upload";
+    this.scanService.reset();
     this.cdr.detectChanges();
   }
 
@@ -300,13 +341,9 @@ export class ReceiptScannerComponent {
     this.zoomed = !this.zoomed;
   }
 
+  /** Cancel: discard the scan and close. */
   close(): void {
+    this.scanService.reset();
     this.dialogRef.close();
-  }
-
-  private fail(message: string): void {
-    this.status = "error";
-    this.errorMessage = message;
-    this.cdr.detectChanges();
   }
 }

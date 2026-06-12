@@ -153,6 +153,21 @@ export class ExpensesListComponent {
     return `${h} ${period}`;
   }
 
+  /** Hour (0-23) whose bar tooltip is currently shown, or null. */
+  activeHour: number | null = null;
+
+  onBarEnter(hour: number): void {
+    this.activeHour = hour;
+  }
+
+  onBarLeave(): void {
+    this.activeHour = null;
+  }
+
+  onBarToggle(hour: number): void {
+    this.activeHour = this.activeHour === hour ? null : hour;
+  }
+
   previousDay(): void {
     this.facade.previousDay();
   }

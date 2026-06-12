@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
 import {
   Auth,
-  AuthErrorCodes,
   GoogleAuthProvider,
+  createUserWithEmailAndPassword,
   getRedirectResult,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -69,30 +69,47 @@ export class SignInFacade {
       this.router.navigate(["/expenses/list"]);
     } catch (error: any) {
       console.error("Sign-in error:", error);
-      if (error.message.includes(AuthErrorCodes.USER_DELETED)) {
-        this.errorMessage$.next("User not found. Please check your email.");
-      }
-      if (error.message.includes(AuthErrorCodes.INVALID_PASSWORD)) {
-        this.errorMessage$.next("Invalid password. Please try again.");
-      }
-      if (error.message.includes(AuthErrorCodes.TOO_MANY_ATTEMPTS_TRY_LATER)) {
-        this.errorMessage$.next("Too many attempts. Please try again later.");
-      }
-      if (error.message.includes(AuthErrorCodes.OPERATION_NOT_ALLOWED)) {
-        this.errorMessage$.next(
-          "Operation not allowed. Please contact support."
-        );
-      }
-      if (error.message.includes(AuthErrorCodes.INTERNAL_ERROR)) {
-        this.errorMessage$.next("Internal error. Please try again later.");
-      }
-      if (error.message.includes(AuthErrorCodes.INVALID_EMAIL)) {
-        this.errorMessage$.next(
-          "Invalid email format. Please check your email."
-        );
-      }
+      this.errorMessage$.next(this.emailErrorMessage(error));
     } finally {
       this.isLoading$.next(false);
+    }
+  }
+
+  /** Creates a new email/password account, then signs the user in. */
+  async registerWithEmail(email: string, password: string): Promise<void> {
+    this.errorMessage$.next(null);
+    this.isLoading$.next(true);
+    try {
+      await createUserWithEmailAndPassword(this.auth, email, password);
+      this.router.navigate(["/expenses/list"]);
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      this.errorMessage$.next(this.emailErrorMessage(error));
+    } finally {
+      this.isLoading$.next(false);
+    }
+  }
+
+  private emailErrorMessage(error: any): string {
+    switch (error?.code ?? "") {
+      case "auth/invalid-credential":
+      case "auth/wrong-password":
+      case "auth/user-not-found":
+        return "Incorrect email or password.";
+      case "auth/invalid-email":
+        return "Please enter a valid email address.";
+      case "auth/email-already-in-use":
+        return "An account with this email already exists — try signing in.";
+      case "auth/weak-password":
+        return "Password must be at least 6 characters.";
+      case "auth/too-many-requests":
+        return "Too many attempts. Please try again later.";
+      case "auth/operation-not-allowed":
+        return "Email/password sign-in is not enabled for this project.";
+      case "auth/network-request-failed":
+        return "Network error. Check your connection and try again.";
+      default:
+        return "Authentication failed. Please try again.";
     }
   }
 

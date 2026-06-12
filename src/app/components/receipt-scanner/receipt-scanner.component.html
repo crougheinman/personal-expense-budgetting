@@ -17,7 +17,7 @@
     <!-- STEP 1: Upload -->
     <div
       class="rs-upload"
-      *ngIf="status === 'upload'"
+      *ngIf="view === 'upload'"
       [class.dragging]="isDragging"
       (dragover)="onDragOver($event)"
       (dragleave)="onDragLeave($event)"
@@ -48,14 +48,64 @@
     </div>
 
     <!-- Processing -->
-    <div class="rs-status" *ngIf="status === 'processing'">
-      <mat-progress-spinner mode="indeterminate" diameter="52"></mat-progress-spinner>
-      <p>Reading your receipt with AI…</p>
+    <div class="rs-status" *ngIf="view === 'processing'">
+      <div
+        class="rs-robot-wrap"
+        [ngClass]="robotClass"
+        [class.is-out]="robotPhase === 'out'"
+        [class.is-in]="robotPhase === 'in'"
+      >
+        <svg class="rs-robot" viewBox="0 0 160 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g class="rs-robot__bob">
+            <!-- shadow -->
+            <ellipse class="rs-robot__shadow" cx="80" cy="138" rx="34" ry="6" />
+            <!-- antenna -->
+            <line class="rs-robot__stalk" x1="80" y1="36" x2="80" y2="22" />
+            <circle class="rs-robot__bulb" cx="80" cy="18" r="5" />
+            <!-- head -->
+            <rect class="rs-robot__head" x="50" y="36" width="60" height="40" rx="12" />
+            <circle class="rs-robot__eye" cx="68" cy="56" r="5.5" />
+            <circle class="rs-robot__eye" cx="92" cy="56" r="5.5" />
+            <!-- body -->
+            <rect class="rs-robot__body" x="48" y="78" width="64" height="46" rx="14" />
+            <rect class="rs-robot__panel" x="62" y="92" width="36" height="18" rx="5" />
+            <!-- scratching arm (puzzled) -->
+            <g class="rs-robot__scratch">
+              <line class="rs-robot__arm" x1="106" y1="84" x2="104" y2="50" />
+              <circle class="rs-robot__hand" cx="104" cy="46" r="6" />
+            </g>
+            <!-- arm holding the magnifier, scanning -->
+            <g class="rs-robot__mag">
+              <line class="rs-robot__arm" x1="54" y1="92" x2="34" y2="104" />
+              <circle class="rs-robot__lens-ring" cx="30" cy="100" r="13" />
+              <circle class="rs-robot__lens" cx="30" cy="100" r="9" />
+              <line class="rs-robot__lens-handle" x1="39" y1="109" x2="48" y2="118" />
+            </g>
+          </g>
+        </svg>
+      </div>
+
+      <p class="rs-robot__label">Scanning with <strong>{{ displayProvider || 'Gemini' }}</strong>…</p>
+      <small *ngIf="displayProvider && displayProvider !== 'Gemini'" class="rs-robot__handoff">
+        Previous model was busy — {{ displayProvider }} took over.
+      </small>
       <small>{{ fileName }}</small>
+      <button
+        type="button"
+        mat-stroked-button
+        class="rs-minimize"
+        (click)="minimize()"
+      >
+        <mat-icon>minimize</mat-icon> Minimize &amp; keep working
+      </button>
+      <small class="rs-minimize__hint">
+        Scanning continues in the background — we'll pop the result up when it's
+        ready.
+      </small>
     </div>
 
     <!-- Error -->
-    <div class="rs-status rs-status--error" *ngIf="status === 'error'">
+    <div class="rs-status rs-status--error" *ngIf="view === 'error'">
       <mat-icon>error_outline</mat-icon>
       <p>{{ errorMessage }}</p>
       <button type="button" mat-stroked-button (click)="reset()">
@@ -64,7 +114,7 @@
     </div>
 
     <!-- No items -->
-    <div class="rs-status" *ngIf="status === 'empty'">
+    <div class="rs-status" *ngIf="view === 'empty'">
       <mat-icon>receipt_long</mat-icon>
       <p>No line items were found on this receipt.</p>
       <button type="button" mat-stroked-button (click)="reset()">
@@ -73,7 +123,7 @@
     </div>
 
     <!-- STEP 2: Review split-view -->
-    <div class="rs-review" *ngIf="status === 'review' || status === 'saving'">
+    <div class="rs-review" *ngIf="view === 'review' || view === 'saving'">
       <!-- Receipt preview -->
       <div class="rs-preview">
         <div class="rs-preview__scroll">
@@ -201,7 +251,7 @@
   </div>
 
   <!-- STEP 3: Sticky action footer -->
-  <div class="rs-footer" *ngIf="status === 'review' || status === 'saving'">
+  <div class="rs-footer" *ngIf="view === 'review' || view === 'saving'">
     <div class="rs-footer__total">
       <span class="rs-footer__total-label">Selected total</span>
       <span class="rs-footer__total-value">{{
@@ -213,7 +263,7 @@
         type="button"
         mat-stroked-button
         (click)="close()"
-        [disabled]="status === 'saving'"
+        [disabled]="view === 'saving'"
       >
         Cancel
       </button>
@@ -223,16 +273,16 @@
         color="primary"
         class="rs-add"
         (click)="bulkAdd()"
-        [disabled]="status === 'saving' || selectedCount === 0"
+        [disabled]="view === 'saving' || selectedCount === 0"
       >
         <mat-progress-spinner
-          *ngIf="status === 'saving'"
+          *ngIf="view === 'saving'"
           diameter="18"
           mode="indeterminate"
         ></mat-progress-spinner>
-        <mat-icon *ngIf="status !== 'saving'">playlist_add_check</mat-icon>
+        <mat-icon *ngIf="view !== 'saving'">playlist_add_check</mat-icon>
         {{
-          status === 'saving'
+          view === 'saving'
             ? 'Adding…'
             : 'Bulk Add Selected (' + selectedCount + ')'
         }}

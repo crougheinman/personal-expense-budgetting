@@ -19,6 +19,7 @@ import { InventoryListComponent } from "./inventory-list/inventory-list.componen
 import { InventoryEditComponent } from "./inventory-edit/inventory-edit.component";
 import { VoiceExpenseComponent } from "./voice-expense/voice-expense.component";
 import { ReceiptScannerComponent } from "./receipt-scanner/receipt-scanner.component";
+import { ReceiptScanStripComponent } from "./receipt-scan-strip/receipt-scan-strip.component";
 import { SwipeToDeleteDirective } from "./shared/swipe-to-delete.directive";
 import { MaterialModule } from "../shared/material.module";
 
@@ -39,6 +40,7 @@ import { MaterialModule } from "../shared/material.module";
     ProductScanner,
     VoiceExpenseComponent,
     ReceiptScannerComponent,
+    ReceiptScanStripComponent,
     SwipeToDeleteDirective,
   ],
   imports: [
@@ -60,6 +62,7 @@ import { MaterialModule } from "../shared/material.module";
     InventoryListComponent,
     InventoryEditComponent,
     SidebarComponent,
+    ReceiptScanStripComponent,
     SwipeToDeleteDirective,
     AsyncPipe,
     CommonModule,

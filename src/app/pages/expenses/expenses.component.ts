@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { DialogService } from '@services';
+import { DialogService, ReceiptScanService } from '@services';
 import { ExpensesCreateComponent, VoiceExpenseComponent, ReceiptScannerComponent } from '@app/components';
 
 @Component({
@@ -14,7 +14,10 @@ export class ExpensesComponent {
   /** Whether the speed-dial actions are expanded. */
   fabOpen = false;
 
-  constructor(private dialogService: DialogService) {}
+  constructor(
+    private dialogService: DialogService,
+    private scanService: ReceiptScanService,
+  ) {}
 
   toggleFab(): void {
     this.fabOpen = !this.fabOpen;
@@ -55,6 +58,11 @@ export class ExpensesComponent {
   }
 
   openReceiptScanner(): void {
+    // A scan dialog is already mounted (or reopening a background one): the
+    // service-backed dialog shows the live state, so never stack a second.
+    if (this.scanService.dialogOpen) {
+      return;
+    }
     this.dialogService.open(ReceiptScannerComponent, {
       width: '940px',
       height: '88vh',
