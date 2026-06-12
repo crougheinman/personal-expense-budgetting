@@ -8,7 +8,6 @@ import { Timestamp } from "firebase/firestore";
 import { query, where } from "firebase/firestore";
 import moment from "moment";
 import { ExpensesService } from "@app/services";
-import { groupBy, mapValues } from "lodash";
 import { sortByNumericPropertiesAsc } from "@app/shared/utils";
 
 export interface BillingListFacadeModel {
@@ -61,7 +60,14 @@ export class BillingListFacade {
 
         filteredItems = sortByNumericPropertiesAsc(filteredItems, 'dueDay');
 
-        const billingExpenseMap: Record<string, Expense> | null = mapValues(groupBy(billingExpenses, 'billingId'), expenses => expenses[0]);
+        // First paying expense per billingId (replaces lodash groupBy+mapValues).
+        const billingExpenseMap: Record<string, Expense> = {};
+        for (const expense of billingExpenses) {
+          const key = (expense as any).billingId;
+          if (key != null && !(key in billingExpenseMap)) {
+            billingExpenseMap[key] = expense;
+          }
+        }
         
         // Calculate total amount of all bills
         const totalAmount = billingItems.reduce((sum, item) => sum + (item.price || 0), 0);
