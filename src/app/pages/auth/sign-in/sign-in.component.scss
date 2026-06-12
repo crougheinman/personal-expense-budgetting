@@ -1,0 +1,13 @@
+@use 'variables' as *;
+
+.auth-error {
+  max-width: 320px;
+  margin: 14px auto 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--app-error) 14%, transparent);
+  border: 1px solid $color-error;
+  color: $color-error;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}

@@ -84,11 +84,10 @@ export class VoiceExpenseComponent implements OnInit, OnDestroy {
     };
 
     this.recognition.onerror = (event: any) => {
+      // Log the full event so the real cause is visible in the console.
+      console.error("SpeechRecognition error:", event?.error, event);
       this.status = "error";
-      this.errorMessage =
-        event.error === "not-allowed" || event.error === "service-not-allowed"
-          ? "Microphone permission was denied."
-          : "Couldn't capture audio. Please try again.";
+      this.errorMessage = this.describeRecognitionError(event?.error);
       this.cdr.detectChanges();
     };
 
@@ -164,6 +163,38 @@ export class VoiceExpenseComponent implements OnInit, OnDestroy {
         : "I didn't hear anything. Tap the mic and try again.";
     }
     this.cdr.detectChanges();
+  }
+
+  /** Maps a SpeechRecognition error code to a clear message (code included). */
+  private describeRecognitionError(code: string): string {
+    const insecure =
+      typeof window !== "undefined" && window.isSecureContext === false;
+    switch (code) {
+      case "not-allowed":
+      case "service-not-allowed": {
+        let msg =
+          "Microphone access was blocked for voice input. Allow the microphone " +
+          "in your browser's site settings (the mic/lock icon in the address bar) " +
+          "and try again.";
+        if (insecure) {
+          msg +=
+            " Note: this page is on an insecure (http) address — some browsers " +
+            "block voice there, so the https:// site is more reliable.";
+        }
+        return msg;
+      }
+      case "audio-capture":
+        return "No microphone was found. Check that a mic is connected and enabled.";
+      case "no-speech":
+        return "I didn't hear anything. Tap the mic and try again.";
+      case "network":
+        return "Speech recognition couldn't reach its online service. Check your " +
+          "connection and try again.";
+      case "aborted":
+        return "Listening was cancelled. Tap the mic to try again.";
+      default:
+        return `Couldn't capture audio (${code || "unknown error"}). Please try again.`;
+    }
   }
 
   /** Extracts a product name and price from a spoken phrase like "Coffee 150". */

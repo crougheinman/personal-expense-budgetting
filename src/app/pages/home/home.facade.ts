@@ -5,6 +5,7 @@ import { Expense, User } from "@models";
 import { Store } from "@ngrx/store";
 import {
   BehaviorSubject,
+  combineLatest,
   debounceTime,
   distinctUntilChanged,
   firstValueFrom,
@@ -35,14 +36,36 @@ export interface CategorySlice {
   pct: number; // 0-100, share of total
 }
 
+export type StatGranularity = "daily" | "weekly" | "monthly";
+
+export interface StatPoint {
+  label: string;
+  amount: number;
+}
+
+export interface StatsView {
+  granularity: StatGranularity;
+  points: StatPoint[];
+  total: number;
+  peakIndex: number; // index of the highest point (highlighted on the chart)
+  breakdown: CategorySlice[];
+}
+
 export interface HomeFacadeModel {
   user?: User;
-  totalSpent: number;
-  thisMonth: number;
-  transactionCount: number;
-  averageAmount: number;
+  // Scope is capped at the current year; metrics below the year total are for
+  // the selected month (navigable with prev/next, within the current year).
+  thisYear: number;
+  monthSpent: number;
+  monthCount: number;
+  monthAverage: number;
+  monthLabel: string;
+  isCurrentMonth: boolean;
+  canPrevMonth: boolean;
+  canNextMonth: boolean;
   monthly: MonthlyPoint[];
   topCategories: CategorySlice[];
+  stats: StatsView;
   hasData: boolean;
 }
 
@@ -59,12 +82,23 @@ export interface PebbyReport {
 }
 
 const emptyAnalytics = {
-  totalSpent: 0,
-  thisMonth: 0,
-  transactionCount: 0,
-  averageAmount: 0,
+  thisYear: 0,
+  monthSpent: 0,
+  monthCount: 0,
+  monthAverage: 0,
+  monthLabel: moment().format("MMMM YYYY"),
+  isCurrentMonth: true,
+  canPrevMonth: moment().month() > 0,
+  canNextMonth: false,
   monthly: [] as MonthlyPoint[],
   topCategories: [] as CategorySlice[],
+  stats: {
+    granularity: "daily" as StatGranularity,
+    points: [] as StatPoint[],
+    total: 0,
+    peakIndex: 0,
+    breakdown: [] as CategorySlice[],
+  },
   hasData: false,
 };
 
@@ -83,6 +117,13 @@ export class HomeFacade implements OnDestroy {
   });
   /** Pebby's AI spending report (cached up to an hour; refresh() forces a new one). */
   pebby$ = this.pebbySubject.asObservable();
+
+  // Selected month relative to now: 0 = this month, -1 = last month. Never
+  // positive (no future), never before January of the current year.
+  private monthOffset$ = new BehaviorSubject<number>(0);
+
+  // Statistics-card granularity (Daily / Weekly / Monthly).
+  private granularity$ = new BehaviorSubject<StatGranularity>("daily");
 
   private autoSub?: Subscription;
   private readonly isBrowser: boolean;
@@ -106,9 +147,9 @@ export class HomeFacade implements OnDestroy {
       .pipe(
         distinctUntilChanged(
           (a, b) =>
-            a.totalSpent === b.totalSpent &&
-            a.thisMonth === b.thisMonth &&
-            a.transactionCount === b.transactionCount
+            a.thisYear === b.thisYear &&
+            a.monthSpent === b.monthSpent &&
+            a.monthCount === b.monthCount
         ),
         debounceTime(500)
       )
@@ -124,16 +165,44 @@ export class HomeFacade implements OnDestroy {
     firstValueFrom(this.vm$).then((vm) => this.loadPebby(vm, true));
   }
 
+  /** Step to the previous month (not before January of the current year). */
+  previousMonth(): void {
+    const min = -moment().month(); // months back to January
+    this.monthOffset$.next(Math.max(min, this.monthOffset$.value - 1));
+  }
+
+  /** Step to the next month (never into the future). */
+  nextMonth(): void {
+    this.monthOffset$.next(Math.min(0, this.monthOffset$.value + 1));
+  }
+
+  /** Switch the Statistics card between Daily / Weekly / Monthly. */
+  setGranularity(g: StatGranularity): void {
+    this.granularity$.next(g);
+  }
+
   private buildViewModel(): Observable<HomeFacadeModel> {
-    return this.store.select(selectAuthenticatedUser).pipe(
-      switchMap((user): Observable<HomeFacadeModel> => {
-        if (!user?.id) {
-          return of({ user, ...emptyAnalytics });
-        }
-        return this.expensesService.getExpensesByUserId(user.id).pipe(
-          map((expenses) => this.computeModel(user, expenses))
-        );
-      })
+    const userExpenses$ = this.store.select(selectAuthenticatedUser).pipe(
+      switchMap((user) =>
+        user?.id
+          ? this.expensesService
+              .getExpensesByUserId(user.id)
+              .pipe(map((expenses) => ({ user, expenses })))
+          : of({ user, expenses: [] as Expense[] })
+      )
+    );
+
+    // Re-derive metrics when month or granularity changes WITHOUT re-querying.
+    return combineLatest([
+      userExpenses$,
+      this.monthOffset$,
+      this.granularity$.pipe(distinctUntilChanged()),
+    ]).pipe(
+      map(([{ user, expenses }, offset, granularity]) =>
+        user?.id
+          ? this.computeModel(user, expenses, offset, granularity)
+          : { user, ...emptyAnalytics }
+      )
     );
   }
 
@@ -227,38 +296,144 @@ export class HomeFacade implements OnDestroy {
 
   private summarize(vm: HomeFacadeModel): string {
     return [
-      `Total spent (all time): ${vm.totalSpent}`,
-      `Spent this month: ${vm.thisMonth}`,
-      `Number of transactions: ${vm.transactionCount}`,
-      `Average per expense: ${Math.round(vm.averageAmount)}`,
+      `Spent this year: ${vm.thisYear}`,
+      `Selected month (${vm.monthLabel}) spent: ${vm.monthSpent}`,
+      `Transactions that month: ${vm.monthCount}`,
+      `Average per expense that month: ${Math.round(vm.monthAverage)}`,
       `Last 6 months: ${vm.monthly
         .map((m) => `${m.label}=${m.amount}`)
         .join(", ")}`,
-      `Top categories: ${vm.topCategories
+      `Top categories that month: ${vm.topCategories
         .map((c) => `${c.name}=${c.amount} (${c.pct}%)`)
         .join(", ")}`,
     ].join("\n");
   }
 
-  private computeModel(user: User, expenses: Expense[]): HomeFacadeModel {
-    const totalSpent = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-    const transactionCount = expenses.length;
-    const averageAmount = transactionCount > 0 ? totalSpent / transactionCount : 0;
+  private computeModel(
+    user: User,
+    expenses: Expense[],
+    monthOffset: number,
+    granularity: StatGranularity
+  ): HomeFacadeModel {
+    const now = moment();
 
-    const startOfMonth = moment().startOf("month");
-    const thisMonth = expenses
-      .filter((e) => moment(this.dateOf(e)).isSameOrAfter(startOfMonth))
+    // Year scope (cap): only the current calendar year counts.
+    const yearStart = now.clone().startOf("year");
+    const thisYear = expenses
+      .filter((e) => moment(this.dateOf(e)).isSameOrAfter(yearStart))
       .reduce((sum, e) => sum + (e.amount || 0), 0);
+
+    // Selected month, clamped within the current year and never in the future.
+    const minOffset = -now.month(); // back to January
+    const offset = Math.min(0, Math.max(monthOffset, minOffset));
+    const selected = now.clone().add(offset, "months");
+    const mStart = selected.clone().startOf("month");
+    const mEnd = selected.clone().endOf("month");
+
+    const monthExpenses = expenses.filter((e) => {
+      const d = moment(this.dateOf(e));
+      return d.isSameOrAfter(mStart) && d.isSameOrBefore(mEnd);
+    });
+    const monthSpent = monthExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+    const monthCount = monthExpenses.length;
 
     return {
       user,
-      totalSpent,
-      thisMonth,
-      transactionCount,
-      averageAmount,
+      thisYear,
+      monthSpent,
+      monthCount,
+      monthAverage: monthCount > 0 ? monthSpent / monthCount : 0,
+      monthLabel: selected.format("MMMM YYYY"),
+      isCurrentMonth: offset === 0,
+      canPrevMonth: offset > minOffset,
+      canNextMonth: offset < 0,
       monthly: this.buildMonthly(expenses),
-      topCategories: this.buildCategories(expenses, totalSpent),
-      hasData: transactionCount > 0,
+      topCategories: this.buildCategories(monthExpenses, monthSpent),
+      stats: this.buildStats(expenses, granularity),
+      hasData: expenses.length > 0,
+    };
+  }
+
+  /**
+   * Builds the Statistics-card series for the chosen granularity: 7 days, 6
+   * weeks, or 6 months ending now. Returns the per-bucket totals, the grand
+   * total, the peak bucket index, and a category breakdown over the same range.
+   */
+  private buildStats(
+    expenses: Expense[],
+    granularity: StatGranularity
+  ): StatsView {
+    const now = moment();
+    const buckets: {
+      start: moment.Moment;
+      end: moment.Moment;
+      label: string;
+      amount: number;
+    }[] = [];
+
+    if (granularity === "daily") {
+      for (let i = 6; i >= 0; i--) {
+        const d = now.clone().subtract(i, "days");
+        buckets.push({
+          start: d.clone().startOf("day"),
+          end: d.clone().endOf("day"),
+          label: d.format(" dd").trim(),
+          amount: 0,
+        });
+      }
+    } else if (granularity === "weekly") {
+      for (let i = 5; i >= 0; i--) {
+        const w = now.clone().subtract(i, "weeks");
+        buckets.push({
+          start: w.clone().startOf("week"),
+          end: w.clone().endOf("week"),
+          label: w.clone().startOf("week").format("MMM D"),
+          amount: 0,
+        });
+      }
+    } else {
+      for (let i = 5; i >= 0; i--) {
+        const m = now.clone().subtract(i, "months");
+        buckets.push({
+          start: m.clone().startOf("month"),
+          end: m.clone().endOf("month"),
+          label: m.format("MMM"),
+          amount: 0,
+        });
+      }
+    }
+
+    const rangeStart = buckets[0].start;
+    const inRange: Expense[] = [];
+    for (const e of expenses) {
+      const d = moment(this.dateOf(e));
+      if (d.isBefore(rangeStart) || d.isAfter(now)) {
+        continue;
+      }
+      const bucket = buckets.find(
+        (b) => d.isSameOrAfter(b.start) && d.isSameOrBefore(b.end)
+      );
+      if (bucket) {
+        bucket.amount += e.amount || 0;
+        inRange.push(e);
+      }
+    }
+
+    const points = buckets.map((b) => ({ label: b.label, amount: b.amount }));
+    const total = points.reduce((s, p) => s + p.amount, 0);
+    let peakIndex = 0;
+    points.forEach((p, i) => {
+      if (p.amount > points[peakIndex].amount) {
+        peakIndex = i;
+      }
+    });
+
+    return {
+      granularity,
+      points,
+      total,
+      peakIndex,
+      breakdown: this.buildCategories(inRange, total),
     };
   }
 

@@ -3,8 +3,10 @@ import {
   Auth,
   AuthErrorCodes,
   GoogleAuthProvider,
+  getRedirectResult,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
 } from "@angular/fire/auth";
 import { Router } from "@angular/router";
 import { User } from "@models";
@@ -95,10 +97,65 @@ export class SignInFacade {
   }
 
   async signInWithGoogle(): Promise<void> {
+    this.errorMessage$.next(null);
+    this.isLoading$.next(true);
     try {
       await signInWithPopup(this.auth, this.googleAuthProvider);
+      this.router.navigate(["/expenses/list"]);
     } catch (error: any) {
-      
+      const code = error?.code ?? "";
+      if (code === "auth/popup-closed-by-user") {
+        // User dismissed the popup themselves — no error to show.
+      } else if (
+        code === "auth/popup-blocked" ||
+        code === "auth/cancelled-popup-request" ||
+        code === "auth/operation-not-supported-in-this-environment"
+      ) {
+        // Popups are unreliable on some mobile browsers — fall back to redirect.
+        try {
+          await signInWithRedirect(this.auth, this.googleAuthProvider);
+          return; // the page navigates away; result handled on return
+        } catch (redirectError: any) {
+          console.error("Google redirect sign-in error:", redirectError);
+          this.errorMessage$.next(this.googleErrorMessage(redirectError));
+        }
+      } else {
+        console.error("Google sign-in error:", error);
+        this.errorMessage$.next(this.googleErrorMessage(error));
+      }
+    } finally {
+      this.isLoading$.next(false);
     }
+  }
+
+  /** Completes a redirect-based Google sign-in when the user returns to the app. */
+  async handleRedirectResult(): Promise<void> {
+    try {
+      const result = await getRedirectResult(this.auth);
+      if (result?.user) {
+        this.router.navigate(["/expenses/list"]);
+      }
+    } catch (error: any) {
+      console.error("Google redirect result error:", error);
+      this.errorMessage$.next(this.googleErrorMessage(error));
+    }
+  }
+
+  private googleErrorMessage(error: any): string {
+    const code = error?.code ?? "";
+    if (code === "auth/unauthorized-domain") {
+      return (
+        "This address isn't authorized for Google sign-in. Open the app at its " +
+        "deployed URL (https://ang-fire-b15d9.web.app), or add this host under " +
+        "Firebase Console → Authentication → Settings → Authorized domains."
+      );
+    }
+    if (code === "auth/network-request-failed") {
+      return "Network error reaching Google. Check your connection and try again.";
+    }
+    if (code === "auth/popup-blocked") {
+      return "Your browser blocked the sign-in popup. Allow popups and try again.";
+    }
+    return "Google sign-in failed. Please try again.";
   }
 }

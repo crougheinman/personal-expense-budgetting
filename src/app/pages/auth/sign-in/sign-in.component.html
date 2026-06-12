@@ -28,6 +28,10 @@
           </span>
           Sign in with Google
         </button>
+
+        <p class="auth-error" *ngIf="vm.errorMessage">
+          {{ vm.errorMessage }}
+        </p>
       </div>
     </div>
   </div>

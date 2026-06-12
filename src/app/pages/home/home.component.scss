@@ -6,6 +6,263 @@
   margin: 0 auto;
   color: $color-text;
 
+  // Metrics header — holds the compact month switcher on the top right.
+  .metrics-head {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+  }
+
+  // Month switcher (compact)
+  .month-switcher {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .month-label {
+      min-width: 92px;
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: $color-text;
+    }
+
+    .month-nav {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid $color-border;
+      background: $color-surface-2;
+      color: $color-text;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: $color-accent-soft;
+        border-color: $color-accent;
+        color: $color-accent-text;
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+
+      &:focus-visible {
+        outline: 2px solid $color-accent;
+        outline-offset: 2px;
+      }
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+
+  // Statistics card (Daily / Weekly / Monthly area chart + breakdown)
+  .stats-card {
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+
+    .stats-tabs {
+      display: flex;
+      gap: 6px;
+      padding: 4px;
+      background: $color-surface-2;
+      border-radius: 12px;
+
+      button {
+        flex: 1;
+        padding: 8px 10px;
+        border: none;
+        border-radius: 9px;
+        background: transparent;
+        color: $color-text-muted;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease;
+
+        &.active {
+          background: $color-accent;
+          color: $color-accent-on;
+        }
+
+        &:focus-visible {
+          outline: 2px solid $color-accent;
+          outline-offset: 2px;
+        }
+      }
+    }
+
+    .stats-total {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      margin: 18px 0 6px;
+
+      .stats-total__label {
+        font-size: 0.78rem;
+        color: $color-text-muted;
+      }
+
+      .stats-total__value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: $color-text;
+      }
+    }
+
+    .stats-chart {
+      position: relative;
+
+      .stats-svg {
+        display: block;
+        width: 100%;
+        height: 150px;
+      }
+
+      .stats-fill-top {
+        stop-color: var(--app-accent);
+        stop-opacity: 0.32;
+      }
+      .stats-fill-bottom {
+        stop-color: var(--app-accent);
+        stop-opacity: 0;
+      }
+
+      .stats-line {
+        stroke: $color-accent;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+      }
+
+      .stats-guide {
+        stroke: $color-accent;
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+        opacity: 0.5;
+        vector-effect: non-scaling-stroke;
+      }
+
+      .stats-dot {
+        fill: $color-surface;
+        stroke: $color-accent;
+        stroke-width: 2.5;
+        vector-effect: non-scaling-stroke;
+      }
+
+      .stats-bubble {
+        position: absolute;
+        transform: translate(-50%, -140%);
+        padding: 3px 9px;
+        border-radius: 8px;
+        background: $color-accent;
+        color: $color-accent-on;
+        font-size: 0.78rem;
+        font-weight: 700;
+        white-space: nowrap;
+        pointer-events: none;
+        box-shadow: 0 4px 12px $color-shadow;
+      }
+
+      .stats-xlabels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 4px;
+        padding: 0 2px;
+
+        span {
+          font-size: 0.7rem;
+          color: $color-text-faint;
+        }
+      }
+    }
+
+    .stats-breakdown {
+      margin-top: 16px;
+
+      .stats-breakdown__title {
+        margin: 0 0 12px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: $color-text;
+      }
+
+      .breakdown-empty {
+        color: $color-text-muted;
+        font-size: 0.85rem;
+      }
+
+      .breakdown-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid $color-border;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .breakdown-ring {
+          position: relative;
+          flex-shrink: 0;
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          // Inner hole to make the conic-gradient read as a ring.
+          &::before {
+            content: "";
+            position: absolute;
+            inset: 6px;
+            border-radius: 50%;
+            background: $color-surface;
+          }
+
+          .breakdown-ring__pct {
+            position: relative;
+            font-size: 0.66rem;
+            font-weight: 700;
+            color: $color-text;
+          }
+        }
+
+        .breakdown-name {
+          flex: 1 1 auto;
+          min-width: 0;
+          font-size: 0.9rem;
+          font-weight: 500;
+          color: $color-text;
+        }
+
+        .breakdown-amount {
+          flex-shrink: 0;
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: $color-text;
+        }
+      }
+    }
+  }
+
   // Welcome Section
   .welcome-section {
     margin-bottom: 24px;
@@ -28,22 +285,12 @@
     }
   }
 
-  // Pebby — AI spending reporter ---------------------------------------------
-  .pebby-card {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    background: linear-gradient(135deg, $color-accent-soft 0%, $color-surface 70%);
-    border: 1px solid $color-border;
-    border-left: 3px solid $color-accent;
-    border-radius: 16px;
-    padding: 16px 18px;
-    margin-bottom: 24px;
-
+  // Pebby — floating chat bubble ---------------------------------------------
+  .pebby-dock {
     .pebby-avatar {
       flex-shrink: 0;
-      width: 40px;
-      height: 40px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       background: $color-accent;
       display: flex;
@@ -52,61 +299,192 @@
 
       mat-icon {
         color: $color-accent-on;
-        font-size: 22px;
-        width: 22px;
-        height: 22px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
       }
     }
 
-    .pebby-body {
-      min-width: 0;
-      flex: 1;
+    .pebby-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: $color-text;
+
+      .pebby-tag {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: $color-accent;
+        background: $color-accent-soft;
+        border: 1px solid $color-accent;
+        border-radius: 6px;
+        padding: 1px 6px;
+      }
+    }
+
+    .pebby-text {
+      margin: 0;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      color: $color-text;
+
+      &.muted {
+        color: $color-text-muted;
+      }
+
+      &.is-loading {
+        animation: pebby-pulse 1.2s ease-in-out infinite;
+      }
+    }
+  }
+
+  // Tap-catcher behind the open panel.
+  .pebby-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: transparent;
+  }
+
+  // Floating avatar button.
+  .pebby-fab {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 1000;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: $color-accent;
+    color: $color-accent-on;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 6px 18px $color-shadow;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-accent;
+      outline-offset: 3px;
+    }
+
+    mat-icon {
+      font-size: 26px;
+      width: 26px;
+      height: 26px;
+    }
+
+    // "New report ready" indicator.
+    .pebby-fab__dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: $color-success;
+      border: 2px solid $color-accent;
+    }
+
+    @media (max-width: 767.98px) {
+      bottom: calc(#{$nav-bar-height} + 16px + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
+  // The chat popover above the bubble.
+  .pebby-panel {
+    position: fixed;
+    right: 24px;
+    bottom: 92px;
+    z-index: 1001;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    max-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: 16px;
+    box-shadow: 0 12px 34px $color-shadow;
+    overflow: hidden;
+    transform-origin: bottom right;
+    animation: pebby-pop 0.18s ease forwards;
+
+    @media (max-width: 767.98px) {
+      bottom: calc(#{$nav-bar-height} + 16px + 56px + 12px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .pebby-panel__head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 12px 12px 14px;
+      border-bottom: 1px solid $color-border;
+      background: linear-gradient(135deg, $color-accent-soft 0%, $color-surface 80%);
 
       .pebby-name {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        color: $color-text;
-        margin-bottom: 4px;
-
-        .pebby-tag {
-          font-size: 0.65rem;
-          font-weight: 700;
-          letter-spacing: 0.5px;
-          color: $color-accent;
-          background: $color-accent-soft;
-          border: 1px solid $color-accent;
-          border-radius: 6px;
-          padding: 1px 6px;
-        }
+        flex: 1;
+        min-width: 0;
       }
 
-      .pebby-text {
-        margin: 0;
-        font-size: 0.92rem;
-        line-height: 1.45;
-        color: $color-text;
+      .pebby-icon-btn {
+        flex-shrink: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: $color-text-muted;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
 
-        &.muted {
-          color: $color-text-muted;
+        &:hover:not(:disabled) {
+          background: $color-surface-2;
+          color: $color-accent;
         }
 
-        &.is-loading {
-          animation: pebby-pulse 1.2s ease-in-out infinite;
+        &:disabled {
+          opacity: 0.5;
+          cursor: default;
+        }
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+
+        .spinning {
+          animation: pebby-spin 0.9s linear infinite;
         }
       }
     }
 
-    .pebby-refresh {
-      flex-shrink: 0;
-      align-self: flex-start;
-      color: $color-accent;
+    .pebby-panel__body {
+      padding: 14px;
+      overflow-y: auto;
+    }
+  }
 
-      .spinning {
-        animation: pebby-spin 0.9s linear infinite;
-      }
+  @keyframes pebby-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.92) translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
     }
   }
 
@@ -123,14 +501,9 @@
   // Summary stat cards -------------------------------------------------------
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 24px;
-
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
 
     .stat-card {
       display: flex;

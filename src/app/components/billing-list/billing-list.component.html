@@ -47,40 +47,55 @@
   </div>
 
   <div class="billing-list">
+    <!-- Swipe a card to the right to delete it (a confirmation is shown). -->
     <div class="bills-grid">
-      <article
-        class="bill-card"
-        *ngFor="let item of vm.billingItems"
-        (click)="onItemClick(item)"
+      <div
+        class="swipe-cell"
+        *ngFor="let item of vm.billingItems; trackBy: trackById"
       >
-        <div class="bill-card-head">
-          <div class="bill-icon"><mat-icon>description</mat-icon></div>
-          <span
-            class="bill-status"
-            [class.paid]="vm.billPayments && vm.billPayments[item.id]"
-          >
-            <mat-icon>{{
-              vm.billPayments && vm.billPayments[item.id]
-                ? 'check_circle'
-                : 'schedule'
-            }}</mat-icon>
-            {{ vm.billPayments && vm.billPayments[item.id] ? 'Paid' : 'Pending' }}
-          </span>
+        <div class="swipe-cell__bg" [class.armed]="sw.armed" aria-hidden="true">
+          <mat-icon>delete</mat-icon>
+          <span>Delete</span>
         </div>
 
-        <h3 class="bill-name" [title]="item.name">{{ item.name }}</h3>
+        <article
+          class="swipe-fg bill-card"
+          appSwipeToDelete
+          #sw="swipeToDelete"
+          tabindex="0"
+          (tap)="onItemClick(item)"
+          (swipeDelete)="confirmDelete(item)"
+          (keydown.enter)="onItemClick(item)"
+        >
+          <div class="bill-card-head">
+            <div class="bill-icon"><mat-icon>description</mat-icon></div>
+            <span
+              class="bill-status"
+              [class.paid]="vm.billPayments && vm.billPayments[item.id]"
+            >
+              <mat-icon>{{
+                vm.billPayments && vm.billPayments[item.id]
+                  ? 'check_circle'
+                  : 'schedule'
+              }}</mat-icon>
+              {{ vm.billPayments && vm.billPayments[item.id] ? 'Paid' : 'Pending' }}
+            </span>
+          </div>
 
-        <div class="bill-amount">
-          {{ item.price | currency : "PHP" : "symbol" : "1.2-2" }}
-        </div>
+          <h3 class="bill-name" [title]="item.name">{{ item.name }}</h3>
 
-        <div class="bill-meta">
-          <mat-icon>event</mat-icon>
-          <span>Due on day {{ item.dueDay }}</span>
-        </div>
+          <div class="bill-amount">
+            {{ item.price | currency : "PHP" : "symbol" : "1.2-2" }}
+          </div>
 
-        <p class="bill-desc" *ngIf="item.description">{{ item.description }}</p>
-      </article>
+          <div class="bill-meta">
+            <mat-icon>event</mat-icon>
+            <span>Due on day {{ item.dueDay }}</span>
+          </div>
+
+          <p class="bill-desc" *ngIf="item.description">{{ item.description }}</p>
+        </article>
+      </div>
     </div>
 
     <div class="empty-list" *ngIf="vm.billingItems && vm.billingItems.length === 0">

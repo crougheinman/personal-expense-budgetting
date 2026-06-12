@@ -75,6 +75,11 @@ export class InventoryListFacade {
     );
   }
 
+  /** Permanently deletes a single inventory item. */
+  deleteInventory(item: Inventory): Promise<void> {
+    return this.inventoryService.deleteInventoryItem({ id: item.id });
+  }
+
   updateSearchKey(value: string) : void {
     this.searchKey$.next(value);
   }

@@ -18,6 +18,8 @@ import { InventoryCreateComponent } from "./inventory-create/inventory-create.co
 import { InventoryListComponent } from "./inventory-list/inventory-list.component";
 import { InventoryEditComponent } from "./inventory-edit/inventory-edit.component";
 import { VoiceExpenseComponent } from "./voice-expense/voice-expense.component";
+import { ReceiptScannerComponent } from "./receipt-scanner/receipt-scanner.component";
+import { SwipeToDeleteDirective } from "./shared/swipe-to-delete.directive";
 import { MaterialModule } from "../shared/material.module";
 
 @NgModule({
@@ -36,6 +38,8 @@ import { MaterialModule } from "../shared/material.module";
     CameraComponent,
     ProductScanner,
     VoiceExpenseComponent,
+    ReceiptScannerComponent,
+    SwipeToDeleteDirective,
   ],
   imports: [
     AsyncPipe,
@@ -56,6 +60,7 @@ import { MaterialModule } from "../shared/material.module";
     InventoryListComponent,
     InventoryEditComponent,
     SidebarComponent,
+    SwipeToDeleteDirective,
     AsyncPipe,
     CommonModule,
     MaterialModule,

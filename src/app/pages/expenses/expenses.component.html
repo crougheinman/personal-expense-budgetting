@@ -1,16 +1,54 @@
 <ng-container>
-  <button
-    mat-fab
-    class="voice-fab"
-    (click)="openVoiceExpenseDialog()"
-    aria-label="Add expense by voice"
-    title="Add expense by voice"
-  >
-    <mat-icon>mic</mat-icon>
-  </button>
-  <button mat-fab color="accent" class="floating-btn" (click)="openAddExpenseDialog()">
-    <mat-icon>add</mat-icon>
-  </button>
+  <!-- Speed-dial: the main FAB expands into Manual / Scan Receipt / Voice. -->
+  <div class="fab-scrim" *ngIf="fabOpen" (click)="closeFab()"></div>
+
+  <div class="fab-speed-dial" [class.open]="fabOpen">
+    <div class="fab-actions" [attr.aria-hidden]="!fabOpen">
+      <button
+        type="button"
+        class="fab-action"
+        [attr.tabindex]="fabOpen ? 0 : -1"
+        (click)="runAction('voice')"
+      >
+        <span class="fab-action__label">Voice</span>
+        <span class="fab-action__btn"><mat-icon>mic</mat-icon></span>
+      </button>
+
+      <button
+        type="button"
+        class="fab-action"
+        [attr.tabindex]="fabOpen ? 0 : -1"
+        (click)="runAction('receipt')"
+      >
+        <span class="fab-action__label">Scan Receipt</span>
+        <span class="fab-action__btn"><mat-icon>document_scanner</mat-icon></span>
+      </button>
+
+      <button
+        type="button"
+        class="fab-action"
+        [attr.tabindex]="fabOpen ? 0 : -1"
+        (click)="runAction('manual')"
+      >
+        <span class="fab-action__label">Manual</span>
+        <span class="fab-action__btn"><mat-icon>edit</mat-icon></span>
+      </button>
+    </div>
+
+    <button
+      mat-fab
+      color="accent"
+      class="fab-main"
+      [class.open]="fabOpen"
+      (click)="toggleFab()"
+      [attr.aria-expanded]="fabOpen"
+      aria-label="Add expense"
+      title="Add expense"
+    >
+      <mat-icon>{{ fabOpen ? 'close' : 'add' }}</mat-icon>
+    </button>
+  </div>
+
   <div class="page-constrained">
     <component-expenses-list></component-expenses-list>
   </div>

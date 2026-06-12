@@ -124,6 +124,11 @@ export class BillingListFacade {
     );
   }
 
+  /** Permanently deletes a single bill. */
+  deleteBill(item: Billing): Promise<void> {
+    return this.billingService.deleteBill({ id: item.id });
+  }
+
   updateSearchKey(value: string): void {
     this.searchKey$.next(value);
   }

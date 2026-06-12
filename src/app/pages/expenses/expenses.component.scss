@@ -1,42 +1,133 @@
 @use 'variables' as *;
 
-// Page action FABs sit in the bottom-right rail. On mobile they must clear the
-// fixed bottom nav bar; on desktop (sidebar on the left) the default offsets
-// are fine.
-.voice-fab {
-    position: fixed;
-    bottom: 92px;
-    right: 24px;
-    z-index: 1000;
-    box-shadow: 0 4px 14px $color-shadow;
-    border-radius: 50%;
-    background: $color-surface-2;
-    color: $color-accent;
-    border: 1px solid $color-accent;
+// Speed-dial FAB (bottom-right). The main button expands into three actions:
+// Manual, Scan Receipt and Voice. On mobile the rail is lifted above the fixed
+// bottom nav; on desktop (left sidebar) the default offset is fine.
+$fab-size: 56px;
 
-    @media (max-width: 767.98px) {
-        // above the add FAB (which is itself lifted above the bar)
-        bottom: calc(#{$nav-bar-height} + 16px + 56px + 12px + env(safe-area-inset-bottom, 0px));
-    }
+.fab-speed-dial {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+
+  @media (max-width: 767.98px) {
+    bottom: calc(#{$nav-bar-height} + 16px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
-.floating-btn{
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 1000;
-    box-shadow: 0 4px 14px $color-shadow;
-    border-radius: 50%;
-    background: $color-accent;
-    color: $color-accent-on;
-    width: 56px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+// Full-screen tap-catcher that closes the dial when tapping outside it.
+.fab-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 999; // above page content, below the dial (and the bottom nav)
+  background: transparent;
+}
 
-    @media (max-width: 767.98px) {
-        bottom: calc(#{$nav-bar-height} + 16px + env(safe-area-inset-bottom, 0px));
+.fab-main {
+  width: $fab-size;
+  height: $fab-size;
+  border-radius: 50%;
+  background: $color-accent;
+  color: $color-accent-on;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px $color-shadow;
+
+  mat-icon {
+    transition: transform 0.2s ease;
+  }
+
+  &.open mat-icon {
+    transform: rotate(90deg);
+  }
+}
+
+// The stacked action buttons, anchored above the main FAB.
+.fab-actions {
+  position: absolute;
+  right: 0;
+  bottom: calc(#{$fab-size} + 14px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+  pointer-events: none; // non-interactive while collapsed
+
+  .fab-speed-dial.open & {
+    pointer-events: auto;
+  }
+}
+
+.fab-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  // Collapsed: hidden and nudged down; expands with a small staggered rise.
+  opacity: 0;
+  transform: translateY(10px) scale(0.9);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+
+  .fab-speed-dial.open & {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  // Stagger the three actions as they appear (nearest the main FAB first).
+  .fab-speed-dial.open &:nth-child(3) {
+    transition-delay: 0.02s;
+  }
+  .fab-speed-dial.open &:nth-child(2) {
+    transition-delay: 0.06s;
+  }
+  .fab-speed-dial.open &:nth-child(1) {
+    transition-delay: 0.1s;
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    .fab-action__btn {
+      outline: 2px solid $color-accent;
+      outline-offset: 2px;
     }
+  }
+}
+
+.fab-action__label {
+  background: $color-surface-2;
+  color: $color-text;
+  border: 1px solid $color-border;
+  padding: 5px 11px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px $color-shadow;
+}
+
+.fab-action__btn {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: $color-surface-2;
+  color: $color-accent;
+  border: 1px solid $color-accent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px $color-shadow;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  .fab-action:hover & {
+    background: $color-accent-soft;
+  }
 }

@@ -215,6 +215,11 @@ export class ExpensesListFacade {
     );
   }
 
+  /** Permanently deletes a single expense. */
+  deleteExpense(expense: Expense): Promise<void> {
+    return this.expensesService.deleteExpense({ id: expense.id });
+  }
+
   previousDay(): void {
     this.dayOffset$.next(this.dayOffset$.value - 1);
   }

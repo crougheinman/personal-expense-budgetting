@@ -1,111 +1,159 @@
 <ng-container *ngIf="vm$ | async as vm">
   <div class="home">
-    <!-- Welcome Section -->
-    <div class="welcome-section">
-      <h1 class="welcome-title">Welcome back, {{ vm.user?.displayName || 'User' }}</h1>
-      <p class="welcome-subtitle">Here's an overview of your spending.</p>
-    </div>
-
-    <!-- Pebby — AI spending reporter -->
-    <div class="pebby-card" *ngIf="pebby$ | async as pebby">
-      <div class="pebby-avatar">
-        <mat-icon>auto_awesome</mat-icon>
-      </div>
-      <div class="pebby-body">
-        <div class="pebby-name">
-          Pebby <span class="pebby-tag">AI</span>
-        </div>
-        <p
-          class="pebby-text"
-          [class.muted]="pebby.status !== 'ready'"
-          [class.is-loading]="pebby.status === 'loading'"
+    <!-- Metrics: 2-per-row cards with a compact month switcher top-right -->
+    <div class="metrics-head">
+      <div class="month-switcher">
+        <button
+          type="button"
+          class="month-nav"
+          (click)="previousMonth()"
+          [disabled]="!vm.canPrevMonth"
+          aria-label="Previous month"
+          title="Previous month"
         >
-          {{ pebby.status === 'loading' ? 'Reading your numbers…' : pebby.message }}
-        </p>
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span class="month-label">{{ vm.monthLabel }}</span>
+        <button
+          type="button"
+          class="month-nav"
+          (click)="nextMonth()"
+          [disabled]="!vm.canNextMonth"
+          aria-label="Next month"
+          title="Next month"
+        >
+          <mat-icon>chevron_right</mat-icon>
+        </button>
       </div>
-      <button
-        *ngIf="pebby.status !== 'unavailable' && pebby.status !== 'empty'"
-        mat-icon-button
-        class="pebby-refresh"
-        (click)="refreshPebby()"
-        [disabled]="pebby.status === 'loading'"
-        aria-label="Refresh Pebby"
-        title="Refresh Pebby"
-      >
-        <mat-icon [class.spinning]="pebby.status === 'loading'">refresh</mat-icon>
-      </button>
     </div>
 
-    <!-- Summary stats -->
+    <!-- Summary stats — year cap + selected month -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon"><mat-icon>payments</mat-icon></div>
         <div class="stat-meta">
-          <span class="stat-label">Total Spent</span>
-          <span class="stat-value">{{ vm.totalSpent | currency:'PHP':'symbol':'1.0-0' }}</span>
+          <span class="stat-label">This Year</span>
+          <span class="stat-value">{{ vm.thisYear | currency:'PHP':'symbol':'1.0-0' }}</span>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon"><mat-icon>calendar_month</mat-icon></div>
         <div class="stat-meta">
-          <span class="stat-label">This Month</span>
-          <span class="stat-value">{{ vm.thisMonth | currency:'PHP':'symbol':'1.0-0' }}</span>
+          <span class="stat-label">{{ vm.isCurrentMonth ? 'This Month' : 'Month Spent' }}</span>
+          <span class="stat-value">{{ vm.monthSpent | currency:'PHP':'symbol':'1.0-0' }}</span>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon"><mat-icon>receipt_long</mat-icon></div>
         <div class="stat-meta">
           <span class="stat-label">Transactions</span>
-          <span class="stat-value">{{ vm.transactionCount }}</span>
+          <span class="stat-value">{{ vm.monthCount }}</span>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon"><mat-icon>trending_up</mat-icon></div>
         <div class="stat-meta">
           <span class="stat-label">Avg / Expense</span>
-          <span class="stat-value">{{ vm.averageAmount | currency:'PHP':'symbol':'1.0-0' }}</span>
+          <span class="stat-value">{{ vm.monthAverage | currency:'PHP':'symbol':'1.0-0' }}</span>
         </div>
       </div>
     </div>
 
     <ng-container *ngIf="vm.hasData; else noData">
-      <!-- Monthly spending trend -->
-      <div class="analytics-card">
-        <div class="analytics-header">
-          <mat-icon>bar_chart</mat-icon>
-          <h2>Spending — last 6 months</h2>
-        </div>
-        <div class="bar-chart">
-          <div
-            class="bar-col"
-            *ngFor="let m of vm.monthly"
-            [title]="m.label + ': ' + (m.amount | currency:'PHP':'symbol':'1.0-0')"
+      <!-- Statistics: Daily / Weekly / Monthly area chart + breakdown -->
+      <div class="stats-card" *ngIf="buildChart(vm.stats) as chart">
+        <div class="stats-tabs">
+          <button
+            type="button"
+            [class.active]="vm.stats.granularity === 'daily'"
+            (click)="setGranularity('daily')"
           >
-            <div class="bar-track">
-              <div class="bar-fill" [style.height.%]="m.height"></div>
-            </div>
-            <span class="bar-label">{{ m.label }}</span>
+            Daily
+          </button>
+          <button
+            type="button"
+            [class.active]="vm.stats.granularity === 'weekly'"
+            (click)="setGranularity('weekly')"
+          >
+            Weekly
+          </button>
+          <button
+            type="button"
+            [class.active]="vm.stats.granularity === 'monthly'"
+            (click)="setGranularity('monthly')"
+          >
+            Monthly
+          </button>
+        </div>
+
+        <div class="stats-total">
+          <span class="stats-total__label">Total expenses</span>
+          <span class="stats-total__value">
+            {{ vm.stats.total | currency:'PHP':'symbol':'1.2-2' }}
+          </span>
+        </div>
+
+        <div class="stats-chart">
+          <svg
+            class="stats-svg"
+            [attr.viewBox]="'0 0 ' + chartW + ' ' + chartH"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <linearGradient id="statsFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" class="stats-fill-top" />
+                <stop offset="100%" class="stats-fill-bottom" />
+              </linearGradient>
+            </defs>
+            <path class="stats-area" [attr.d]="chart.area" fill="url(#statsFill)" />
+            <path class="stats-line" [attr.d]="chart.line" fill="none" />
+            <line
+              class="stats-guide"
+              [attr.x1]="chart.peak.x"
+              [attr.y1]="chart.peak.y"
+              [attr.x2]="chart.peak.x"
+              [attr.y2]="chart.baseline"
+            />
+            <circle
+              class="stats-dot"
+              [attr.cx]="chart.peak.x"
+              [attr.cy]="chart.peak.y"
+              r="4.5"
+            />
+          </svg>
+
+          <div
+            class="stats-bubble"
+            [style.left.%]="(chart.peak.x / chartW) * 100"
+            [style.top.%]="(chart.peak.y / chartH) * 100"
+          >
+            {{ vm.stats.points[vm.stats.peakIndex].amount | currency:'PHP':'symbol':'1.2-2' }}
+          </div>
+
+          <div class="stats-xlabels">
+            <span *ngFor="let c of chart.cols">{{ c.label }}</span>
           </div>
         </div>
-      </div>
 
-      <!-- Top categories -->
-      <div class="analytics-card">
-        <div class="analytics-header">
-          <mat-icon>donut_small</mat-icon>
-          <h2>Top categories</h2>
-        </div>
-        <div class="category-list">
-          <div class="category-row" *ngFor="let c of vm.topCategories">
-            <div class="category-top">
-              <span class="category-name">{{ c.name | titlecase }}</span>
-              <span class="category-amount">
-                {{ c.amount | currency:'PHP':'symbol':'1.0-0' }} · {{ c.pct }}%
-              </span>
+        <div class="stats-breakdown">
+          <h3 class="stats-breakdown__title">Expenses Breakdown</h3>
+          <div class="breakdown-empty" *ngIf="vm.stats.breakdown.length === 0">
+            No expenses in this period.
+          </div>
+          <div class="breakdown-row" *ngFor="let c of vm.stats.breakdown">
+            <div
+              class="breakdown-ring"
+              [style.background]="
+                'conic-gradient(var(--app-accent) ' + c.pct + '%, var(--app-surface-3) 0)'
+              "
+            >
+              <span class="breakdown-ring__pct">{{ c.pct }}%</span>
             </div>
-            <div class="category-bar">
-              <div class="category-bar-fill" [style.width.%]="c.pct"></div>
-            </div>
+            <span class="breakdown-name">{{ c.name | titlecase }}</span>
+            <span class="breakdown-amount">
+              {{ c.amount | currency:'PHP':'symbol':'1.0-0' }}
+            </span>
           </div>
         </div>
       </div>
@@ -118,5 +166,68 @@
         <p>Add an expense to start seeing your spending analytics here.</p>
       </div>
     </ng-template>
+
+    <!-- Pebby — floating chat bubble -->
+    <div class="pebby-dock" *ngIf="pebbyView$ | async as pebby">
+    <div class="pebby-scrim" *ngIf="pebbyOpen" (click)="closePebby()"></div>
+
+    <div class="pebby-panel" *ngIf="pebbyOpen">
+      <div class="pebby-panel__head">
+        <div class="pebby-avatar"><mat-icon>auto_awesome</mat-icon></div>
+        <span class="pebby-name">Pebby <span class="pebby-tag">AI</span></span>
+        <button
+          *ngIf="pebby.status !== 'unavailable' && pebby.status !== 'empty'"
+          type="button"
+          class="pebby-icon-btn"
+          (click)="refreshPebby()"
+          [disabled]="pebby.status === 'loading'"
+          aria-label="Refresh Pebby"
+          title="Refresh"
+        >
+          <mat-icon [class.spinning]="pebby.status === 'loading'">refresh</mat-icon>
+        </button>
+        <button
+          type="button"
+          class="pebby-icon-btn"
+          (click)="closePebby()"
+          aria-label="Close"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="pebby-panel__body">
+        <div
+          class="pebby-text"
+          *ngIf="pebby.status === 'ready'; else pebbyPlain"
+          [innerHTML]="pebby.html"
+        ></div>
+        <ng-template #pebbyPlain>
+          <p
+            class="pebby-text muted"
+            [class.is-loading]="pebby.status === 'loading'"
+          >
+            {{ pebby.status === 'loading' ? 'Reading your numbers…' : pebby.message }}
+          </p>
+        </ng-template>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="pebby-fab"
+      [class.open]="pebbyOpen"
+      (click)="togglePebby()"
+      [attr.aria-expanded]="pebbyOpen"
+      aria-label="Pebby — spending insights"
+      title="Pebby"
+    >
+      <mat-icon>{{ pebbyOpen ? 'close' : 'auto_awesome' }}</mat-icon>
+      <span
+        class="pebby-fab__dot"
+        *ngIf="!pebbyOpen && pebby.status === 'ready'"
+      ></span>
+    </button>
+    </div>
   </div>
 </ng-container>

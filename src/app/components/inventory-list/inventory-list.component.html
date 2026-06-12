@@ -30,24 +30,39 @@
     </small>
   </div>
 
-  <div class="inventory-list">
-    <mat-list role="listbox">
-      <mat-list-item
+  <div class="inventory-list" role="list">
+    <!-- Swipe a row to the right to delete it (a confirmation is shown). -->
+    <div
+      class="swipe-cell"
+      *ngFor="let item of vm.inventoryItems; trackBy: trackById"
+    >
+      <div class="swipe-cell__bg" [class.armed]="sw.armed" aria-hidden="true">
+        <mat-icon>delete</mat-icon>
+        <span>Delete</span>
+      </div>
+
+      <div
+        class="swipe-fg inventory-row"
+        appSwipeToDelete
+        #sw="swipeToDelete"
         role="listitem"
-        class="inventory-row"
-        *ngFor="let item of vm.inventoryItems"
-        (click)="onItemClick(item)"
+        tabindex="0"
+        (tap)="onItemClick(item)"
+        (swipeDelete)="confirmDelete(item)"
+        (keydown.enter)="onItemClick(item)"
       >
-        <mat-icon matListItemIcon class="inventory-icon">inventory_2</mat-icon>
-        <span matListItemTitle class="inventory-name">{{ item.name }}</span>
-        <span matListItemLine class="inventory-store" *ngIf="item.store">{{
-          item.store
-        }}</span>
-        <span matListItemMeta class="inventory-price">{{
+        <div class="inventory-icon-wrap">
+          <mat-icon class="inventory-icon">inventory_2</mat-icon>
+        </div>
+        <div class="inventory-text">
+          <span class="inventory-name">{{ item.name }}</span>
+          <span class="inventory-store" *ngIf="item.store">{{ item.store }}</span>
+        </div>
+        <span class="inventory-price">{{
           item.price | currency : "PHP" : "symbol" : "1.2-2"
         }}</span>
-      </mat-list-item>
-    </mat-list>
+      </div>
+    </div>
 
     <div class="empty-list" *ngIf="vm.inventoryItems && vm.inventoryItems.length === 0">
       <mat-icon>inventory_2</mat-icon>

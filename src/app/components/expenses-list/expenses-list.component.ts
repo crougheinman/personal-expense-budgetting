@@ -6,6 +6,9 @@ import {
 } from "./expenses-list.facade";
 import { Observable, of } from "rxjs";
 import { MatBottomSheet } from "@angular/material/bottom-sheet";
+import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { 
   Expense, 
   EXPENSE_CATEGORIES, 
@@ -40,6 +43,8 @@ export class ExpensesListComponent {
     private facade: ExpensesListFacade,
     private bottomSheet: MatBottomSheet,
     private formBuilder: FormBuilder,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
   ) {
     this.vm$ = this.facade.vm$;
     this.expensesFilterForm = this.formBuilder.group({
@@ -91,6 +96,41 @@ export class ExpensesListComponent {
       data: {
         ...expense,
       },
+    });
+  }
+
+  trackById(_index: number, expense: Expense): string {
+    return expense.id ?? String(_index);
+  }
+
+  confirmDelete(expense: Expense): void {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: "400px",
+      data: {
+        title: "Delete Expense",
+        message: `Are you sure you want to delete "${expense.name}"? This action cannot be undone.`,
+        confirmText: "Delete",
+        cancelText: "Cancel",
+      },
+    });
+
+    dialogRef.afterClosed().subscribe(async (confirmed) => {
+      if (!confirmed) {
+        return;
+      }
+      try {
+        await this.facade.deleteExpense(expense);
+        this.snackBar.open(`Deleted "${expense.name}".`, "Close", {
+          duration: 3000,
+          panelClass: ["success-snackbar"],
+        });
+      } catch (error) {
+        console.error("Failed to delete expense:", error);
+        this.snackBar.open("Failed to delete the expense.", "Close", {
+          duration: 3000,
+          panelClass: ["error-snackbar"],
+        });
+      }
     });
   }
 

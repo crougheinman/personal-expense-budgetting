@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { DialogService } from '@services';
-import { ExpensesCreateComponent, VoiceExpenseComponent } from '@app/components';
+import { ExpensesCreateComponent, VoiceExpenseComponent, ReceiptScannerComponent } from '@app/components';
 
 @Component({
   selector: 'pages-expenses',
@@ -11,7 +11,30 @@ import { ExpensesCreateComponent, VoiceExpenseComponent } from '@app/components'
   
 })
 export class ExpensesComponent {
+  /** Whether the speed-dial actions are expanded. */
+  fabOpen = false;
+
   constructor(private dialogService: DialogService) {}
+
+  toggleFab(): void {
+    this.fabOpen = !this.fabOpen;
+  }
+
+  closeFab(): void {
+    this.fabOpen = false;
+  }
+
+  /** Runs the chosen speed-dial action, collapsing the dial first. */
+  runAction(action: "manual" | "receipt" | "voice"): void {
+    this.fabOpen = false;
+    if (action === "manual") {
+      this.openAddExpenseDialog();
+    } else if (action === "receipt") {
+      this.openReceiptScanner();
+    } else {
+      this.openVoiceExpenseDialog();
+    }
+  }
 
   openAddExpenseDialog(): void {
     this.dialogService.open(ExpensesCreateComponent, {
@@ -28,6 +51,17 @@ export class ExpensesComponent {
       width: '420px',
       mobileFullscreen: false,
       showCloseButton: true,
+    });
+  }
+
+  openReceiptScanner(): void {
+    this.dialogService.open(ReceiptScannerComponent, {
+      width: '940px',
+      height: '88vh',
+      maxWidth: '96vw',
+      mobileFullscreen: true,
+      showCloseButton: false,
+      panelClass: 'receipt-dialog',
     });
   }
 }

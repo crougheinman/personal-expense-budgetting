@@ -1,4 +1,7 @@
-<ng-container *ngIf="vm$ | async as vm" class="expenses-list-container">
+<ng-container *ngIf="vm$ | async as vm">
+  <div class="exp-shell">
+  <!-- Pinned top: hero, metrics, search, filters -->
+  <div class="exp-top">
   <!-- Hero: a day's spending, by hour (navigable with the arrows) -->
   <section class="today-hero" aria-label="Spending by hour">
     <div class="today-hero__head">
@@ -143,32 +146,53 @@
       </mat-chip-listbox>
     </div>
   </div>
+  </div>
+  <!-- /exp-top (pinned) -->
 
+  <div class="expenses-list" role="list">
+    <!-- Swipe a row to the right to delete it (a confirmation is shown). -->
+    <div
+      class="swipe-cell"
+      *ngFor="let expense of vm.expenses; trackBy: trackById"
+    >
+      <!-- Delete affordance revealed behind the row as it slides right -->
+      <div class="swipe-cell__bg" [class.armed]="sw.armed" aria-hidden="true">
+        <mat-icon>delete</mat-icon>
+        <span>Delete</span>
+      </div>
 
-  <div class="expenses-list">
-    <mat-list role="listbox">
-      <mat-list-item
+      <div
+        class="swipe-fg expense-row"
+        appSwipeToDelete
+        #sw="swipeToDelete"
         role="listitem"
-        class="expense-row"
-        *ngFor="let expense of vm.expenses"
-        (click)="onClick(expense)"
+        tabindex="0"
+        (tap)="onClick(expense)"
+        (swipeDelete)="confirmDelete(expense)"
+        (keydown.enter)="onClick(expense)"
       >
-        <mat-icon matListItemIcon class="expense-icon">{{
-          getExpenseIcon(expense.category ?? "default")
-        }}</mat-icon>
-        <span matListItemTitle class="expense-name">{{ expense.name }}</span>
-        <span matListItemLine class="expense-category">{{
-          getCategoryDisplayName(expense.category ?? "default")
-        }}</span>
-        <span matListItemMeta class="expense-amount">{{
+        <div class="expense-icon-wrap">
+          <mat-icon class="expense-icon">{{
+            getExpenseIcon(expense.category ?? "default")
+          }}</mat-icon>
+        </div>
+        <div class="expense-text">
+          <span class="expense-name">{{ expense.name }}</span>
+          <span class="expense-category">{{
+            getCategoryDisplayName(expense.category ?? "default")
+          }}</span>
+        </div>
+        <span class="expense-amount">{{
           expense.amount | currency : "PHP" : "symbol" : "1.2-2"
         }}</span>
-      </mat-list-item>
-    </mat-list>
+      </div>
+    </div>
 
     <div class="empty-list" *ngIf="vm.expenses && vm.expenses.length === 0">
       <mat-icon>receipt_long</mat-icon>
       <p>No expenses to show.</p>
     </div>
   </div>
+  </div>
+  <!-- /exp-shell -->
 </ng-container>

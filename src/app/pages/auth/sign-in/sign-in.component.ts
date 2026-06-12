@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { Component, OnInit, inject } from "@angular/core";
 import { Auth } from "@angular/fire/auth";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { SignInFacade, SignInFacadeModel } from "./sign-in.facade";
@@ -11,7 +11,7 @@ import { Observable } from "rxjs";
   styleUrl: "./sign-in.component.scss",
   providers: [SignInFacade],
 })
-export class SignInComponent {
+export class SignInComponent implements OnInit {
   vm$: Observable<SignInFacadeModel>;
   authform!: FormGroup;
   auth = inject(Auth);
@@ -23,6 +23,11 @@ export class SignInComponent {
     });
 
     this.vm$ = this.facade.vm$;
+  }
+
+  ngOnInit(): void {
+    // Complete a redirect-based Google sign-in if we just returned from one.
+    this.facade.handleRedirectResult();
   }
 
   async onSignIn(): Promise<void> {

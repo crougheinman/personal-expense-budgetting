@@ -146,29 +146,6 @@
   }
 }
 
-.date-filter {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  mat-form-field {
-    flex: 1;
-    
-    .mat-form-field-flex {
-      border-radius: 4px;
-      background-color: $color-surface-3;
-    }
-    
-    .mat-form-field-outline {
-      display: none;
-    }
-    
-    .mat-form-field-underline {
-      display: none;
-    }
-  }
-}
-
 .search-container {
   display: flex;
   align-items: flex-start;
@@ -211,17 +188,39 @@
   height: calc(100vh - var(--header-height, 120px));
   overflow-y: auto;
 
-  .inventory-row {
+  // The swipe wrapper carries the row divider.
+  .swipe-cell {
     border-bottom: 1px solid $color-border;
-    transition: background-color 0.2s ease-in-out;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  // .inventory-row is the sliding foreground (paired with .swipe-fg).
+  .inventory-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+    background: $color-surface;
     cursor: pointer;
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+      background-color 0.2s ease-in-out;
+
+    &.is-dragging {
+      transition: none;
+    }
 
     &:hover {
       background-color: $color-surface-2;
     }
 
-    &:last-child {
-      border-bottom: none;
+    .inventory-icon-wrap {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .inventory-icon.mat-icon {
@@ -232,10 +231,20 @@
       box-sizing: content-box;
     }
 
+    .inventory-text {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
     .inventory-name {
       font-size: 0.95rem;
       font-weight: 500;
       color: $color-text;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .inventory-store {
@@ -244,6 +253,7 @@
     }
 
     .inventory-price {
+      flex-shrink: 0;
       font-size: 0.98rem;
       font-weight: 700;
       color: $color-text;

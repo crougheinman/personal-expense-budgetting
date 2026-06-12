@@ -23,6 +23,24 @@ export interface GeminiScanResult {
   price: number | null;
 }
 
+/** A single purchased line item extracted from a receipt. */
+export interface ReceiptLineItem {
+  description: string;
+  amount: number;
+  /** YYYY-MM-DD, or null (the UI falls back to the receipt date). */
+  date: string | null;
+  /** One of the app's expense categories (lowercased). */
+  category: string;
+  /** Field names the parser was unsure about: "description"|"amount"|"date"|"category". */
+  uncertainFields: string[];
+}
+
+export interface ReceiptScanResult {
+  /** The receipt's overall date (YYYY-MM-DD) if found, else null. */
+  date: string | null;
+  items: ReceiptLineItem[];
+}
+
 const GENERATIVE_LANGUAGE_ENDPOINT =
   "https://generativelanguage.googleapis.com/v1beta/models";
 
@@ -45,22 +63,94 @@ const SCAN_PROMPT =
 
 // Pebby — the friendly in-app spending reporter.
 const PEBBY_PROMPT =
-  "You are Pebby, a friendly and concise personal-finance assistant inside a " +
-  "budgeting app. All amounts are in Philippine Pesos (PHP). Based on the " +
-  "spending summary below, write 2-3 short sentences: a quick, encouraging " +
-  "read of what the numbers show plus ONE practical tip. Plain text only — no " +
-  "markdown, no headings, no bullet points, under 60 words. Address the user " +
-  "directly as \"you\".";
+  "You are Pebby, an intelligent, supportive, highly analytical financial " +
+  "co-pilot. Tone: warm, approachable, pragmatic — never preachy or " +
+  "judgmental.\n\n" +
+  "Core mission: analyze daily and monthly expenses to help the user optimize " +
+  "cash flow, protect financial runway, and eliminate hidden friction points " +
+  "(e.g. excessive convenience/delivery fees).\n\n" +
+  "Operational lens:\n" +
+  "1. The user runs a dynamic lifestyle spanning professional web " +
+  "development/startup infrastructure costs and daily personal maintenance.\n" +
+  "2. Treat certain daily routines — specific customized coffee or milk tea " +
+  "drinks and app-based logistics — as calculated productivity investments, " +
+  "NOT frivolous spending. Never give generic \"stop buying coffee\" advice.\n" +
+  "3. Prioritize runway preservation and income smoothing over rigid " +
+  "traditional monthly budgeting buckets.\n" +
+  "4. For a single day's data, keep insights short, scannable, and focused on " +
+  "behavioral patterns. For a month's data, focus on macro trends, burn-rate " +
+  "stability, and strategic runway forecasting.\n\n" +
+  "All amounts are in Philippine Pesos (PHP). Based on the spending summary " +
+  "below, give a short read plus ONE practical tip. Use light Markdown: wrap " +
+  "key numbers/items in **bold**, and use new lines or short bullet lines " +
+  "(start a line with \"- \") when it helps scannability. No headings. Keep it " +
+  "under ~70 words. Address the user directly as \"you\".";
 
 @Injectable({
   providedIn: "root",
 })
 export class GeminiService {
+  /** Rotating cursor so successive requests start on different keys. */
+  private keyCursor = 0;
+
   constructor(private localAi: LocalAiService) {}
 
-  /** True when an API key has been configured in the environment. */
+  /** True when any provider (Gemini, OpenRouter, Groq, or NVIDIA) has a key. */
   get isConfigured(): boolean {
-    return !!environment.geminiApiKey;
+    return (
+      this.apiKeys.length > 0 ||
+      this.openRouterConfigured ||
+      this.groqConfigured ||
+      this.nvidiaConfigured
+    );
+  }
+
+  /** OpenRouter fallback key, trimmed. */
+  private get openRouterKey(): string {
+    return ((environment as any).openRouterApiKey ?? "").toString().trim();
+  }
+
+  get openRouterConfigured(): boolean {
+    return this.openRouterKey.length > 0;
+  }
+
+  /** Groq fallback key, trimmed. */
+  private get groqKey(): string {
+    return ((environment as any).groqApiKey ?? "").toString().trim();
+  }
+
+  get groqConfigured(): boolean {
+    return this.groqKey.length > 0;
+  }
+
+  /** NVIDIA NIM fallback keys (single + array), trimmed and de-duplicated. */
+  private get nvidiaKeys(): string[] {
+    const env = environment as any;
+    const extra: string[] = Array.isArray(env.nvidiaApiKeys)
+      ? env.nvidiaApiKeys
+      : [];
+    const all = [env.nvidiaApiKey, ...extra]
+      .map((k) => (k ?? "").toString().trim())
+      .filter((k) => k.length > 0);
+    return Array.from(new Set(all));
+  }
+
+  get nvidiaConfigured(): boolean {
+    return this.nvidiaKeys.length > 0;
+  }
+
+  /**
+   * All configured keys (the single `geminiApiKey` plus any `geminiApiKeys`),
+   * trimmed, de-duplicated, and emptied of blanks. Used for quota failover.
+   */
+  private get apiKeys(): string[] {
+    const extra: string[] = Array.isArray((environment as any).geminiApiKeys)
+      ? (environment as any).geminiApiKeys
+      : [];
+    const all = [environment.geminiApiKey, ...extra]
+      .map((k) => (k ?? "").toString().trim())
+      .filter((k) => k.length > 0);
+    return Array.from(new Set(all));
   }
 
   /**
@@ -97,7 +187,10 @@ export class GeminiService {
     try {
       const text = await this.generate([{ text: prompt }], {
         temperature: 0.6,
-        maxOutputTokens: 200,
+        maxOutputTokens: 400,
+        // gemini-2.5-flash "thinking" tokens count against the output cap and
+        // were eating the whole budget, truncating Pebby mid-sentence. Disable.
+        thinkingConfig: { thinkingBudget: 0 },
       });
       return text.trim();
     } catch (err) {
@@ -166,9 +259,100 @@ export class GeminiService {
     }
   }
 
+  /**
+   * Extracts purchased line items from a receipt image or PDF. `mimeType` is the
+   * file's type (e.g. image/jpeg, image/png, application/pdf). Each item is
+   * categorized into one of `categories`, and fields the parser is unsure about
+   * are flagged in `uncertainFields`.
+   */
+  async scanReceipt(
+    base64: string,
+    mimeType: string,
+    categories: string[]
+  ): Promise<ReceiptScanResult> {
+    const schema = {
+      type: "OBJECT",
+      properties: {
+        date: { type: "STRING", nullable: true },
+        items: {
+          type: "ARRAY",
+          items: {
+            type: "OBJECT",
+            properties: {
+              description: { type: "STRING" },
+              amount: { type: "NUMBER" },
+              date: { type: "STRING", nullable: true },
+              category: { type: "STRING" },
+              uncertainFields: { type: "ARRAY", items: { type: "STRING" } },
+            },
+            required: ["description", "amount", "category"],
+          },
+        },
+      },
+      required: ["items"],
+    };
+
+    const prompt =
+      `You are a precise receipt parser. From the attached receipt ` +
+      `${mimeType.includes("pdf") ? "PDF" : "image"}, extract every PURCHASED ` +
+      `line item. EXCLUDE non-purchase lines: subtotal, total, tax/VAT, tip, ` +
+      `service charge, change, cash/card/payment lines, discounts, loyalty ` +
+      `points, and store/header/footer text. For each item return: description ` +
+      `(clean product name), amount (the line's price as a number), date ` +
+      `(YYYY-MM-DD; use the receipt's overall date when the line has none), and ` +
+      `category chosen from THIS EXACT LIST: ${categories.join(", ")} — use only ` +
+      `a value from that list, or "default" if none fits. Also return the ` +
+      `receipt's overall date as "date" (YYYY-MM-DD or null). For ANY field you ` +
+      `are not confident about (blurry/ambiguous text), add that field's name ` +
+      `("description" | "amount" | "date" | "category") to that item's ` +
+      `uncertainFields array; otherwise leave uncertainFields empty.`;
+
+    const text = await this.generate(
+      [
+        { text: prompt },
+        { inline_data: { mime_type: mimeType, data: base64 } },
+      ],
+      {
+        responseMimeType: "application/json",
+        responseSchema: schema,
+        temperature: 0,
+      }
+    );
+
+    return this.normalizeReceipt(JSON.parse(this.extractJson(text)));
+  }
+
   // ---------------------------------------------------------------------------
   // Internal
   // ---------------------------------------------------------------------------
+
+  private normalizeReceipt(raw: any): ReceiptScanResult {
+    const rawItems: any[] = Array.isArray(raw?.items) ? raw.items : [];
+    const items: ReceiptLineItem[] = rawItems
+      .map((it) => {
+        const amount = Number(it?.amount);
+        return {
+          description: (it?.description ?? "").toString().trim(),
+          amount: Number.isFinite(amount) ? amount : 0,
+          date: this.normalizeDate(it?.date),
+          category: (it?.category ?? "default").toString().trim().toLowerCase(),
+          uncertainFields: Array.isArray(it?.uncertainFields)
+            ? it.uncertainFields.map((f: any) => f.toString())
+            : [],
+        };
+      })
+      .filter((it) => it.description.length > 0);
+
+    return { date: this.normalizeDate(raw?.date), items };
+  }
+
+  private normalizeDate(value: any): string | null {
+    if (typeof value !== "string") {
+      return null;
+    }
+    const match = value.match(/\d{4}-\d{2}-\d{2}/);
+    return match ? match[0] : null;
+  }
 
   /**
    * If the given error is a cloud usage-limit error and an on-device model is
@@ -195,17 +379,129 @@ export class GeminiService {
     return (fenced ? fenced[1] : text).trim();
   }
 
-  /** Shared call to the Gemini generateContent endpoint; returns the text part. */
+  /**
+   * Provider-level entry point. Tries Gemini first (with its own multi-key
+   * failover), then each configured cloud fallback in order (OpenRouter, then
+   * Groq). A Gemini *quota* failure is re-raised when every fallback also fails,
+   * so text callers can still drop to the on-device model via tryLocal().
+   */
   private async generate(parts: any[], generationConfig: any): Promise<string> {
-    if (!this.isConfigured) {
+    try {
+      return await this.generateGemini(parts, generationConfig);
+    } catch (err) {
+      let lastErr: unknown = err;
+      for (const fallback of this.fallbackProviders()) {
+        try {
+          return await fallback(parts, generationConfig);
+        } catch (fbErr) {
+          console.warn("AI fallback failed:", fbErr);
+          lastErr = fbErr;
+        }
+      }
+      // Preserve the Gemini limit signal so text methods can try on-device AI.
+      if (err instanceof GeminiLimitError) {
+        throw err;
+      }
+      throw lastErr;
+    }
+  }
+
+  /** Configured cloud fallbacks, in priority order. */
+  private fallbackProviders(): Array<
+    (parts: any[], cfg: any) => Promise<string>
+  > {
+    const providers: Array<(parts: any[], cfg: any) => Promise<string>> = [];
+    if (this.openRouterConfigured) {
+      providers.push((p, c) => this.generateOpenRouter(p, c));
+    }
+    if (this.groqConfigured) {
+      providers.push((p, c) => this.generateGroq(p, c));
+    }
+    if (this.nvidiaConfigured) {
+      providers.push((p, c) => this.generateNvidia(p, c));
+    }
+    return providers;
+  }
+
+  /**
+   * Calls the Gemini generateContent endpoint with quota failover.
+   *
+   * Keys are tried in round-robin order (so load spreads across them). If a key
+   * returns a 429 we move on to the next key immediately; any other key error
+   * (invalid key, bad request, network) is also skipped so one dead key never
+   * blocks a working one. If EVERY key is rate-limited we honour the shortest
+   * suggested `retryDelay` (free-tier per-minute caps clear in seconds) and
+   * retry one key once before giving up.
+   */
+  private async generateGemini(
+    parts: any[],
+    generationConfig: any
+  ): Promise<string> {
+    const keys = this.apiKeys;
+    if (keys.length === 0) {
       throw new Error(
         "Gemini API key is not set. Add it to src/app/environments/environment.ts (geminiApiKey)."
       );
     }
 
+    // Round-robin: start at the cursor, then advance it for the next request.
+    const ordered = keys.map((_, i) => keys[(this.keyCursor + i) % keys.length]);
+    this.keyCursor = (this.keyCursor + 1) % keys.length;
+
+    let lastLimit: GeminiLimitError | null = null;
+    let lastOther: Error | null = null;
+    let lastDelay: number | null = null;
+
+    for (const key of ordered) {
+      const r = await this.callOnce(key, parts, generationConfig);
+      if (r.ok) {
+        return r.text;
+      }
+      if (r.limit) {
+        lastLimit = r.error as GeminiLimitError;
+        lastDelay = r.retryDelaySeconds;
+      } else {
+        lastOther = r.error;
+      }
+      // Try the next key (if any) before giving up.
+    }
+
+    // Every key failed. If the failures were quota limits with a short suggested
+    // delay, wait it out and retry the last key once.
+    if (lastLimit && lastDelay !== null && lastDelay <= 60) {
+      await this.delay(lastDelay * 1000 + 500);
+      const retry = await this.callOnce(
+        ordered[ordered.length - 1],
+        parts,
+        generationConfig
+      );
+      if (retry.ok) {
+        return retry.text;
+      }
+    }
+
+    // Prefer surfacing a quota error (at least one key authenticated) over an
+    // invalid-key/network error.
+    throw lastLimit ?? lastOther ?? new GeminiLimitError();
+  }
+
+  /** A single endpoint call with one key. Never throws; returns a result tag. */
+  private async callOnce(
+    key: string,
+    parts: any[],
+    generationConfig: any
+  ): Promise<
+    | { ok: true; text: string }
+    | {
+        ok: false;
+        limit: boolean;
+        error: Error;
+        retryDelaySeconds: number | null;
+      }
+  > {
     const url =
       `${GENERATIVE_LANGUAGE_ENDPOINT}/${environment.geminiModel}:generateContent` +
-      `?key=${environment.geminiApiKey}`;
+      `?key=${key}`;
 
     let response: Response;
     try {
@@ -215,15 +511,30 @@ export class GeminiService {
         body: JSON.stringify({ contents: [{ parts }], generationConfig }),
       });
     } catch {
-      throw new Error("Could not reach the Gemini API. Check your connection.");
+      return {
+        ok: false,
+        limit: false,
+        error: new Error("Could not reach the Gemini API. Check your connection."),
+        retryDelaySeconds: null,
+      };
     }
 
     if (!response.ok) {
-      const detail = await this.readError(response);
+      const { message, retryDelaySeconds } = await this.readError(response);
       if (response.status === 429) {
-        throw new GeminiLimitError(detail);
+        return {
+          ok: false,
+          limit: true,
+          error: new GeminiLimitError(message),
+          retryDelaySeconds,
+        };
       }
-      throw new Error(`Gemini request failed (${response.status}). ${detail}`);
+      return {
+        ok: false,
+        limit: false,
+        error: new Error(`Gemini request failed (${response.status}). ${message}`),
+        retryDelaySeconds: null,
+      };
     }
 
     const data = await response.json();
@@ -231,10 +542,182 @@ export class GeminiService {
       data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!text) {
-      throw new Error("Gemini returned an empty response.");
+      return {
+        ok: false,
+        limit: false,
+        error: new Error("Gemini returned an empty response."),
+        retryDelaySeconds: null,
+      };
     }
 
-    return text;
+    return { ok: true, text };
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private generateOpenRouter(parts: any[], cfg: any): Promise<string> {
+    const env = environment as any;
+    const hasImage = parts.some((p) => p?.inline_data);
+    return this.generateOpenAiCompatible(
+      {
+        provider: "OpenRouter",
+        endpoint: "https://openrouter.ai/api/v1/chat/completions",
+        key: this.openRouterKey,
+        model: hasImage
+          ? env.openRouterVisionModel ||
+            "meta-llama/llama-3.2-11b-vision-instruct:free"
+          : env.openRouterModel || "meta-llama/llama-3.3-70b-instruct:free",
+        headers: {
+          "HTTP-Referer": this.siteUrl(),
+          "X-Title": "Personal Expense Budgeting",
+        },
+      },
+      parts,
+      cfg
+    );
+  }
+
+  private generateGroq(parts: any[], cfg: any): Promise<string> {
+    const env = environment as any;
+    const hasImage = parts.some((p) => p?.inline_data);
+    return this.generateOpenAiCompatible(
+      {
+        provider: "Groq",
+        endpoint: "https://api.groq.com/openai/v1/chat/completions",
+        key: this.groqKey,
+        model: hasImage
+          ? env.groqVisionModel || "meta-llama/llama-4-scout-17b-16e-instruct"
+          : env.groqModel || "llama-3.3-70b-versatile",
+      },
+      parts,
+      cfg
+    );
+  }
+
+  private async generateNvidia(parts: any[], cfg: any): Promise<string> {
+    const env = environment as any;
+    const hasImage = parts.some((p) => p?.inline_data);
+    const base = (env.nvidiaBaseUrl || "https://integrate.api.nvidia.com/v1")
+      .toString()
+      .replace(/\/+$/, "");
+    const model = hasImage
+      ? env.nvidiaVisionModel || "meta/llama-3.2-90b-vision-instruct"
+      : env.nvidiaModel || "nvidia/llama-3.1-nemotron-70b-instruct";
+
+    // Try each NVIDIA key in turn so a rate-limited key falls over to the next.
+    let lastErr: unknown = null;
+    for (const key of this.nvidiaKeys) {
+      try {
+        return await this.generateOpenAiCompatible(
+          {
+            provider: "NVIDIA",
+            endpoint: `${base}/chat/completions`,
+            key,
+            model,
+          },
+          parts,
+          cfg
+        );
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    throw lastErr ?? new Error("NVIDIA request failed.");
+  }
+
+  /**
+   * Shared adapter for OpenAI-compatible chat APIs (OpenRouter, Groq, NVIDIA).
+   * Translates our Gemini-style `parts` (text + inline_data) into chat messages,
+   * picking the supplied vision/text model already resolved by the caller. JSON
+   * requests are asked for via `response_format`.
+   *
+   * Note: image parts are sent as data URLs, so PNG/JPEG receipts work; PDFs are
+   * not reliably parsed by these vision models, so PDF scanning still relies on
+   * Gemini.
+   */
+  private async generateOpenAiCompatible(
+    opts: {
+      provider: string;
+      endpoint: string;
+      key: string;
+      model: string;
+      headers?: Record<string, string>;
+    },
+    parts: any[],
+    generationConfig: any
+  ): Promise<string> {
+    const content = parts.map((p) => {
+      if (p?.inline_data) {
+        return {
+          type: "image_url",
+          image_url: {
+            url: `data:${p.inline_data.mime_type};base64,${p.inline_data.data}`,
+          },
+        };
+      }
+      return { type: "text", text: p?.text ?? "" };
+    });
+
+    const body: any = {
+      model: opts.model,
+      messages: [{ role: "user", content }],
+    };
+    if (generationConfig?.temperature !== undefined) {
+      body.temperature = generationConfig.temperature;
+    }
+    if (generationConfig?.maxOutputTokens !== undefined) {
+      body.max_tokens = generationConfig.maxOutputTokens;
+    }
+    if (generationConfig?.responseMimeType === "application/json") {
+      body.response_format = { type: "json_object" };
+    }
+
+    let response: Response;
+    try {
+      response = await fetch(opts.endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${opts.key}`,
+          ...(opts.headers ?? {}),
+        },
+        body: JSON.stringify(body),
+      });
+    } catch {
+      throw new Error(`Could not reach ${opts.provider}. Check your connection.`);
+    }
+
+    if (!response.ok) {
+      const { message } = await this.readError(response);
+      if (response.status === 429) {
+        throw new GeminiLimitError(
+          message || `${opts.provider} rate limit reached.`
+        );
+      }
+      throw new Error(
+        `${opts.provider} request failed (${response.status}). ${message}`
+      );
+    }
+
+    const data = await response.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text) {
+      throw new Error(`${opts.provider} returned an empty response.`);
+    }
+    return typeof text === "string" ? text : JSON.stringify(text);
+  }
+
+  /** Origin used for OpenRouter's optional referer header (SSR-safe). */
+  private siteUrl(): string {
+    try {
+      return typeof window !== "undefined" && window.location?.origin
+        ? window.location.origin
+        : "https://ang-fire-b15d9.web.app";
+    } catch {
+      return "https://ang-fire-b15d9.web.app";
+    }
   }
 
   private normalize(raw: any): GeminiScanResult {
@@ -245,12 +728,33 @@ export class GeminiService {
     };
   }
 
-  private async readError(response: Response): Promise<string> {
+  /**
+   * Reads the API error body, returning the human message plus any retry delay
+   * Google suggests (from the RetryInfo detail, e.g. "21s") in seconds.
+   */
+  private async readError(
+    response: Response
+  ): Promise<{ message: string; retryDelaySeconds: number | null }> {
     try {
       const err = await response.json();
-      return err?.error?.message ?? "";
+      const message = err?.error?.message ?? "";
+      let retryDelaySeconds: number | null = null;
+      const details = err?.error?.details;
+      if (Array.isArray(details)) {
+        const retryInfo = details.find(
+          (d: any) =>
+            typeof d?.["@type"] === "string" && d["@type"].includes("RetryInfo")
+        );
+        const delay = retryInfo?.retryDelay;
+        const match =
+          typeof delay === "string" ? delay.match(/([\d.]+)s/) : null;
+        if (match) {
+          retryDelaySeconds = Math.ceil(parseFloat(match[1]));
+        }
+      }
+      return { message, retryDelaySeconds };
     } catch {
-      return "";
+      return { message: "", retryDelaySeconds: null };
     }
   }
 }

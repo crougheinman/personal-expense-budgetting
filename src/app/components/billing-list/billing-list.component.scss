@@ -146,29 +146,6 @@
   }
 }
 
-.date-filter {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  mat-form-field {
-    flex: 1;
-
-    .mat-form-field-flex {
-      border-radius: 4px;
-      background-color: $color-surface-3;
-    }
-
-    .mat-form-field-outline {
-      display: none;
-    }
-
-    .mat-form-field-underline {
-      display: none;
-    }
-  }
-}
-
 .search-container {
   display: flex;
   align-items: flex-start;
@@ -222,7 +199,13 @@
     }
   }
 
-  // Professional bill card
+  // The swipe wrapper is the grid item; it clips the sliding card, so it carries
+  // the card's rounded corners.
+  .swipe-cell {
+    border-radius: 14px;
+  }
+
+  // Professional bill card — the sliding foreground (paired with .swipe-fg).
   .bill-card {
     display: flex;
     flex-direction: column;
@@ -232,13 +215,19 @@
     border-radius: 14px;
     padding: 16px;
     cursor: pointer;
-    transition: border-color 0.2s ease, transform 0.2s ease,
-      box-shadow 0.2s ease;
+    // transform is the swipe slide; keep border/background transitions too.
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+      border-color 0.2s ease, background-color 0.2s ease;
 
+    &.is-dragging {
+      transition: none; // follow the finger 1:1 while dragging
+    }
+
+    // Lift/large shadow would be clipped by the swipe wrapper's overflow, so the
+    // hover cue is a border + surface tint instead.
     &:hover {
       border-color: $color-accent;
-      transform: translateY(-3px);
-      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.4);
+      background: $color-surface-2;
     }
 
     .bill-card-head {

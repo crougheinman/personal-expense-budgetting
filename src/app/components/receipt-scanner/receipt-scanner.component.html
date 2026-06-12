@@ -1,0 +1,242 @@
+<div class="receipt-scanner">
+  <!-- Header -->
+  <div class="rs-header">
+    <h2><mat-icon>document_scanner</mat-icon> Scan Receipt</h2>
+    <button
+      type="button"
+      class="rs-close"
+      mat-icon-button
+      (click)="close()"
+      aria-label="Close"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="rs-body">
+    <!-- STEP 1: Upload -->
+    <div
+      class="rs-upload"
+      *ngIf="status === 'upload'"
+      [class.dragging]="isDragging"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+    >
+      <input
+        #fileInput
+        type="file"
+        accept="image/jpeg,image/png,image/webp,application/pdf"
+        hidden
+        (change)="onFileSelected($event)"
+      />
+      <mat-icon class="rs-upload__icon">cloud_upload</mat-icon>
+      <p class="rs-upload__title">Drag &amp; drop a receipt here</p>
+      <p class="rs-upload__sub">JPEG, PNG, or PDF</p>
+      <button
+        type="button"
+        mat-raised-button
+        color="primary"
+        (click)="fileInput.click()"
+        [disabled]="!geminiConfigured"
+      >
+        <mat-icon>upload_file</mat-icon> Choose file
+      </button>
+      <p class="rs-upload__hint" *ngIf="!geminiConfigured">
+        Add a Google Gemini API key in the environment to enable scanning.
+      </p>
+    </div>
+
+    <!-- Processing -->
+    <div class="rs-status" *ngIf="status === 'processing'">
+      <mat-progress-spinner mode="indeterminate" diameter="52"></mat-progress-spinner>
+      <p>Reading your receipt with AI…</p>
+      <small>{{ fileName }}</small>
+    </div>
+
+    <!-- Error -->
+    <div class="rs-status rs-status--error" *ngIf="status === 'error'">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ errorMessage }}</p>
+      <button type="button" mat-stroked-button (click)="reset()">
+        <mat-icon>refresh</mat-icon> Try again
+      </button>
+    </div>
+
+    <!-- No items -->
+    <div class="rs-status" *ngIf="status === 'empty'">
+      <mat-icon>receipt_long</mat-icon>
+      <p>No line items were found on this receipt.</p>
+      <button type="button" mat-stroked-button (click)="reset()">
+        <mat-icon>refresh</mat-icon> Scan another
+      </button>
+    </div>
+
+    <!-- STEP 2: Review split-view -->
+    <div class="rs-review" *ngIf="status === 'review' || status === 'saving'">
+      <!-- Receipt preview -->
+      <div class="rs-preview">
+        <div class="rs-preview__scroll">
+          <img
+            *ngIf="!isPdf && previewUrl"
+            [src]="previewUrl"
+            alt="Receipt preview"
+            class="rs-preview__img"
+            [class.zoomed]="zoomed"
+            (click)="toggleZoom()"
+          />
+          <div class="rs-preview__pdf" *ngIf="isPdf">
+            <mat-icon>picture_as_pdf</mat-icon>
+            <span>PDF receipt</span>
+            <small>Items extracted below</small>
+          </div>
+        </div>
+        <div class="rs-preview__caption">
+          <mat-icon>{{ isPdf ? 'picture_as_pdf' : 'image' }}</mat-icon>
+          <span>{{ fileName }}</span>
+          <button
+            *ngIf="!isPdf"
+            type="button"
+            class="rs-zoom"
+            (click)="toggleZoom()"
+            [attr.aria-label]="zoomed ? 'Zoom out' : 'Zoom in'"
+          >
+            <mat-icon>{{ zoomed ? 'zoom_out' : 'zoom_in' }}</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Editable line items -->
+      <div class="rs-items">
+        <div class="rs-items__bulk">
+          <label class="rs-checkbox">
+            <input
+              type="checkbox"
+              [checked]="allSelected"
+              [indeterminate]="someSelected"
+              (change)="onSelectAllChange($event)"
+            />
+            <span>Select all</span>
+          </label>
+          <select
+            class="rs-bulkcat"
+            [value]="bulkCategory"
+            (change)="onBulkCategoryChange($event)"
+            aria-label="Set category for all selected items"
+          >
+            <option value="">Set category…</option>
+            <option *ngFor="let c of categories" [value]="c">
+              {{ c | titlecase }}
+            </option>
+          </select>
+        </div>
+
+        <form [formGroup]="form" class="rs-table">
+          <div formArrayName="items">
+            <div
+              class="rs-row"
+              *ngFor="let group of itemControls; let i = index"
+              [formGroupName]="i"
+              [class.unselected]="!group.get('selected')?.value"
+            >
+              <label class="rs-row__check rs-checkbox">
+                <input
+                  type="checkbox"
+                  formControlName="selected"
+                  (change)="onRowSelectChange()"
+                  [attr.aria-label]="'Select ' + group.get('description')?.value"
+                />
+              </label>
+              <input
+                class="rs-row__desc"
+                type="text"
+                formControlName="description"
+                placeholder="Description"
+                aria-label="Description"
+                [class.uncertain]="isUncertain(group, 'description')"
+              />
+              <div class="rs-row__meta">
+                <input
+                  class="rs-row__date"
+                  type="date"
+                  formControlName="date"
+                  aria-label="Date"
+                  [class.uncertain]="isUncertain(group, 'date')"
+                />
+                <input
+                  class="rs-row__amount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  formControlName="amount"
+                  placeholder="0.00"
+                  aria-label="Amount"
+                  [class.uncertain]="isUncertain(group, 'amount')"
+                />
+                <select
+                  class="rs-row__cat"
+                  formControlName="category"
+                  aria-label="Category"
+                  [class.uncertain]="isUncertain(group, 'category')"
+                >
+                  <option *ngFor="let c of categories" [value]="c">
+                    {{ c | titlecase }}
+                  </option>
+                </select>
+              </div>
+              <button
+                type="button"
+                class="rs-row__del"
+                (click)="removeRow(i)"
+                aria-label="Remove item"
+                title="Remove item"
+              >
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Sticky action footer -->
+  <div class="rs-footer" *ngIf="status === 'review' || status === 'saving'">
+    <div class="rs-footer__total">
+      <span class="rs-footer__total-label">Selected total</span>
+      <span class="rs-footer__total-value">{{
+        selectedTotal | currency : "PHP" : "symbol" : "1.2-2"
+      }}</span>
+    </div>
+    <div class="rs-footer__actions">
+      <button
+        type="button"
+        mat-stroked-button
+        (click)="close()"
+        [disabled]="status === 'saving'"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        mat-raised-button
+        color="primary"
+        class="rs-add"
+        (click)="bulkAdd()"
+        [disabled]="status === 'saving' || selectedCount === 0"
+      >
+        <mat-progress-spinner
+          *ngIf="status === 'saving'"
+          diameter="18"
+          mode="indeterminate"
+        ></mat-progress-spinner>
+        <mat-icon *ngIf="status !== 'saving'">playlist_add_check</mat-icon>
+        {{
+          status === 'saving'
+            ? 'Adding…'
+            : 'Bulk Add Selected (' + selectedCount + ')'
+        }}
+      </button>
+    </div>
+  </div>
+</div>

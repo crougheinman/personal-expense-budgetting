@@ -200,6 +200,93 @@ a {
   }
 }
 
+// Pebby report — word-by-word typing reveal + light Markdown. These target
+// [innerHTML]-injected nodes, so they live globally (component-scoped styles
+// don't reach injected content). ------------------------------------------------
+.pebby-text {
+  .pebby-line {
+    margin: 0 0 6px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .pebby-list {
+    margin: 4px 0;
+    padding-left: 18px;
+
+    li {
+      margin: 2px 0;
+    }
+  }
+
+  strong {
+    color: var(--app-accent-text);
+    font-weight: 700;
+  }
+
+  // Each word fades/rises in on a staggered delay → "speaking in real time".
+  .pw {
+    display: inline-block;
+    opacity: 0;
+    animation: pebby-word 0.26s ease forwards;
+  }
+}
+
+@keyframes pebby-word {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// Swipe-to-delete — shared by the expense, bill and inventory lists. ----------
+// `.swipe-cell` clips the sliding `.swipe-fg`; `.swipe-cell__bg` is the delete
+// affordance revealed as the foreground slides right (see SwipeToDeleteDirective).
+.swipe-cell {
+  position: relative;
+  overflow: hidden;
+
+  .swipe-cell__bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 22px;
+    background: color-mix(in srgb, var(--app-error) 16%, var(--app-surface));
+    color: var(--app-error);
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background-color 0.15s ease;
+
+    .mat-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+    }
+
+    // Brighten once dragged past the delete threshold.
+    &.armed {
+      background: color-mix(in srgb, var(--app-error) 32%, var(--app-surface));
+    }
+  }
+}
+
+// The foreground row. Each list's own foreground class (.expense-row,
+// .bill-card, .inventory-row) owns the `transform` transition + `.is-dragging`
+// override, because component-scoped rules outrank this global one.
+.swipe-fg {
+  position: relative;
+  touch-action: pan-y; // vertical scroll stays native; horizontal is the gesture
+  will-change: transform;
+}
+
 // Snackbar styles ------------------------------------------------------------
 .success-snackbar {
   --mdc-snackbar-container-color: #{$color-surface-2};
@@ -224,24 +311,62 @@ a {
 
 // Mobile fullscreen dialog styles --------------------------------------------
 .mobile-fullscreen-dialog {
+  // The panelClass lands on the overlay pane; MatDialog sets an inline
+  // height:100vh on it. On mobile, 100vh is TALLER than the visible viewport, so
+  // the bottom of a fullscreen dialog (its sticky footer) ends up below the
+  // screen edge. `100dvh` (dynamic viewport height) excludes the browser chrome;
+  // `100vh` stays as a fallback for older engines.
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+
   .mat-mdc-dialog-container {
     padding: 0 !important;
     margin: 0 !important;
     border-radius: 0 !important;
     max-width: 100vw !important;
-    max-height: 100vh !important;
     width: 100vw !important;
-    height: 100vh !important;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    height: 100vh !important;
+    height: 100dvh !important;
   }
 
   .mat-mdc-dialog-content {
     padding: 0 !important;
     margin: 0 !important;
     max-height: 100vh !important;
+    max-height: 100dvh !important;
     overflow-y: auto;
+  }
+}
+
+// Keep Material overlays (dialogs, menus, snackbars) above the app chrome.
+// The mobile header and bottom nav sit at z-index 1100; the CDK overlay
+// container defaults to 1000, so a fullscreen dialog would otherwise render
+// *behind* them — hiding the dialog's own header (close) and footer (cancel).
+.cdk-overlay-container {
+  z-index: 1200;
+}
+
+// Receipt scanner dialog — let the component own the full surface (no padding),
+// and give it a definite height so its body scrolls and the footer stays pinned.
+.receipt-dialog {
+  .mat-mdc-dialog-container {
+    height: 100%;
+    padding: 0 !important;
+  }
+
+  .mat-mdc-dialog-surface {
+    height: 100%;
+    padding: 0 !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 }
 

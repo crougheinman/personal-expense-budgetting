@@ -11,5 +11,6 @@ export * from './inventory-list/inventory-list.component';
 export * from './inventory-edit/inventory-edit.component';
 export * from './product-scanner/product-scanner';
 export * from './voice-expense/voice-expense.component';
+export * from './receipt-scanner/receipt-scanner.component';
 export * from './camera/camera.component';
 export * from './components-module';
