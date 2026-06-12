@@ -63,6 +63,10 @@ export interface HomeFacadeModel {
   isCurrentMonth: boolean;
   canPrevMonth: boolean;
   canNextMonth: boolean;
+  // Current week + weekday patterns — fed to Pebby for week/surge analysis.
+  thisWeek: number;
+  weekByDay: { day: string; amount: number }[];
+  monthWeekday: { day: string; amount: number }[];
   monthly: MonthlyPoint[];
   topCategories: CategorySlice[];
   stats: StatsView;
@@ -90,6 +94,9 @@ const emptyAnalytics = {
   isCurrentMonth: true,
   canPrevMonth: moment().month() > 0,
   canNextMonth: false,
+  thisWeek: 0,
+  weekByDay: [] as { day: string; amount: number }[],
+  monthWeekday: [] as { day: string; amount: number }[],
   monthly: [] as MonthlyPoint[],
   topCategories: [] as CategorySlice[],
   stats: {
@@ -296,10 +303,17 @@ export class HomeFacade implements OnDestroy {
 
   private summarize(vm: HomeFacadeModel): string {
     return [
-      `Spent this year: ${vm.thisYear}`,
+      `Spent this year (${moment().format("YYYY")}): ${vm.thisYear}`,
+      `This week so far: ${vm.thisWeek}`,
+      `This week by day: ${vm.weekByDay
+        .map((d) => `${d.day}=${d.amount}`)
+        .join(", ")}`,
       `Selected month (${vm.monthLabel}) spent: ${vm.monthSpent}`,
       `Transactions that month: ${vm.monthCount}`,
       `Average per expense that month: ${Math.round(vm.monthAverage)}`,
+      `That month by weekday (find the surge day): ${vm.monthWeekday
+        .map((d) => `${d.day}=${d.amount}`)
+        .join(", ")}`,
       `Last 6 months: ${vm.monthly
         .map((m) => `${m.label}=${m.amount}`)
         .join(", ")}`,
@@ -337,6 +351,40 @@ export class HomeFacade implements OnDestroy {
     const monthSpent = monthExpenses.reduce((s, e) => s + (e.amount || 0), 0);
     const monthCount = monthExpenses.length;
 
+    // Current week (Mon–Sun), bucketed per day.
+    const weekStart = now.clone().startOf("isoWeek");
+    const weekEnd = now.clone().endOf("isoWeek");
+    const weekBuckets = Array.from({ length: 7 }, (_, i) => {
+      const d = weekStart.clone().add(i, "days");
+      return { day: d.format("ddd"), key: d.format("YYYY-MM-DD"), amount: 0 };
+    });
+    for (const e of expenses) {
+      const m = moment(this.dateOf(e));
+      if (m.isSameOrAfter(weekStart) && m.isSameOrBefore(weekEnd)) {
+        const b = weekBuckets.find((b) => b.key === m.format("YYYY-MM-DD"));
+        if (b) {
+          b.amount += e.amount || 0;
+        }
+      }
+    }
+    const thisWeek = weekBuckets.reduce((s, b) => s + b.amount, 0);
+    const weekByDay = weekBuckets.map((b) => ({ day: b.day, amount: b.amount }));
+
+    // Selected month grouped by weekday — reveals which day tends to surge.
+    const weekdayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const weekdayTotals: Record<string, number> = {};
+    weekdayNames.forEach((n) => (weekdayTotals[n] = 0));
+    for (const e of monthExpenses) {
+      const name = moment(this.dateOf(e)).format("ddd");
+      if (name in weekdayTotals) {
+        weekdayTotals[name] += e.amount || 0;
+      }
+    }
+    const monthWeekday = weekdayNames.map((n) => ({
+      day: n,
+      amount: weekdayTotals[n],
+    }));
+
     return {
       user,
       thisYear,
@@ -347,6 +395,9 @@ export class HomeFacade implements OnDestroy {
       isCurrentMonth: offset === 0,
       canPrevMonth: offset > minOffset,
       canNextMonth: offset < 0,
+      thisWeek,
+      weekByDay,
+      monthWeekday,
       monthly: this.buildMonthly(expenses),
       topCategories: this.buildCategories(monthExpenses, monthSpent),
       stats: this.buildStats(expenses, granularity),

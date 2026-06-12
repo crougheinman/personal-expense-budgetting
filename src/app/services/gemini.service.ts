@@ -80,11 +80,17 @@ const PEBBY_PROMPT =
   "4. For a single day's data, keep insights short, scannable, and focused on " +
   "behavioral patterns. For a month's data, focus on macro trends, burn-rate " +
   "stability, and strategic runway forecasting.\n\n" +
-  "All amounts are in Philippine Pesos (PHP). Based on the spending summary " +
-  "below, give a short read plus ONE practical tip. Use light Markdown: wrap " +
-  "key numbers/items in **bold**, and use new lines or short bullet lines " +
-  "(start a line with \"- \") when it helps scannability. No headings. Keep it " +
-  "under ~70 words. Address the user directly as \"you\".";
+  "Cover ALL of these, briefly:\n" +
+  "- Current year: a one-line read of the year-to-date total.\n" +
+  "- Current week: how this week is tracking, calling out the heaviest day if " +
+  "one stands out.\n" +
+  "- This month: from the by-weekday figures, name the weekday that tends to " +
+  "SURGE in spending (the clear pattern), and give ONE concrete, practical tip " +
+  "to manage that surge.\n\n" +
+  "All amounts are in Philippine Pesos (PHP). Use light Markdown: wrap key " +
+  "numbers/items in **bold**, and use short bullet lines (start a line with " +
+  "\"- \") or new lines for scannability. No headings. Keep it under ~90 words. " +
+  "Address the user directly as \"you\".";
 
 @Injectable({
   providedIn: "root",
