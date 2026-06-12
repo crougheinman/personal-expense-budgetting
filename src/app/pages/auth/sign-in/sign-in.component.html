@@ -25,6 +25,22 @@
             />
           </label>
 
+          <label class="auth-field" *ngIf="mode === 'register'">
+            <span class="auth-field__label">Confirm password</span>
+            <input
+              type="password"
+              formControlName="confirmPassword"
+              autocomplete="new-password"
+              placeholder="Re-enter password"
+            />
+          </label>
+
+          <div
+            id="recaptcha-container"
+            class="auth-recaptcha"
+            *ngIf="mode === 'register'"
+          ></div>
+
           <button type="submit" class="auth-submit" [disabled]="vm.isLoading">
             {{
               vm.isLoading

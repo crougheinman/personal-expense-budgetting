@@ -85,6 +85,13 @@
   }
 }
 
+.auth-recaptcha {
+  display: flex;
+  justify-content: center;
+  margin-top: 2px;
+  min-height: 78px;
+}
+
 .auth-divider {
   display: flex;
   align-items: center;

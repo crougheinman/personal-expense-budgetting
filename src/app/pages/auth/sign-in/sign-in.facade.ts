@@ -90,6 +90,11 @@ export class SignInFacade {
     }
   }
 
+  /** Surface a validation/auth message on the sign-in page. */
+  setError(message: string): void {
+    this.errorMessage$.next(message);
+  }
+
   private emailErrorMessage(error: any): string {
     switch (error?.code ?? "") {
       case "auth/invalid-credential":

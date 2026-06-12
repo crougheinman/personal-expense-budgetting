@@ -46,5 +46,9 @@ Thumbs.db
 *-debug.log
 .runtimeconfig.json
 
-# Local environment with secrets (copy environment.template.ts -> environment.ts)
+# Local environment with secrets (generated from .env by scripts/set-env.js)
 /src/app/environments/environment.ts
+
+# Secrets — source of truth for local + Vercel (paste the same vars in Vercel)
+.env
+.env.local
