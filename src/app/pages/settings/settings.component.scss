@@ -1,7 +1,9 @@
 @use 'variables' as *;
 
 .settings {
-  padding: 20px;
+  // No horizontal padding — the shell (.shell-content) already adds the 16px
+  // side gutter, so this matches the list pages (expenses/bills/inventory).
+  padding: 20px 0;
   max-width: 820px;
   margin: 0 auto;
   color: $color-text;
@@ -149,6 +151,6 @@
   }
 
   @media (max-width: 768px) {
-    padding: 16px;
+    padding: 16px 0px;
   }
 }
