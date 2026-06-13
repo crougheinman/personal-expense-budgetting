@@ -17,6 +17,7 @@ import {
   getCategoryDisplayName 
 } from "@app/models";
 import { ExpensesEditComponent } from "../expenses-edit/expenses-edit.component";
+import { ExpensesDetailComponent } from "../expenses-detail/expenses-detail.component";
 import moment from "moment";
 import { MatDatepickerInputEvent } from "@angular/material/datepicker";
 import { DateRange } from "@angular/material/datepicker";
@@ -91,11 +92,17 @@ export class ExpensesListComponent {
     this.showCategoryFilter = !this.showCategoryFilter;
   }
 
+  /** Tap a row → show read-only details (Edit/Delete live inside the sheet). */
   onClick(expense: Expense): void {
+    this.bottomSheet.open(ExpensesDetailComponent, {
+      data: { ...expense },
+    });
+  }
+
+  /** Swipe a row left → jump straight to the edit form. */
+  openEdit(expense: Expense): void {
     this.bottomSheet.open(ExpensesEditComponent, {
-      data: {
-        ...expense,
-      },
+      data: { ...expense },
     });
   }
 

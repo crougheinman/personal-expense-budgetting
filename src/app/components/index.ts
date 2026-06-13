@@ -2,6 +2,7 @@ export * from './custom/sidebar/sidebar.component'
 export * from './expenses-create/expenses-create.component';
 export * from './expenses-list/expenses-list.component';
 export * from './expenses-edit/expenses-edit.component';
+export * from './expenses-detail/expenses-detail.component';
 export * from './billing-create/billing-create.component';
 export * from './billing-list/billing-list.component';
 export * from './billing-edit/billing-edit.component';
@@ -13,4 +14,6 @@ export * from './product-scanner/product-scanner';
 export * from './voice-expense/voice-expense.component';
 export * from './receipt-scanner/receipt-scanner.component';
 export * from './camera/camera.component';
+export * from './shared/time-picker/time-picker.component';
+export * from './shared/date-picker/date-picker.component';
 export * from './components-module';

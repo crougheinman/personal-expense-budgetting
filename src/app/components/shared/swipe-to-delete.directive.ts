@@ -8,22 +8,28 @@ import {
 } from "@angular/core";
 
 /**
- * Swipe-a-row-to-the-right-to-delete gesture, reusable across the expense, bill
- * and inventory lists. Works with both touch and mouse via Pointer Events.
+ * Horizontal swipe gesture, reusable across the expense, bill and inventory
+ * lists. Works with both touch and mouse via Pointer Events.
  *
- * The host element is the sliding foreground. Place a "delete" affordance as a
- * sibling *behind* it (revealed as the host slides right). Bind:
- *   <div class="bg" [class.armed]="sw.armed"></div>
- *   <div appSwipeToDelete #sw="swipeToDelete"
- *        (tap)="open(item)" (swipeDelete)="confirmDelete(item)"> ... </div>
+ * Swipe RIGHT to delete; optionally swipe LEFT to edit (opt-in via
+ * `[appSwipeLeftEnabled]="true"`). The host element is the sliding foreground;
+ * place a "delete" affordance behind it (revealed sliding right) and, when the
+ * left swipe is enabled, an "edit" affordance behind it too (revealed sliding
+ * left). Bind:
+ *   <div class="bg-delete" [class.armed]="sw.armed"></div>
+ *   <div class="bg-edit"   [class.armed]="sw.armedLeft"></div>
+ *   <div appSwipeToDelete #sw="swipeToDelete" [appSwipeLeftEnabled]="true"
+ *        (tap)="open(item)" (swipeDelete)="confirmDelete(item)"
+ *        (swipeEdit)="edit(item)"> ... </div>
  *
- * - `(tap)`         a clean press with no swipe — use it to open/edit.
- * - `(swipeDelete)` the row was dragged past the delete threshold and released.
- * - `armed`         true once dragged far enough to trigger deletion (for styling).
+ * - `(tap)`         a clean press with no swipe — use it to open a detail view.
+ * - `(swipeDelete)` dragged past the threshold to the RIGHT and released.
+ * - `(swipeEdit)`   dragged past the threshold to the LEFT and released.
+ * - `armed`         dragged far enough RIGHT to trigger deletion (for styling).
+ * - `armedLeft`     dragged far enough LEFT to trigger edit (for styling).
  *
  * Direction is locked on the first movement so vertical scrolling is preserved
- * (pair with `touch-action: pan-y` on the host); only a clear rightward drag is
- * treated as a swipe.
+ * (pair with `touch-action: pan-y` on the host).
  */
 @Directive({
   selector: "[appSwipeToDelete]",
@@ -34,15 +40,19 @@ export class SwipeToDeleteDirective {
   /** When true, the gesture is disabled (taps still pass through as clicks). */
   @Input("appSwipeToDeleteDisabled") disabled = false;
 
+  /** Opt-in: allow a leftward swipe that emits `(swipeEdit)`. Off by default. */
+  @Input("appSwipeLeftEnabled") leftEnabled = false;
+
   @Output() tap = new EventEmitter<void>();
   @Output() swipeDelete = new EventEmitter<void>();
+  @Output() swipeEdit = new EventEmitter<void>();
 
-  /** Current rightward offset (px). */
+  /** Current horizontal offset (px): positive = right, negative = left. */
   dragX = 0;
   /** True while an active horizontal drag is in progress. */
   dragging = false;
 
-  private readonly TRIGGER = 104; // px before deletion is armed
+  private readonly TRIGGER = 104; // px before an action is armed
   private readonly MAX = 140; // px the row can travel
   private startX = 0;
   private startY = 0;
@@ -51,9 +61,14 @@ export class SwipeToDeleteDirective {
 
   constructor(private el: ElementRef<HTMLElement>) {}
 
-  /** True once dragged far enough that releasing will trigger deletion. */
+  /** True once dragged far enough RIGHT that releasing will delete. */
   get armed(): boolean {
     return this.dragX >= this.TRIGGER;
+  }
+
+  /** True once dragged far enough LEFT that releasing will edit. */
+  get armedLeft(): boolean {
+    return this.dragX <= -this.TRIGGER;
   }
 
   @HostListener("pointerdown", ["$event"])
@@ -83,13 +98,18 @@ export class SwipeToDeleteDirective {
       if (Math.abs(dx) < 6 && Math.abs(dy) < 6) {
         return; // too small to decide a direction yet
       }
-      if (Math.abs(dx) > Math.abs(dy) && dx > 0) {
+      // A clear horizontal intent: rightward always (delete); leftward only
+      // when the edit swipe is enabled.
+      const horizontal =
+        Math.abs(dx) > Math.abs(dy) &&
+        (dx > 0 || (dx < 0 && this.leftEnabled));
+      if (horizontal) {
         this.axis = "h";
         this.dragging = true;
         this.el.nativeElement.classList.add("is-dragging");
         this.el.nativeElement.setPointerCapture?.(event.pointerId);
       } else {
-        // Vertical (or leftward) → let the list scroll; abandon the swipe.
+        // Vertical (or a disabled-direction drag) → let the list scroll.
         this.axis = "v";
         this.active = false;
         return;
@@ -99,18 +119,22 @@ export class SwipeToDeleteDirective {
     if (this.axis !== "h") {
       return;
     }
-    this.dragX = Math.max(0, Math.min(dx, this.MAX));
+    const lower = this.leftEnabled ? -this.MAX : 0;
+    this.dragX = Math.max(lower, Math.min(dx, this.MAX));
     this.el.nativeElement.style.transform = `translateX(${this.dragX}px)`;
   }
 
   @HostListener("pointerup")
   onPointerUp(): void {
     if (this.axis === "h" && this.dragging) {
-      const armed = this.armed;
-      const moved = this.dragX > 6;
+      const armedRight = this.armed;
+      const armedLeft = this.armedLeft;
+      const moved = Math.abs(this.dragX) > 6;
       this.reset();
-      if (armed) {
+      if (armedRight) {
         this.swipeDelete.emit();
+      } else if (armedLeft) {
+        this.swipeEdit.emit();
       } else if (!moved) {
         this.tap.emit();
       }

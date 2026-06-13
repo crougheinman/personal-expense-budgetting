@@ -1,0 +1,58 @@
+<div class="wheel" [class.disabled]="disabled" [style.height.px]="wheelHeight">
+  <!-- Centre selection band -->
+  <div class="wheel__band" [style.height.px]="ITEM" aria-hidden="true"></div>
+
+  <!-- Hours -->
+  <div class="wheel__col" #hourCol (scroll)="onScroll('hour', hourCol)">
+    <div class="wheel__pad" [style.height.px]="padPx"></div>
+    <button
+      type="button"
+      class="wheel__item"
+      *ngFor="let h of hours; let i = index"
+      [class.active]="i === hourIndex"
+      [style.height.px]="ITEM"
+      (click)="select('hour', i, hourCol)"
+    >
+      {{ h }}
+    </button>
+    <div class="wheel__pad" [style.height.px]="padPx"></div>
+  </div>
+
+  <span class="wheel__sep">:</span>
+
+  <!-- Minutes -->
+  <div class="wheel__col" #minCol (scroll)="onScroll('min', minCol)">
+    <div class="wheel__pad" [style.height.px]="padPx"></div>
+    <button
+      type="button"
+      class="wheel__item"
+      *ngFor="let m of minutes; let i = index"
+      [class.active]="i === minuteIndex"
+      [style.height.px]="ITEM"
+      (click)="select('min', i, minCol)"
+    >
+      {{ pad2(m) }}
+    </button>
+    <div class="wheel__pad" [style.height.px]="padPx"></div>
+  </div>
+
+  <!-- AM / PM -->
+  <div
+    class="wheel__col wheel__col--wide"
+    #merCol
+    (scroll)="onScroll('mer', merCol)"
+  >
+    <div class="wheel__pad" [style.height.px]="padPx"></div>
+    <button
+      type="button"
+      class="wheel__item"
+      *ngFor="let mer of meridiems; let i = index"
+      [class.active]="i === meridiemIndex"
+      [style.height.px]="ITEM"
+      (click)="select('mer', i, merCol)"
+    >
+      {{ mer }}
+    </button>
+    <div class="wheel__pad" [style.height.px]="padPx"></div>
+  </div>
+</div>

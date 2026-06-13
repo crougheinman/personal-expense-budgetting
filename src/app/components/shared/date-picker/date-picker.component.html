@@ -1,0 +1,60 @@
+<div class="wheel" [class.disabled]="disabled" [style.height.px]="wheelHeight">
+  <!-- Centre selection band -->
+  <div class="wheel__band" [style.height.px]="ITEM" aria-hidden="true"></div>
+
+  <!-- Month -->
+  <div
+    class="wheel__col wheel__col--wide"
+    #monthCol
+    (scroll)="onScroll('month', monthCol)"
+  >
+    <div class="wheel__pad" [style.height.px]="padPx"></div>
+    <button
+      type="button"
+      class="wheel__item"
+      *ngFor="let m of months; let i = index"
+      [class.active]="i === monthIndex"
+      [style.height.px]="ITEM"
+      (click)="select('month', i, monthCol)"
+    >
+      {{ m }}
+    </button>
+    <div class="wheel__pad" [style.height.px]="padPx"></div>
+  </div>
+
+  <!-- Day -->
+  <div class="wheel__col" #dayCol (scroll)="onScroll('day', dayCol)">
+    <div class="wheel__pad" [style.height.px]="padPx"></div>
+    <button
+      type="button"
+      class="wheel__item"
+      *ngFor="let d of days; let i = index; trackBy: trackByNum"
+      [class.active]="i === dayIndex"
+      [style.height.px]="ITEM"
+      (click)="select('day', i, dayCol)"
+    >
+      {{ d }}
+    </button>
+    <div class="wheel__pad" [style.height.px]="padPx"></div>
+  </div>
+
+  <!-- Year -->
+  <div
+    class="wheel__col wheel__col--xwide"
+    #yearCol
+    (scroll)="onScroll('year', yearCol)"
+  >
+    <div class="wheel__pad" [style.height.px]="padPx"></div>
+    <button
+      type="button"
+      class="wheel__item"
+      *ngFor="let y of years; let i = index; trackBy: trackByNum"
+      [class.active]="i === yearIndex"
+      [style.height.px]="ITEM"
+      (click)="select('year', i, yearCol)"
+    >
+      {{ y }}
+    </button>
+    <div class="wheel__pad" [style.height.px]="padPx"></div>
+  </div>
+</div>

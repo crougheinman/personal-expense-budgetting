@@ -1,0 +1,62 @@
+<div class="exp-detail">
+  <span class="sheet-grabber" aria-hidden="true"></span>
+
+  <button
+    mat-icon-button
+    class="detail-close"
+    (click)="close()"
+    aria-label="Close"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <!-- Hero: icon, amount, name, category -->
+  <div class="detail-hero">
+    <div class="detail-icon"><mat-icon>{{ icon }}</mat-icon></div>
+    <span class="detail-amount">{{
+      expense.amount | currency : "PHP" : "symbol" : "1.2-2"
+    }}</span>
+    <span class="detail-name">{{ expense.name }}</span>
+    <span class="detail-cat">
+      <mat-icon>{{ icon }}</mat-icon>
+      {{ categoryName }}
+    </span>
+  </div>
+
+  <!-- Meta rows -->
+  <div class="detail-meta">
+    <div class="meta-row">
+      <div class="meta-ic"><mat-icon>event</mat-icon></div>
+      <div class="meta-text">
+        <span class="meta-label">Date</span>
+        <span class="meta-value">{{ dateLabel }}</span>
+      </div>
+    </div>
+    <div class="meta-row">
+      <div class="meta-ic"><mat-icon>schedule</mat-icon></div>
+      <div class="meta-text">
+        <span class="meta-label">Time</span>
+        <span class="meta-value">{{ timeLabel }}</span>
+      </div>
+    </div>
+    <div class="meta-row" *ngIf="expense.description">
+      <div class="meta-ic"><mat-icon>notes</mat-icon></div>
+      <div class="meta-text">
+        <span class="meta-label">Description</span>
+        <span class="meta-value">{{ expense.description }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="detail-actions">
+    <button type="button" class="act act-edit" (click)="onEdit()">
+      <mat-icon>edit</mat-icon>
+      Edit
+    </button>
+    <button type="button" class="act act-delete" (click)="onDelete()">
+      <mat-icon>delete</mat-icon>
+      Delete
+    </button>
+  </div>
+</div>

@@ -1,0 +1,209 @@
+@use 'variables' as *;
+
+.exp-detail {
+  position: relative;
+  padding: 10px 20px 24px;
+  color: $color-text;
+
+  @media (max-width: 600px) {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+// Bottom-sheet grabber handle
+.sheet-grabber {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: 0 auto 14px;
+  border-radius: 999px;
+  background: $color-border;
+}
+
+.detail-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+
+  mat-icon {
+    color: $color-text-muted;
+  }
+}
+
+// Hero ----------------------------------------------------------------------
+.detail-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 6px 0 18px;
+
+  .detail-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 6px;
+    border-radius: 50%;
+    background: $color-accent-soft;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--app-accent) 22%, transparent);
+
+    mat-icon {
+      color: $color-accent;
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .detail-amount {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .detail-name {
+    font-size: 1.02rem;
+    font-weight: 500;
+    color: $color-text;
+  }
+
+  .detail-cat {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 2px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: $color-surface-2;
+    border: 1px solid $color-border;
+    color: $color-text-muted;
+    font-size: 0.78rem;
+    font-weight: 500;
+
+    mat-icon {
+      font-size: 15px;
+      width: 15px;
+      height: 15px;
+      color: $color-accent;
+    }
+  }
+}
+
+// Meta rows -----------------------------------------------------------------
+.detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: $color-surface-2;
+  border: 1px solid $color-border;
+  border-radius: 14px;
+  padding: 6px 14px;
+
+  .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+
+    & + .meta-row {
+      border-top: 1px solid $color-border;
+    }
+
+    .meta-ic {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: $color-surface-3;
+
+      mat-icon {
+        font-size: 19px;
+        width: 19px;
+        height: 19px;
+        color: $color-accent;
+      }
+    }
+
+    .meta-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .meta-label {
+      font-size: 0.72rem;
+      color: $color-text-muted;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .meta-value {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: $color-text;
+      word-break: break-word;
+    }
+  }
+}
+
+// Actions -------------------------------------------------------------------
+.detail-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+
+  .act {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 46px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: transform 0.12s ease, filter 0.15s ease,
+      background-color 0.15s ease;
+
+    mat-icon {
+      font-size: 19px;
+      width: 19px;
+      height: 19px;
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
+  .act-edit {
+    background: $color-surface-2;
+    border-color: $color-border;
+    color: $color-text;
+
+    &:hover {
+      border-color: $color-accent;
+      color: $color-accent-text;
+      background: $color-accent-soft;
+    }
+  }
+
+  .act-delete {
+    background: color-mix(in srgb, var(--app-error) 14%, var(--app-surface));
+    color: $color-error;
+
+    &:hover {
+      background: color-mix(in srgb, var(--app-error) 24%, var(--app-surface));
+    }
+  }
+}

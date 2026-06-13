@@ -1,45 +1,43 @@
 <ng-container *ngIf="vm$ | async as vm">
-  <!-- Close button for mobile fullscreen -->
-  <button 
-    *ngIf="showCloseButton" 
-    mat-icon-button 
-    class="dialog-close-button"
-    (click)="closeDialog()"
-    aria-label="Close dialog"
-  >
-    <mat-icon>close</mat-icon>
-  </button>
-  
-  <div class="expenses-create px-4 py-3">
-    <h2 class="text-light">Add Expense</h2>
-    <mat-divider></mat-divider>
-    
+  <div class="exp-form">
+    <div class="form-head">
+      <div class="form-head__icon"><mat-icon>add</mat-icon></div>
+      <div class="form-head__text">
+        <h2>Add Expense</h2>
+        <p>Log a new expense.</p>
+      </div>
+      <button
+        *ngIf="showCloseButton"
+        mat-icon-button
+        class="form-close"
+        (click)="closeDialog()"
+        aria-label="Close dialog"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
     <!-- AI Product Scanner (Google Gemini) -->
     <app-product-scanner
       (detected)="onItemDetected($event)"
-      (error)="onScanError($event)">
+      (error)="onScanError($event)"
+    >
     </app-product-scanner>
-    
-    <form [formGroup]="expensesForm" class="pt-4">
+
+    <form [formGroup]="expensesForm" class="form-body">
       <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
         <mat-label>Name</mat-label>
-        <input
-          #expenseName
-          matInput
-          type="text"
-          formControlName="expenseName"
-          required
-        />
-        <mat-error
-          *ngIf="expensesForm.get('expenseName')?.hasError('required')"
-        >
+        <mat-icon matPrefix>label</mat-icon>
+        <input matInput type="text" formControlName="expenseName" required />
+        <mat-error *ngIf="nameControl.hasError('required')">
           Expense name is required
         </mat-error>
       </mat-form-field>
+
       <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
         <mat-label>Amount</mat-label>
+        <span matPrefix class="amount-prefix">₱</span>
         <input
-          #expenseAmount
           matInput
           type="number"
           formControlName="expenseAmount"
@@ -47,21 +45,26 @@
           min="0"
           step="0.01"
         />
-        <mat-error
-          *ngIf="expensesForm.get('expenseAmount')?.hasError('required')"
-        >
+        <mat-error *ngIf="amountControl.hasError('required')">
           Amount is required
         </mat-error>
-        <mat-error *ngIf="expensesForm.get('expenseAmount')?.hasError('min')">
-          Amount must be greater than 0
-        </mat-error>
       </mat-form-field>
+
+      <div class="field-block">
+        <span class="field-label">Date</span>
+        <component-date-picker formControlName="expenseDate"></component-date-picker>
+      </div>
+
+      <div class="field-block">
+        <span class="field-label">Time</span>
+        <component-time-picker formControlName="expenseTime"></component-time-picker>
+      </div>
     </form>
-    
+
     <div class="form-actions">
       <button
-        mat-raised-button
-        color="primary"
+        type="button"
+        class="act act-primary"
         (click)="addExpenses(vm)"
         [disabled]="expensesForm.invalid"
       >

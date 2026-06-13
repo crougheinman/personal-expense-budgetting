@@ -163,19 +163,35 @@
       *ngFor="let expense of vm.expenses; trackBy: trackById"
     >
       <!-- Delete affordance revealed behind the row as it slides right -->
-      <div class="swipe-cell__bg" [class.armed]="sw.armed" aria-hidden="true">
+      <div
+        class="swipe-cell__bg swipe-cell__bg--delete"
+        [class.armed]="sw.armed"
+        aria-hidden="true"
+      >
         <mat-icon>delete</mat-icon>
         <span>Delete</span>
+      </div>
+
+      <!-- Edit affordance revealed behind the row as it slides left -->
+      <div
+        class="swipe-cell__bg swipe-cell__bg--edit"
+        [class.armed]="sw.armedLeft"
+        aria-hidden="true"
+      >
+        <span>Edit</span>
+        <mat-icon>edit</mat-icon>
       </div>
 
       <div
         class="swipe-fg expense-row"
         appSwipeToDelete
+        [appSwipeLeftEnabled]="true"
         #sw="swipeToDelete"
         role="listitem"
         tabindex="0"
         (tap)="onClick(expense)"
         (swipeDelete)="confirmDelete(expense)"
+        (swipeEdit)="openEdit(expense)"
         (keydown.enter)="onClick(expense)"
       >
         <div class="expense-icon-wrap">

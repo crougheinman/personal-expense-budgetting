@@ -1,84 +1,99 @@
-<div class="expenses-edit px-4 py-3">
-  <h2>Edit Expense</h2>
-  <mat-divider></mat-divider>
-  <form [formGroup]="expensesForm" class="pt-4">
+<div class="exp-form">
+  <span class="sheet-grabber" aria-hidden="true"></span>
+
+  <div class="form-head">
+    <div class="form-head__icon"><mat-icon>edit</mat-icon></div>
+    <div class="form-head__text">
+      <h2>Edit Expense</h2>
+      <p>Update the details below.</p>
+    </div>
+    <button
+      mat-icon-button
+      class="form-close"
+      (click)="close()"
+      aria-label="Close"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="expensesForm" class="form-body">
     <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
       <mat-label>Name</mat-label>
-      <input #expenseName matInput type="text" formControlName="expenseName" required />
-      <mat-error *ngIf="expensesForm.get('expenseName')?.hasError('required')">
-      Name is required
+      <mat-icon matPrefix>label</mat-icon>
+      <input matInput type="text" formControlName="expenseName" required />
+      <mat-error *ngIf="nameControl.hasError('required')">
+        Name is required
       </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
       <mat-label>Amount</mat-label>
+      <span matPrefix class="amount-prefix">₱</span>
       <input
-      #expenseAmount
-      matInput
-      type="number"
-      formControlName="expenseAmount"
-      required
+        matInput
+        type="number"
+        formControlName="expenseAmount"
+        required
+        min="0"
+        step="0.01"
       />
-      <mat-error *ngIf="expensesForm.get('expenseAmount')?.hasError('required')">
-      Amount is required
+      <mat-error *ngIf="amountControl.hasError('required')">
+        Amount is required
       </mat-error>
     </mat-form-field>
+
+    <!-- Category — chip picker -->
+    <div class="field-block">
+      <span class="field-label">Category</span>
+      <div class="cat-chips">
+        <button
+          type="button"
+          class="cat-chip"
+          *ngFor="let category of categories"
+          [class.selected]="categoryControl.value === category"
+          (click)="selectCategory(category)"
+        >
+          <mat-icon>{{ categoryIcon(category) }}</mat-icon>
+          <span>{{ categoryLabel(category) }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="field-block">
+      <span class="field-label">Date</span>
+      <component-date-picker formControlName="expenseDate"></component-date-picker>
+    </div>
+
+    <div class="field-block">
+      <span class="field-label">Time</span>
+      <component-time-picker formControlName="expenseTime"></component-time-picker>
+    </div>
 
     <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
       <mat-label>Description</mat-label>
+      <mat-icon matPrefix>notes</mat-icon>
       <textarea
-      #expenseDescription
-      matInput
-      placeholder="Ex. Just anything..."
-      formControlName="expenseDescription"
+        matInput
+        rows="2"
+        placeholder="Optional note…"
+        formControlName="expenseDescription"
       ></textarea>
-      <mat-error *ngIf="expensesForm.get('expenseDescription')?.hasError('required')">
-      Description is required
-      </mat-error>
-    </mat-form-field>
-    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
-      <mat-label>Category</mat-label>
-      <mat-select formControlName="expenseCategory" required>
-        <mat-option *ngFor="let category of categories" [value]="category">
-          {{ category }}
-        </mat-option>
-      </mat-select>
-      <mat-error *ngIf="expensesForm.get('expenseCategory')?.hasError('required')">
-        Category is required
-      </mat-error>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
-      <mat-label>Expense Date</mat-label>
-      <input 
-        #expenseDate
-        matInput 
-        [matDatepicker]="picker" 
-        formControlName="expenseDate" 
-        required>
-      <mat-hint>MM/DD/YYYY</mat-hint>
-      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-      <mat-datepicker #picker></mat-datepicker>
-      <mat-error *ngIf="expensesForm.get('expenseDate')?.hasError('required')">
-        Expense Date is required
-      </mat-error>
     </mat-form-field>
   </form>
+
   <div class="form-actions">
-    <button
-      mat-raised-button
-      color="primary"
-      (click)="updateExpense()"
-      [disabled]="expensesForm.invalid">
-      <mat-icon>save</mat-icon>
-      Update
+    <button type="button" class="act act-ghost" (click)="close()">
+      Cancel
     </button>
     <button
-      mat-raised-button
-      color="warn"
-      (click)="deleteExpense()">
-      <mat-icon>delete</mat-icon>
-      Delete
+      type="button"
+      class="act act-primary"
+      (click)="updateExpense()"
+      [disabled]="expensesForm.invalid"
+    >
+      <mat-icon>save</mat-icon>
+      Save Changes
     </button>
   </div>
 </div>

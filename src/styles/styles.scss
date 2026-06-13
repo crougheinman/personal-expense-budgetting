@@ -245,9 +245,10 @@ a {
   }
 }
 
-// Swipe-to-delete — shared by the expense, bill and inventory lists. ----------
-// `.swipe-cell` clips the sliding `.swipe-fg`; `.swipe-cell__bg` is the delete
-// affordance revealed as the foreground slides right (see SwipeToDeleteDirective).
+// Swipe gestures — shared by the expense, bill and inventory lists. -----------
+// `.swipe-cell` clips the sliding `.swipe-fg`. `.swipe-cell__bg--delete` is the
+// delete affordance revealed as the foreground slides right; the opt-in
+// `.swipe-cell__bg--edit` is revealed as it slides left (see SwipeToDeleteDirective).
 .swipe-cell {
   position: relative;
   overflow: hidden;
@@ -258,9 +259,6 @@ a {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding-left: 22px;
-    background: color-mix(in srgb, var(--app-error) 16%, var(--app-surface));
-    color: var(--app-error);
     font-weight: 600;
     font-size: 0.9rem;
     transition: background-color 0.15s ease;
@@ -270,10 +268,29 @@ a {
       width: 22px;
       height: 22px;
     }
+  }
 
-    // Brighten once dragged past the delete threshold.
+  // Delete — left-aligned, revealed sliding right.
+  .swipe-cell__bg--delete {
+    justify-content: flex-start;
+    padding-left: 22px;
+    background: color-mix(in srgb, var(--app-error) 16%, var(--app-surface));
+    color: var(--app-error);
+
     &.armed {
       background: color-mix(in srgb, var(--app-error) 32%, var(--app-surface));
+    }
+  }
+
+  // Edit — right-aligned, revealed sliding left.
+  .swipe-cell__bg--edit {
+    justify-content: flex-end;
+    padding-right: 22px;
+    background: color-mix(in srgb, var(--app-accent) 18%, var(--app-surface));
+    color: var(--app-accent-text);
+
+    &.armed {
+      background: color-mix(in srgb, var(--app-accent) 34%, var(--app-surface));
     }
   }
 }
@@ -285,6 +302,338 @@ a {
   position: relative;
   touch-action: pan-y; // vertical scroll stays native; horizontal is the gesture
   will-change: transform;
+}
+
+// Expense add / edit form — shared look for the create dialog and edit sheet. -
+// Lives globally so both view-encapsulated components share one design.
+.exp-form {
+  position: relative;
+  padding: 12px 20px 22px;
+  color: $color-text;
+
+  @media (max-width: 600px) {
+    padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .sheet-grabber {
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: 0 auto 12px;
+    border-radius: 999px;
+    background: $color-border;
+  }
+
+  // Header band
+  .form-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .form-head__icon {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: $color-accent-soft;
+
+      mat-icon {
+        color: $color-accent;
+      }
+    }
+
+    .form-head__text {
+      flex: 1 1 auto;
+      min-width: 0;
+
+      h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+        color: $color-text;
+      }
+
+      p {
+        margin: 2px 0 0;
+        font-size: 0.82rem;
+        color: $color-text-muted;
+      }
+    }
+
+    .form-close mat-icon {
+      color: $color-text-muted;
+    }
+  }
+
+  .form-body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  // Two fields side-by-side (date / time); stack on narrow screens.
+  .field-row {
+    display: flex;
+    gap: 12px;
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+      gap: 0;
+    }
+  }
+
+  .amount-prefix {
+    color: $color-text-muted;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+  // Dark-mode: recolour native time-input's clock indicator.
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.7);
+    cursor: pointer;
+  }
+
+  // Category chip picker
+  .field-block {
+    margin-bottom: 16px;
+
+    .field-label {
+      display: block;
+      font-size: 0.78rem;
+      color: $color-text-muted;
+      margin-bottom: 8px;
+    }
+  }
+
+  .cat-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .cat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      border: 1px solid $color-border;
+      background: $color-surface-2;
+      color: $color-text-muted;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+
+      &:hover {
+        border-color: $color-accent;
+        color: $color-accent-text;
+      }
+
+      &.selected {
+        background: $color-accent;
+        border-color: $color-accent;
+        color: $color-accent-on;
+
+        mat-icon {
+          color: $color-accent-on;
+        }
+      }
+    }
+  }
+
+  // Footer actions
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+
+    .act {
+      flex: 1 1 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      height: 46px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: transform 0.12s ease, filter 0.15s ease,
+        background-color 0.15s ease;
+
+      mat-icon {
+        font-size: 19px;
+        width: 19px;
+        height: 19px;
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+    }
+
+    .act-ghost {
+      flex: 0 0 auto;
+      min-width: 96px;
+      background: transparent;
+      border-color: $color-border;
+      color: $color-text-muted;
+
+      &:hover {
+        background: $color-surface-2;
+        color: $color-text;
+      }
+    }
+
+    .act-primary {
+      background: linear-gradient(
+        135deg,
+        $color-accent 0%,
+        $color-accent-strong 100%
+      );
+      color: $color-accent-on;
+      box-shadow: 0 6px 16px color-mix(in srgb, var(--app-accent) 30%, transparent);
+
+      &:hover:not(:disabled) {
+        filter: brightness(1.06);
+      }
+    }
+  }
+}
+
+// Wheel / roulette picker — shared by the time and date pickers. -------------
+// A row of vertically-scrolling columns with a centred selection band and
+// faded top/bottom edges. Lives globally so both pickers share one look.
+.wheel {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 10px;
+  border: 1px solid $color-border;
+  border-radius: 14px;
+  background: $color-surface-2;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+
+  // Fade off-centre rows so they recede like a real wheel.
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 26%,
+    #000 74%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 26%,
+    #000 74%,
+    transparent 100%
+  );
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  // Highlighted centre row
+  .wheel__band {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 10px;
+    background: $color-accent-soft;
+    border-top: 1px solid color-mix(in srgb, var(--app-accent) 45%, transparent);
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--app-accent) 45%, transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wheel__col {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+    min-width: 46px;
+    height: 100%;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      display: none;
+    }
+
+    &--wide {
+      min-width: 58px;
+    }
+
+    &--xwide {
+      min-width: 66px;
+    }
+  }
+
+  .wheel__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    scroll-snap-align: center;
+    font-size: 1.1rem;
+    font-variant-numeric: tabular-nums;
+    color: $color-text-muted;
+    transition: color 0.15s ease, font-weight 0.15s ease, transform 0.15s ease;
+
+    &.active {
+      color: $color-text;
+      font-weight: 700;
+      transform: scale(1.12);
+    }
+  }
+
+  .wheel__sep {
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    padding-bottom: 2px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: $color-text-muted;
+  }
+
+  .wheel__pad {
+    pointer-events: none;
+  }
 }
 
 // Snackbar styles ------------------------------------------------------------
