@@ -3,9 +3,7 @@
     <div class="billing-summary-cards">
       <mat-card class="summary-card">
         <mat-card-header>
-          <mat-card-title>
-            {{ vm.filteredCount }}
-          </mat-card-title>
+          <mat-card-title>{{ vm.totalCount }}</mat-card-title>
           <mat-card-subtitle>Total Bills</mat-card-subtitle>
         </mat-card-header>
       </mat-card>
@@ -14,7 +12,7 @@
           <mat-card-title>
             {{ vm.totalAmount | currency : "PHP" : "symbol" : "1.2-2" }}
           </mat-card-title>
-          <mat-card-subtitle>Total Amount</mat-card-subtitle>
+          <mat-card-subtitle>Total Obligation</mat-card-subtitle>
         </mat-card-header>
       </mat-card>
       <mat-card class="summary-card">
@@ -22,7 +20,7 @@
           <mat-card-title>
             {{ vm.remainingBalance | currency : "PHP" : "symbol" : "1.2-2" }}
           </mat-card-title>
-          <mat-card-subtitle>Remaining Balance</mat-card-subtitle>
+          <mat-card-subtitle>Remaining</mat-card-subtitle>
         </mat-card-header>
       </mat-card>
     </div>
@@ -47,8 +45,9 @@
   </div>
 
   <div class="billing-list">
-    <!-- Swipe a card to the right to delete it (a confirmation is shown). -->
+    <!-- Responsive grid: 3-up on mobile, 4-up on desktop. -->
     <div class="bills-grid">
+      <!-- Swipe a card right to delete it (a confirmation is shown). -->
       <div
         class="swipe-cell"
         *ngFor="let item of vm.billingItems; trackBy: trackById"
@@ -60,27 +59,28 @@
 
         <article
           class="swipe-fg bill-card"
+          [class.is-removing]="isRemoving(item)"
           appSwipeToDelete
           #sw="swipeToDelete"
           tabindex="0"
-          (tap)="onItemClick(item)"
+          (tap)="openDetail(item)"
           (swipeDelete)="confirmDelete(item)"
-          (keydown.enter)="onItemClick(item)"
+          (keydown.enter)="openDetail(item)"
         >
-          <div class="bill-card-head">
-            <div class="bill-icon"><mat-icon>description</mat-icon></div>
+          <header class="bill-card-head">
+            <div class="bill-icon">
+              <mat-icon>{{ typeIcon(item) }}</mat-icon>
+            </div>
+            <span class="bill-type">{{ typeLabel(item) }}</span>
             <span
               class="bill-status"
-              [class.paid]="vm.billPayments && vm.billPayments[item.id]"
+              [class.paid]="isFullyPaid(item)"
+              [class.active]="isSubscription(item)"
             >
-              <mat-icon>{{
-                vm.billPayments && vm.billPayments[item.id]
-                  ? 'check_circle'
-                  : 'schedule'
-              }}</mat-icon>
-              {{ vm.billPayments && vm.billPayments[item.id] ? 'Paid' : 'Pending' }}
+              <mat-icon>{{ statusIcon(item) }}</mat-icon>
+              <span class="bill-status__txt">{{ statusLabel(item) }}</span>
             </span>
-          </div>
+          </header>
 
           <h3 class="bill-name" [title]="item.name">{{ item.name }}</h3>
 
@@ -88,17 +88,80 @@
             {{ item.price | currency : "PHP" : "symbol" : "1.2-2" }}
           </div>
 
-          <div class="bill-meta">
+          <div class="bill-meta" *ngIf="startLabel(item)">
             <mat-icon>event</mat-icon>
-            <span>Due on day {{ item.dueDay }}</span>
+            <span>{{ startLabel(item) }}</span>
           </div>
 
-          <p class="bill-desc" *ngIf="item.description">{{ item.description }}</p>
+          <!-- Visual term tracker: one circle per term (subscriptions grow a
+               green dot per paid cycle + a trailing hollow "next" dot). -->
+          <div class="term-tracker" [attr.aria-label]="trackerLabel(item) + ' paid'">
+            <div class="term-tracker__dots">
+              <span
+                class="term-dot"
+                *ngFor="let i of circlesOf(item)"
+                [class.paid]="isCirclePaid(item, i)"
+              ></span>
+              <span class="term-dot" *ngIf="isSubscription(item)"></span>
+            </div>
+            <span class="term-tracker__count">{{ trackerLabel(item) }}</span>
+          </div>
+
+          <!-- Pay Bill — creates an expense + fills the next circle. -->
+          <button
+            type="button"
+            class="pay-btn"
+            [class.done]="isFullyPaid(item)"
+            [disabled]="isFullyPaid(item)"
+            (pointerdown)="stop($event)"
+            (keydown.enter)="stop($event)"
+            (click)="payBill(item, $event)"
+          >
+            <mat-icon>{{ isFullyPaid(item) ? "verified" : "payments" }}</mat-icon>
+            <span>{{ isFullyPaid(item) ? "Settled" : "Pay Bill" }}</span>
+          </button>
+
+          <!-- Collapsible payment history. -->
+          <div class="bill-history" *ngIf="(item.payments?.length || 0) > 0">
+            <button
+              type="button"
+              class="history-toggle"
+              [attr.aria-expanded]="isHistoryOpen(item)"
+              (pointerdown)="stop($event)"
+              (keydown.enter)="stop($event)"
+              (click)="toggleHistory(item, $event)"
+            >
+              <mat-icon>history</mat-icon>
+              <span>History ({{ item.payments?.length }})</span>
+              <mat-icon class="chevron" [class.open]="isHistoryOpen(item)"
+                >expand_more</mat-icon
+              >
+            </button>
+
+            <ul
+              class="history-list"
+              *ngIf="isHistoryOpen(item)"
+              (pointerdown)="stop($event)"
+            >
+              <li class="history-row" *ngFor="let p of paymentsOf(item)">
+                <mat-icon>task_alt</mat-icon>
+                <span class="history-date">{{
+                  formatPaymentDate(p.timestamp)
+                }}</span>
+                <span class="history-amount">{{
+                  p.amount | currency : "PHP" : "symbol" : "1.2-2"
+                }}</span>
+              </li>
+            </ul>
+          </div>
         </article>
       </div>
     </div>
 
-    <div class="empty-list" *ngIf="vm.billingItems && vm.billingItems.length === 0">
+    <div
+      class="empty-list"
+      *ngIf="vm.billingItems && vm.billingItems.length === 0"
+    >
       <mat-icon>description</mat-icon>
       <p>No bills to show.</p>
     </div>

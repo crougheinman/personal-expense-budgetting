@@ -52,16 +52,16 @@ export class FirestoreService {
 
   async addDocument(collectionPath: string, data: any): Promise<void> {
     const collectionInstance = collection(this.firestore, collectionPath);
-    addDoc(collectionInstance, data);
+    await addDoc(collectionInstance, data);
   }
 
   async updateDocument(documentPath: string,  id: string, data: any): Promise<void> {
     const documentInstance = doc(this.firestore, documentPath, id);
-    updateDoc(documentInstance, data);
+    await updateDoc(documentInstance, data);
   }
 
   async deleteDocument(documentPath: string,  id: string): Promise<void> {
     const documentInstance = doc(this.firestore, documentPath, id);
-    deleteDoc(documentInstance);
+    await deleteDoc(documentInstance);
   }
 }

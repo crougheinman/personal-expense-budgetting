@@ -1,42 +1,53 @@
 import { Injectable } from "@angular/core";
-import { Billing, Expense, ExpenseCategory } from "@models";
-import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of, startWith, switchMap } from "rxjs";
+import {
+  Billing,
+  getBillingPaidCount,
+  getBillingTerms,
+  isSubscriptionBilling,
+} from "@models";
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  switchMap,
+} from "rxjs";
 import { Store } from "@ngrx/store";
 import { AppState, selectAuthenticatedUser } from "@store";
 import { BillingService } from "@app/services/billing.service";
-import { Timestamp } from "firebase/firestore";
-import { query, where } from "firebase/firestore";
-import moment from "moment";
-import { ExpensesService } from "@app/services";
 import { sortByNumericPropertiesAsc } from "@app/shared/utils";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 export interface BillingListFacadeModel {
-  billingItems?: Billing[];
-  billPayments?: Record<string, Expense> | null;
+  billingItems: Billing[];
   filteredCount: number;
   totalCount: number;
-  totalAmount: number;
-  remainingBalance: number;
+  totalAmount: number; // total obligation across all bills (price × terms)
+  paidAmount: number; // total already paid (price × paidTerms)
+  remainingBalance: number; // totalAmount − paidAmount
 }
 
 export const initialState: BillingListFacadeModel = {
   billingItems: [],
-  billPayments: {},
   filteredCount: 0,
   totalCount: 0,
   totalAmount: 0,
+  paidAmount: 0,
   remainingBalance: 0,
 };
 
 @Injectable()
 export class BillingListFacade {
   vm$: Observable<BillingListFacadeModel> = of(initialState);
-  searchKey$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  searchKey$: BehaviorSubject<string> = new BehaviorSubject<string>("");
 
   constructor(
     private billingService: BillingService,
-    private expensesService: ExpensesService,
     private store: Store<AppState>,
+    private snackBar: MatSnackBar
   ) {
     this.vm$ = this.buildViewModel();
   }
@@ -45,89 +56,97 @@ export class BillingListFacade {
     return combineLatest([
       this.getBillingItems(),
       this.searchKey$.asObservable().pipe(distinctUntilChanged()),
-      this.getBillingExpensesForThisMonth(),
     ]).pipe(
-      map(([billingItems, searchKey, billingExpenses]) => {
+      map(([billingItems, searchKey]) => {
         let filteredItems = billingItems;
-        
-        // Filter by search key
+
         if (searchKey.length > 0) {
-          filteredItems = filteredItems.filter((item) => 
-            item.name.toLowerCase().includes(searchKey.toLowerCase()) ||
-            (item.description && item.description.toLowerCase().includes(searchKey.toLowerCase()))
+          const key = searchKey.toLowerCase();
+          filteredItems = filteredItems.filter(
+            (item) =>
+              item.name.toLowerCase().includes(key) ||
+              (item.description &&
+                item.description.toLowerCase().includes(key))
           );
         }
 
-        filteredItems = sortByNumericPropertiesAsc(filteredItems, 'dueDay');
+        // Surface unpaid bills first; sort the rest by start date / due day.
+        filteredItems = sortByNumericPropertiesAsc(
+          [...filteredItems],
+          "dueDay"
+        );
 
-        // First paying expense per billingId (replaces lodash groupBy+mapValues).
-        const billingExpenseMap: Record<string, Expense> = {};
-        for (const expense of billingExpenses) {
-          const key = (expense as any).billingId;
-          if (key != null && !(key in billingExpenseMap)) {
-            billingExpenseMap[key] = expense;
-          }
+        // Totals are term-aware: a 12-term ₱1,000 bill is a ₱12,000 obligation.
+        // Subscriptions are open-ended, so they add no *future* obligation —
+        // only what's already been paid counts (net-zero remaining).
+        let totalAmount = 0;
+        let paidAmount = 0;
+        for (const item of billingItems) {
+          const price = item.price || 0;
+          const paidCount = getBillingPaidCount(item);
+          paidAmount += price * paidCount;
+          totalAmount += isSubscriptionBilling(item)
+            ? price * paidCount
+            : price * getBillingTerms(item);
         }
-        
-        // Calculate total amount of all bills
-        const totalAmount = billingItems.reduce((sum, item) => sum + (item.price || 0), 0);
-        
-        // Calculate total paid amount this month
-        const totalPaidAmount = billingExpenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
-        
-        // Calculate remaining balance
-        const remainingBalance = totalAmount - totalPaidAmount;
-        
+
         return {
           billingItems: filteredItems,
-          billPayments: billingExpenseMap,
           filteredCount: filteredItems.length,
           totalCount: billingItems.length,
-          totalAmount: totalAmount,
-          remainingBalance: remainingBalance,
+          totalAmount,
+          paidAmount,
+          remainingBalance: Math.max(0, totalAmount - paidAmount),
         };
       }),
-      startWith(initialState),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
-  }
-
-  private getBillingExpensesForThisMonth(): Observable<Expense[]> {
-      const startOfMonth = moment().startOf("month").toDate();
-      const endOfMonth = moment().endOf("month").toDate();
-    return this.store.select(selectAuthenticatedUser).pipe(
-      switchMap((user) => {
-        if (!user) {
-          return of([]);
-        }
-        return this.billingService.getBillsByUserId(user.id as string).pipe(
-          switchMap((bills) => {
-            const billIds = bills.map(bill => bill.id);
-            return this.expensesService.getExpensesByQuery((collectionRef) =>
-              query(
-                collectionRef,
-                where("billingId", "in", billIds),
-                where("expenseDate", ">=", Timestamp.fromDate(startOfMonth)),
-                where("expenseDate", "<=", Timestamp.fromDate(endOfMonth)),
-                where("userId", "==", user.id),
-                where("category", "==", ExpenseCategory.BILLS),
-              )
-            );
-          })
-        );
-      }),
-    );
-
   }
 
   private getBillingItems(): Observable<Billing[]> {
     return this.store.select(selectAuthenticatedUser).pipe(
       switchMap((user) => {
         if (!user) {
-          return of([]);
+          return of([] as Billing[]);
         }
         return this.billingService.getBillsByUserId(user.id as string);
-      }),
+      })
     );
+  }
+
+  /**
+   * Executes a payment via the shared service path: creates a Billings expense
+   * dated today and appends a payment record — filling the next term circle
+   * (the card re-renders reactively from the updated `payments` array).
+   */
+  async payBill(item: Billing): Promise<void> {
+    try {
+      const result = await this.billingService.payTerm(item);
+
+      if (result.alreadyPaid) {
+        this.snackBar.open(`"${item.name}" is fully paid.`, "Close", {
+          duration: 3000,
+          panelClass: ["success-snackbar"],
+        });
+        return;
+      }
+
+      this.snackBar.open(
+        result.fullyPaid
+          ? `Paid "${item.name}" — fully settled! 🎉`
+          : `Paid "${item.name}" — ${result.remaining} term${
+              result.remaining === 1 ? "" : "s"
+            } left.`,
+        "Close",
+        { duration: 3000, panelClass: ["success-snackbar"] }
+      );
+    } catch (error) {
+      console.error("Failed to pay bill:", error);
+      this.snackBar.open("Failed to pay the bill.", "Close", {
+        duration: 3000,
+        panelClass: ["error-snackbar"],
+      });
+    }
   }
 
   /** Permanently deletes a single bill. */

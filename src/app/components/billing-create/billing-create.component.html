@@ -1,39 +1,48 @@
 <ng-container *ngIf="vm$ | async as vm">
-  <!-- Close button for mobile fullscreen -->
-  <button
-    *ngIf="showCloseButton"
-    mat-icon-button
-    class="dialog-close-button"
-    (click)="closeDialog()"
-    aria-label="Close dialog"
-  >
-    <mat-icon>close</mat-icon>
-  </button>
+  <div class="exp-form">
+    <div class="form-head">
+      <div class="form-head__icon"><mat-icon>receipt_long</mat-icon></div>
+      <div class="form-head__text">
+        <h2>Add New Bill</h2>
+        <p>Set up a recurring or one-time bill.</p>
+      </div>
+      <button
+        *ngIf="showCloseButton"
+        mat-icon-button
+        class="form-close"
+        (click)="closeDialog()"
+        aria-label="Close dialog"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
 
-  <div class="billing-create px-4 py-3">
-    <h2 class="text-light">Add New Bill</h2>
-    <mat-divider></mat-divider>
-
-    <form [formGroup]="billingForm" class="pt-4">
+    <form [formGroup]="billingForm" class="form-body">
       <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
         <mat-label>Bill Name</mat-label>
+        <mat-icon matPrefix>label</mat-icon>
         <input
-          #billName
           matInput
           type="text"
           formControlName="billName"
-          placeholder="e.g., Electricity Bill, Internet Bill"
+          placeholder="e.g., Electricity, Internet, Car Loan"
           required
         />
-        <mat-error *ngIf="billingForm.get('billName')?.hasError('required')">
+        <mat-error *ngIf="billNameControl.hasError('required')">
           Bill name is required
         </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
-        <mat-label>Amount</mat-label>
+        <mat-label>Amount{{
+          typeControl.value === "recurring"
+            ? " per term"
+            : typeControl.value === "subscription"
+            ? " per cycle"
+            : ""
+        }}</mat-label>
+        <span matPrefix class="amount-prefix">₱</span>
         <input
-          #price
           matInput
           type="number"
           formControlName="price"
@@ -42,46 +51,92 @@
           min="0"
           required
         />
-        <span matTextPrefix>₱&nbsp;</span>
-        <mat-error *ngIf="billingForm.get('price')?.hasError('required')">
+        <mat-error *ngIf="priceControl.hasError('required')">
           Amount is required
         </mat-error>
-        <mat-error *ngIf="billingForm.get('price')?.hasError('min')">
-          Amount must be greater than 0
+        <mat-error *ngIf="priceControl.hasError('min')">
+          Amount must be 0 or greater
         </mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
-        <mat-label>Due Day</mat-label>
+      <!-- Type -->
+      <div class="field-block">
+        <span class="field-label">Type</span>
+        <div class="cat-chips">
+          <button
+            type="button"
+            class="cat-chip"
+            [class.selected]="typeControl.value === 'recurring'"
+            (click)="selectType('recurring')"
+          >
+            <mat-icon>autorenew</mat-icon>
+            <span>Recurring</span>
+          </button>
+          <button
+            type="button"
+            class="cat-chip"
+            [class.selected]="typeControl.value === 'subscription'"
+            (click)="selectType('subscription')"
+          >
+            <mat-icon>subscriptions</mat-icon>
+            <span>Subscription</span>
+          </button>
+          <button
+            type="button"
+            class="cat-chip"
+            [class.selected]="typeControl.value === 'onetime'"
+            (click)="selectType('onetime')"
+          >
+            <mat-icon>looks_one</mat-icon>
+            <span>One-time</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Terms (recurring installments only) -->
+      <mat-form-field
+        appearance="outline"
+        floatLabel="auto"
+        class="w-100"
+        *ngIf="typeControl.value === 'recurring'"
+      >
+        <mat-label>Number of terms / installments</mat-label>
+        <mat-icon matPrefix>tag</mat-icon>
         <input
-          #dueDay
           matInput
           type="number"
-          formControlName="dueDay"
-          placeholder="e.g., 15"
-          required
+          formControlName="terms"
+          placeholder="e.g., 12"
+          min="1"
+          step="1"
         />
-        <mat-error *ngIf="billingForm.get('dueDay')?.hasError('required')">
-          Due day is required
-        </mat-error>    
+        <mat-error *ngIf="termsControl.hasError('min')">
+          Must be at least 1
+        </mat-error>
       </mat-form-field>
 
+      <!-- Start date -->
+      <div class="field-block">
+        <span class="field-label">Start Date</span>
+        <component-date-picker formControlName="startDate"></component-date-picker>
+      </div>
+
       <mat-form-field appearance="outline" floatLabel="auto" class="w-100">
-        <mat-label>Description (Optional)</mat-label>
+        <mat-label>Description (optional)</mat-label>
+        <mat-icon matPrefix>notes</mat-icon>
         <textarea
-          #description
           matInput
+          rows="2"
           formControlName="description"
-          placeholder="Additional notes about this bill..."
-          rows="3"
+          placeholder="Additional notes about this bill…"
         ></textarea>
       </mat-form-field>
     </form>
 
     <div class="form-actions">
       <button
-        mat-raised-button
-        color="primary"
+        type="button"
+        class="act act-primary"
         (click)="addBill(vm)"
         [disabled]="billingForm.invalid"
       >

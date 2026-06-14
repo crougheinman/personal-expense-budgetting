@@ -1,0 +1,97 @@
+<div class="bill-detail">
+  <span class="sheet-grabber" aria-hidden="true"></span>
+
+  <button
+    mat-icon-button
+    class="detail-close"
+    (click)="close()"
+    aria-label="Close"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <!-- Hero -->
+  <div class="detail-hero">
+    <div class="detail-icon"><mat-icon>{{ typeIcon }}</mat-icon></div>
+    <span class="detail-amount">{{
+      bill.price | currency : "PHP" : "symbol" : "1.2-2"
+    }}</span>
+    <span class="detail-name">{{ bill.name }}</span>
+    <span class="detail-type">
+      <mat-icon>{{ typeIcon }}</mat-icon>
+      {{ typeLabel }}
+    </span>
+  </div>
+
+  <!-- Term tracker -->
+  <div class="detail-tracker">
+    <div class="detail-tracker__head">
+      <span class="detail-tracker__label">
+        {{ isSubscription ? "Cycles paid" : "Payment progress" }}
+      </span>
+      <span class="detail-tracker__count">{{ progressLabel }}</span>
+    </div>
+    <div class="detail-tracker__dots">
+      <span
+        class="term-dot"
+        *ngFor="let i of circles()"
+        [class.paid]="isCirclePaid(i)"
+      ></span>
+      <span class="term-dot" *ngIf="isSubscription"></span>
+    </div>
+  </div>
+
+  <!-- Meta -->
+  <div class="detail-meta">
+    <div class="meta-row">
+      <div class="meta-ic"><mat-icon>event</mat-icon></div>
+      <div class="meta-text">
+        <span class="meta-label">Start date</span>
+        <span class="meta-value">{{ startLabel }}</span>
+      </div>
+    </div>
+    <div class="meta-row" *ngIf="bill.description">
+      <div class="meta-ic"><mat-icon>notes</mat-icon></div>
+      <div class="meta-text">
+        <span class="meta-label">Description</span>
+        <span class="meta-value">{{ bill.description }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="detail-history" *ngIf="payments().length > 0">
+    <span class="detail-history__title">Payment history</span>
+    <ul class="history-list">
+      <li class="history-row" *ngFor="let p of payments()">
+        <mat-icon>task_alt</mat-icon>
+        <span class="history-date">{{ formatPaymentDate(p.timestamp) }}</span>
+        <span class="history-amount">{{
+          p.amount | currency : "PHP" : "symbol" : "1.2-2"
+        }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Actions -->
+  <div class="detail-actions">
+    <button type="button" class="act act-edit" (click)="edit()">
+      <mat-icon>edit</mat-icon>
+      Edit
+    </button>
+    <button type="button" class="act act-delete" (click)="remove()">
+      <mat-icon>delete</mat-icon>
+      Delete
+    </button>
+    <button
+      type="button"
+      class="act act-pay"
+      [class.done]="fullyPaid"
+      [disabled]="fullyPaid || paying"
+      (click)="pay()"
+    >
+      <mat-icon>{{ fullyPaid ? "verified" : "payments" }}</mat-icon>
+      {{ fullyPaid ? "Settled" : "Pay Bill" }}
+    </button>
+  </div>
+</div>
