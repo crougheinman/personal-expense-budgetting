@@ -162,20 +162,25 @@
       class="swipe-cell"
       *ngFor="let expense of vm.expenses; trackBy: trackById"
     >
-      <!-- Delete affordance revealed behind the row as it slides right -->
+      <!-- Delete affordance revealed behind the row as it slides right.
+           Hidden while dragging left so it can't cover the edit layer. -->
       <div
         class="swipe-cell__bg swipe-cell__bg--delete"
         [class.armed]="sw.armed"
+        [class.swipe-bg-hidden]="sw.dragX < 0"
         aria-hidden="true"
       >
         <mat-icon>delete</mat-icon>
         <span>Delete</span>
       </div>
 
-      <!-- Edit affordance revealed behind the row as it slides left -->
+      <!-- Edit affordance revealed behind the row as it slides left. The edit
+           layer is on top, so hide it unless actually dragging left — otherwise
+           it would cover the red delete background on a rightward swipe. -->
       <div
         class="swipe-cell__bg swipe-cell__bg--edit"
         [class.armed]="sw.armedLeft"
+        [class.swipe-bg-hidden]="sw.dragX >= 0"
         aria-hidden="true"
       >
         <span>Edit</span>

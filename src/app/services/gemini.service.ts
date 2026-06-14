@@ -83,7 +83,15 @@ const PEBBY_PROMPT =
   "transportation services — are calculated operational investments to maintain " +
   "high velocity and deep focus. Never offer generic, tone-deaf advice like " +
   "\"cut back on coffee to save money.\" Instead, focus on optimization and " +
-  "finding hidden systemic leaks (like excessive delivery or convenience fees).\n\n" +
+  "finding hidden systemic leaks (like excessive delivery or convenience fees).\n" +
+  "4. Recurring Commitments & Bills: the user tracks bills in three flavours — " +
+  "RECURRING installment plans (a fixed number of terms, e.g. a loan paid 3/12), " +
+  "open-ended SUBSCRIPTIONS (ongoing monthly charges with no end date), and " +
+  "ONE-TIME bills (a single payment, then they're gone). Treat the total monthly " +
+  "subscription load as a prime candidate for systemic leaks — flag stacking " +
+  "auto-renewals and anything rarely used. Respect committed obligations: " +
+  "installment balances and pending one-time bills are money already spoken for, " +
+  "so weigh them against the runway. Celebrate an installment plan nearing payoff.\n\n" +
   "Analysis Guardrails & Reporting Structure:\n" +
   "Organize your response using clean, scannable Markdown (bold labels and " +
   "\"- \" bullet lines — NO large headings):\n" +

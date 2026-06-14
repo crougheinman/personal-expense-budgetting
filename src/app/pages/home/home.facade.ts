@@ -1,7 +1,15 @@
 import { Inject, Injectable, OnDestroy, PLATFORM_ID } from "@angular/core";
 import { isPlatformBrowser } from "@angular/common";
 import { AppState, selectAuthenticatedUser } from "@app/store";
-import { Expense, User } from "@models";
+import {
+  Billing,
+  Expense,
+  User,
+  getBillingPaidCount,
+  getBillingTerms,
+  isOneTimeBilling,
+  isSubscriptionBilling,
+} from "@models";
 import { Store } from "@ngrx/store";
 import {
   BehaviorSubject,
@@ -17,6 +25,7 @@ import {
   switchMap,
 } from "rxjs";
 import { ExpensesService, GeminiService } from "@services";
+import { BillingService } from "@app/services/billing.service";
 import moment from "moment";
 
 // Pebby's report is cached this long so it doesn't spend API usage on every
@@ -51,6 +60,21 @@ export interface StatsView {
   breakdown: CategorySlice[];
 }
 
+/** Bill commitments fed to Pebby so it can factor in recurring obligations. */
+export interface BillsSummary {
+  hasBills: boolean;
+  active: number;
+  subscriptionCount: number;
+  subscriptionMonthly: number; // sum of subscription prices (per cycle)
+  subscriptionNames: string[];
+  installmentCount: number;
+  installmentOutstanding: number; // Σ price × remaining terms
+  installmentProgress: { name: string; paid: number; terms: number }[];
+  oneTimePendingCount: number;
+  oneTimePendingAmount: number;
+  paidThisMonth: number; // total bill payments dated in the current month
+}
+
 export interface HomeFacadeModel {
   user?: User;
   // Scope is capped at the current year; metrics below the year total are for
@@ -70,8 +94,23 @@ export interface HomeFacadeModel {
   monthly: MonthlyPoint[];
   topCategories: CategorySlice[];
   stats: StatsView;
+  bills: BillsSummary;
   hasData: boolean;
 }
+
+const emptyBills: BillsSummary = {
+  hasBills: false,
+  active: 0,
+  subscriptionCount: 0,
+  subscriptionMonthly: 0,
+  subscriptionNames: [],
+  installmentCount: 0,
+  installmentOutstanding: 0,
+  installmentProgress: [],
+  oneTimePendingCount: 0,
+  oneTimePendingAmount: 0,
+  paidThisMonth: 0,
+};
 
 export type PebbyStatus =
   | "loading"
@@ -106,6 +145,7 @@ const emptyAnalytics = {
     peakIndex: 0,
     breakdown: [] as CategorySlice[],
   },
+  bills: emptyBills,
   hasData: false,
 };
 
@@ -138,6 +178,7 @@ export class HomeFacade implements OnDestroy {
   constructor(
     private store: Store<AppState>,
     private expensesService: ExpensesService,
+    private billingService: BillingService,
     private gemini: GeminiService,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
@@ -189,25 +230,26 @@ export class HomeFacade implements OnDestroy {
   }
 
   private buildViewModel(): Observable<HomeFacadeModel> {
-    const userExpenses$ = this.store.select(selectAuthenticatedUser).pipe(
+    const userData$ = this.store.select(selectAuthenticatedUser).pipe(
       switchMap((user) =>
         user?.id
-          ? this.expensesService
-              .getExpensesByUserId(user.id)
-              .pipe(map((expenses) => ({ user, expenses })))
-          : of({ user, expenses: [] as Expense[] })
+          ? combineLatest([
+              this.expensesService.getExpensesByUserId(user.id),
+              this.billingService.getBillsByUserId(user.id),
+            ]).pipe(map(([expenses, bills]) => ({ user, expenses, bills })))
+          : of({ user, expenses: [] as Expense[], bills: [] as Billing[] })
       )
     );
 
     // Re-derive metrics when month or granularity changes WITHOUT re-querying.
     return combineLatest([
-      userExpenses$,
+      userData$,
       this.monthOffset$,
       this.granularity$.pipe(distinctUntilChanged()),
     ]).pipe(
-      map(([{ user, expenses }, offset, granularity]) =>
+      map(([{ user, expenses, bills }, offset, granularity]) =>
         user?.id
-          ? this.computeModel(user, expenses, offset, granularity)
+          ? this.computeModel(user, expenses, bills, offset, granularity)
           : { user, ...emptyAnalytics }
       )
     );
@@ -302,7 +344,7 @@ export class HomeFacade implements OnDestroy {
   }
 
   private summarize(vm: HomeFacadeModel): string {
-    return [
+    const lines = [
       `Spent this year (${moment().format("YYYY")}): ${vm.thisYear}`,
       `This week so far: ${vm.thisWeek}`,
       `This week by day: ${vm.weekByDay
@@ -320,12 +362,34 @@ export class HomeFacade implements OnDestroy {
       `Top categories that month: ${vm.topCategories
         .map((c) => `${c.name}=${c.amount} (${c.pct}%)`)
         .join(", ")}`,
-    ].join("\n");
+    ];
+
+    const b = vm.bills;
+    if (b.hasBills) {
+      const subs = b.subscriptionNames.length
+        ? ` across ${b.subscriptionNames.join(", ")}`
+        : "";
+      const progress = b.installmentProgress.length
+        ? ` (e.g. ${b.installmentProgress
+            .map((p) => `${p.name} ${p.paid}/${p.terms}`)
+            .join("; ")})`
+        : "";
+      lines.push(
+        `Active bills: ${b.active} — ${b.subscriptionCount} subscriptions, ${b.installmentCount} installment plans, ${b.oneTimePendingCount} one-time pending`,
+        `Monthly subscription load: ${b.subscriptionMonthly}${subs}`,
+        `Installment balance outstanding: ${b.installmentOutstanding}${progress}`,
+        `One-time bills pending: ${b.oneTimePendingAmount}`,
+        `Bills paid this month: ${b.paidThisMonth}`
+      );
+    }
+
+    return lines.join("\n");
   }
 
   private computeModel(
     user: User,
     expenses: Expense[],
+    bills: Billing[],
     monthOffset: number,
     granularity: StatGranularity
   ): HomeFacadeModel {
@@ -401,8 +465,58 @@ export class HomeFacade implements OnDestroy {
       monthly: this.buildMonthly(expenses),
       topCategories: this.buildCategories(monthExpenses, monthSpent),
       stats: this.buildStats(expenses, granularity),
+      bills: this.buildBillsSummary(bills),
       hasData: expenses.length > 0,
     };
+  }
+
+  /** Condenses the user's bills into commitment figures for Pebby. */
+  private buildBillsSummary(bills: Billing[]): BillsSummary {
+    const mStart = moment().startOf("month");
+    const mEnd = moment().endOf("month");
+
+    const summary: BillsSummary = { ...emptyBills, subscriptionNames: [], installmentProgress: [] };
+    summary.active = bills.length;
+    summary.hasBills = bills.length > 0;
+
+    for (const bill of bills) {
+      const price = bill.price || 0;
+
+      // Bill payments dated within the current calendar month.
+      for (const payment of bill.payments ?? []) {
+        const ms =
+          payment.timestamp && typeof payment.timestamp.toMillis === "function"
+            ? payment.timestamp.toMillis()
+            : 0;
+        if (ms && moment(ms).isSameOrAfter(mStart) && moment(ms).isSameOrBefore(mEnd)) {
+          summary.paidThisMonth += payment.amount || 0;
+        }
+      }
+
+      if (isSubscriptionBilling(bill)) {
+        summary.subscriptionCount++;
+        summary.subscriptionMonthly += price;
+        if (summary.subscriptionNames.length < 6) {
+          summary.subscriptionNames.push(bill.name);
+        }
+      } else if (isOneTimeBilling(bill)) {
+        // Paid one-time bills are removed, so any still present is pending.
+        if (getBillingPaidCount(bill) < 1) {
+          summary.oneTimePendingCount++;
+          summary.oneTimePendingAmount += price;
+        }
+      } else {
+        const terms = getBillingTerms(bill);
+        const paid = getBillingPaidCount(bill);
+        summary.installmentCount++;
+        summary.installmentOutstanding += price * Math.max(0, terms - paid);
+        if (summary.installmentProgress.length < 6) {
+          summary.installmentProgress.push({ name: bill.name, paid, terms });
+        }
+      }
+    }
+
+    return summary;
   }
 
   /**

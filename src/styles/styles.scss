@@ -268,6 +268,12 @@ a {
       width: 22px;
       height: 22px;
     }
+
+    // When two affordances overlap (delete + edit), the inactive direction is
+    // hidden so the top layer can't mask the one being revealed.
+    &.swipe-bg-hidden {
+      opacity: 0;
+    }
   }
 
   // Delete — left-aligned, revealed sliding right.
