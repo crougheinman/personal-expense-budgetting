@@ -90,6 +90,27 @@
       color: $color-accent;
     }
   }
+
+  .detail-overdue {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--app-error) 16%, transparent);
+    border: 1px solid $color-error;
+    color: $color-error;
+    font-size: 0.78rem;
+    font-weight: 700;
+
+    mat-icon {
+      font-size: 15px;
+      width: 15px;
+      height: 15px;
+      color: $color-error;
+    }
+  }
 }
 
 // Term tracker --------------------------------------------------------------

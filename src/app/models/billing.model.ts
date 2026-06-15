@@ -1,4 +1,5 @@
 import { Timestamp } from "firebase/firestore";
+import moment from "moment";
 
 /**
  * How a bill recurs:
@@ -122,6 +123,83 @@ export function isBillingFullyPaid(
     return false;
   }
   return getBillingPaidCount(billing) >= getBillingTerms(billing);
+}
+
+/**
+ * The date the next expected payment is (or was) due:
+ * - one-time → the start date.
+ * - subscription → the dueDay (or start day) of the current month.
+ * - recurring → start date + (lifetime payments) months (next installment).
+ * Returns null when there's no start date to schedule from.
+ */
+export function getBillingDueDate(
+  billing: Pick<Billing, "type" | "terms" | "payments" | "startDate" | "dueDay">,
+  now: Date = new Date()
+): Date | null {
+  const startMs =
+    billing.startDate && typeof billing.startDate.toMillis === "function"
+      ? billing.startDate.toMillis()
+      : null;
+
+  if (isOneTimeBilling(billing)) {
+    return startMs != null ? moment(startMs).startOf("day").toDate() : null;
+  }
+
+  if (isSubscriptionBilling(billing)) {
+    const day =
+      billing.dueDay && billing.dueDay > 0
+        ? billing.dueDay
+        : startMs != null
+        ? moment(startMs).date()
+        : null;
+    if (day == null) {
+      return null;
+    }
+    const ref = moment(now);
+    return ref.date(Math.min(day, ref.daysInMonth())).startOf("day").toDate();
+  }
+
+  // recurring: the installment at index = lifetime payments made so far.
+  if (startMs == null) {
+    return null;
+  }
+  const made = billing.payments?.length ?? 0;
+  return moment(startMs).add(made, "months").startOf("day").toDate();
+}
+
+/**
+ * True when the bill's current obligation is past its due date and unpaid.
+ * Fully-paid (or this-month-paid, for subscriptions) bills are never overdue,
+ * and nothing is overdue before its start date.
+ */
+export function isBillingOverdue(
+  billing: Pick<Billing, "type" | "terms" | "payments" | "startDate" | "dueDay">,
+  now: Date = new Date()
+): boolean {
+  if (isSubscriptionBilling(billing)) {
+    if (isBillingPaidThisMonth(billing, now)) {
+      return false;
+    }
+  } else if (isBillingFullyPaid(billing)) {
+    return false;
+  }
+
+  const due = getBillingDueDate(billing, now);
+  if (!due) {
+    return false;
+  }
+  const today = moment(now).startOf("day");
+
+  // Don't flag a bill before it has even started.
+  const startMs =
+    billing.startDate && typeof billing.startDate.toMillis === "function"
+      ? billing.startDate.toMillis()
+      : null;
+  if (startMs != null && today.isBefore(moment(startMs).startOf("day"))) {
+    return false;
+  }
+
+  return today.isAfter(moment(due).startOf("day"));
 }
 
 /** Human label for a bill type (maps legacy `fixed` → Subscription). */

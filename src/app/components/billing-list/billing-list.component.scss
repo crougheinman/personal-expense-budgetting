@@ -322,6 +322,13 @@
           border-color: $color-accent;
         }
 
+        // Past due and unpaid — red warning state (wins over the others).
+        &.overdue {
+          color: $color-error;
+          background: color-mix(in srgb, var(--app-error) 16%, transparent);
+          border-color: $color-error;
+        }
+
         // Hide the word on tight mobile cards; the icon still conveys state.
         @media (max-width: 767.98px) {
           .bill-status__txt {

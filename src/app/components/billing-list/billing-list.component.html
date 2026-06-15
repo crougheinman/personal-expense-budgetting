@@ -110,7 +110,8 @@
             <span
               class="bill-status"
               [class.paid]="payDone(item)"
-              [class.active]="isSubscription(item) && !subPaid(item)"
+              [class.active]="isSubscription(item) && !subPaid(item) && !isOverdue(item)"
+              [class.overdue]="isOverdue(item)"
             >
               <mat-icon>{{ statusIcon(item) }}</mat-icon>
               <span class="bill-status__txt">{{ statusLabel(item) }}</span>

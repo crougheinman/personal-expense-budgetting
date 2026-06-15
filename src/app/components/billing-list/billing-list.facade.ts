@@ -6,6 +6,7 @@ import {
   getBillingTerms,
   getTotalMonthlyIncome,
   isBillingFullyPaid,
+  isBillingOverdue,
   isOneTimeBilling,
   isSubscriptionBilling,
 } from "@models";
@@ -85,10 +86,11 @@ export class BillingListFacade {
           );
         }
 
-        // Surface unpaid bills first; sort the rest by start date / due day.
-        filteredItems = sortByNumericPropertiesAsc(
-          [...filteredItems],
-          "dueDay"
+        // Sort by due day, then float overdue bills to the very top.
+        filteredItems = sortByNumericPropertiesAsc([...filteredItems], "dueDay");
+        filteredItems = [...filteredItems].sort(
+          (a, b) =>
+            (isBillingOverdue(b) ? 1 : 0) - (isBillingOverdue(a) ? 1 : 0)
         );
 
         // Totals are term-aware: a 12-term ₱1,000 bill is a ₱12,000 obligation.

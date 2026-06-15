@@ -14,6 +14,7 @@ import {
   getBillingTypeIcon,
   getBillingTypeLabel,
   isBillingFullyPaid,
+  isBillingOverdue,
   isBillingPaidThisMonth,
   isSubscriptionBilling,
 } from "@app/models";
@@ -71,6 +72,9 @@ export class BillingDetailComponent {
   }
   get isSubscription(): boolean {
     return isSubscriptionBilling(this.bill);
+  }
+  get isOverdue(): boolean {
+    return isBillingOverdue(this.bill);
   }
   /** Subscription settled for the current month (resets next month). */
   get subPaid(): boolean {

@@ -21,6 +21,7 @@ import {
   getBillingTypeIcon,
   getBillingTypeLabel,
   isBillingFullyPaid,
+  isBillingOverdue,
   isBillingPaidThisMonth,
   isOneTimeBilling,
   isSubscriptionBilling,
@@ -133,6 +134,11 @@ export class BillingListComponent implements OnInit, OnDestroy {
     return isBillingPaidThisMonth(item);
   }
 
+  /** Current obligation is past due and unpaid. */
+  isOverdue(item: Billing): boolean {
+    return isBillingOverdue(item);
+  }
+
   /** Whether the bill's pay action is done (settled, or sub paid this month). */
   payDone(item: Billing): boolean {
     return this.isSubscription(item)
@@ -149,6 +155,9 @@ export class BillingListComponent implements OnInit, OnDestroy {
   }
 
   statusLabel(item: Billing): string {
+    if (this.isOverdue(item)) {
+      return "Overdue";
+    }
     if (this.isSubscription(item)) {
       return this.subPaid(item) ? "Paid" : "Active";
     }
@@ -156,6 +165,9 @@ export class BillingListComponent implements OnInit, OnDestroy {
   }
 
   statusIcon(item: Billing): string {
+    if (this.isOverdue(item)) {
+      return "warning";
+    }
     if (this.isSubscription(item)) {
       return this.subPaid(item) ? "check_circle" : "all_inclusive";
     }

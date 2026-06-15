@@ -21,6 +21,10 @@
       <mat-icon>{{ typeIcon }}</mat-icon>
       {{ typeLabel }}
     </span>
+    <span class="detail-overdue" *ngIf="isOverdue">
+      <mat-icon>warning</mat-icon>
+      Overdue
+    </span>
   </div>
 
   <!-- Term tracker -->
