@@ -12,6 +12,8 @@ export interface Expense {
     nextDueDate?: Date;
     paid?: boolean;
     billingId?: string;
+    /** Id of the bill payment this expense was created from (for reverse cleanup). */
+    billingPaymentId?: string;
     paymentMethod?: string;
     tags?: string[];
     notes?: string;

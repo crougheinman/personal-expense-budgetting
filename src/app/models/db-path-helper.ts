@@ -8,4 +8,7 @@ export class DBPathHelper {
     static getInventoryPath(): string {
         return 'inventory';
     }
+    static getIncomePath(): string {
+        return 'income';
+    }
 }

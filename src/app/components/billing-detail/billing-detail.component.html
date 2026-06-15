@@ -27,17 +27,19 @@
   <div class="detail-tracker">
     <div class="detail-tracker__head">
       <span class="detail-tracker__label">
-        {{ isSubscription ? "Cycles paid" : "Payment progress" }}
+        {{ isSubscription ? "This month" : "Payment progress" }}
       </span>
       <span class="detail-tracker__count">{{ progressLabel }}</span>
     </div>
-    <div class="detail-tracker__dots">
+    <div class="detail-tracker__dots" *ngIf="!useTermBar">
       <span
         class="term-dot"
         *ngFor="let i of circles()"
         [class.paid]="isCirclePaid(i)"
       ></span>
-      <span class="term-dot" *ngIf="isSubscription"></span>
+    </div>
+    <div class="term-bar" *ngIf="useTermBar">
+      <div class="term-bar__fill" [style.width.%]="progressPct"></div>
     </div>
   </div>
 
@@ -86,12 +88,12 @@
     <button
       type="button"
       class="act act-pay"
-      [class.done]="fullyPaid"
-      [disabled]="fullyPaid || paying"
+      [class.done]="payDone"
+      [disabled]="payDone || paying"
       (click)="pay()"
     >
-      <mat-icon>{{ fullyPaid ? "verified" : "payments" }}</mat-icon>
-      {{ fullyPaid ? "Settled" : "Pay Bill" }}
+      <mat-icon>{{ payDone ? "verified" : "payments" }}</mat-icon>
+      {{ payDone ? (isSubscription ? "Paid" : "Settled") : "Pay Bill" }}
     </button>
   </div>
 </div>

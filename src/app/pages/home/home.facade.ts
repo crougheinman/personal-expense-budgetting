@@ -4,9 +4,11 @@ import { AppState, selectAuthenticatedUser } from "@app/store";
 import {
   Billing,
   Expense,
+  Income,
   User,
   getBillingPaidCount,
   getBillingTerms,
+  getTotalMonthlyIncome,
   isOneTimeBilling,
   isSubscriptionBilling,
 } from "@models";
@@ -24,7 +26,7 @@ import {
   Subscription,
   switchMap,
 } from "rxjs";
-import { ExpensesService, GeminiService } from "@services";
+import { ExpensesService, GeminiService, IncomeService } from "@services";
 import { BillingService } from "@app/services/billing.service";
 import moment from "moment";
 
@@ -95,6 +97,7 @@ export interface HomeFacadeModel {
   topCategories: CategorySlice[];
   stats: StatsView;
   bills: BillsSummary;
+  monthlyIncome: number;
   hasData: boolean;
 }
 
@@ -146,6 +149,7 @@ const emptyAnalytics = {
     breakdown: [] as CategorySlice[],
   },
   bills: emptyBills,
+  monthlyIncome: 0,
   hasData: false,
 };
 
@@ -179,6 +183,7 @@ export class HomeFacade implements OnDestroy {
     private store: Store<AppState>,
     private expensesService: ExpensesService,
     private billingService: BillingService,
+    private incomeService: IncomeService,
     private gemini: GeminiService,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
@@ -236,8 +241,21 @@ export class HomeFacade implements OnDestroy {
           ? combineLatest([
               this.expensesService.getExpensesByUserId(user.id),
               this.billingService.getBillsByUserId(user.id),
-            ]).pipe(map(([expenses, bills]) => ({ user, expenses, bills })))
-          : of({ user, expenses: [] as Expense[], bills: [] as Billing[] })
+              this.incomeService.getIncomesByUserId(user.id),
+            ]).pipe(
+              map(([expenses, bills, incomes]) => ({
+                user,
+                expenses,
+                bills,
+                incomes,
+              }))
+            )
+          : of({
+              user,
+              expenses: [] as Expense[],
+              bills: [] as Billing[],
+              incomes: [] as Income[],
+            })
       )
     );
 
@@ -247,9 +265,9 @@ export class HomeFacade implements OnDestroy {
       this.monthOffset$,
       this.granularity$.pipe(distinctUntilChanged()),
     ]).pipe(
-      map(([{ user, expenses, bills }, offset, granularity]) =>
+      map(([{ user, expenses, bills, incomes }, offset, granularity]) =>
         user?.id
-          ? this.computeModel(user, expenses, bills, offset, granularity)
+          ? this.computeModel(user, expenses, bills, incomes, offset, granularity)
           : { user, ...emptyAnalytics }
       )
     );
@@ -345,6 +363,9 @@ export class HomeFacade implements OnDestroy {
 
   private summarize(vm: HomeFacadeModel): string {
     const lines = [
+      vm.monthlyIncome > 0
+        ? `Monthly income (salary): ${vm.monthlyIncome}`
+        : `Monthly income (salary): not set`,
       `Spent this year (${moment().format("YYYY")}): ${vm.thisYear}`,
       `This week so far: ${vm.thisWeek}`,
       `This week by day: ${vm.weekByDay
@@ -390,6 +411,7 @@ export class HomeFacade implements OnDestroy {
     user: User,
     expenses: Expense[],
     bills: Billing[],
+    incomes: Income[],
     monthOffset: number,
     granularity: StatGranularity
   ): HomeFacadeModel {
@@ -466,6 +488,7 @@ export class HomeFacade implements OnDestroy {
       topCategories: this.buildCategories(monthExpenses, monthSpent),
       stats: this.buildStats(expenses, granularity),
       bills: this.buildBillsSummary(bills),
+      monthlyIncome: getTotalMonthlyIncome(incomes),
       hasData: expenses.length > 0,
     };
   }

@@ -14,12 +14,15 @@ import {
   getBillingTypeIcon,
   getBillingTypeLabel,
   isBillingFullyPaid,
+  isBillingPaidThisMonth,
   isSubscriptionBilling,
 } from "@app/models";
 import { BillingService } from "@app/services/billing.service";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { BillingEditComponent } from "../billing-edit/billing-edit.component";
+import { BillingPayDialogComponent } from "../billing-pay-dialog/billing-pay-dialog.component";
 import { Timestamp } from "firebase/firestore";
+import { firstValueFrom } from "rxjs";
 import moment from "moment";
 
 /**
@@ -69,12 +72,21 @@ export class BillingDetailComponent {
   get isSubscription(): boolean {
     return isSubscriptionBilling(this.bill);
   }
+  /** Subscription settled for the current month (resets next month). */
+  get subPaid(): boolean {
+    return isBillingPaidThisMonth(this.bill);
+  }
+  /** Pay action complete (finite bill settled, or subscription paid this month). */
+  get payDone(): boolean {
+    return this.isSubscription ? this.subPaid : this.fullyPaid;
+  }
 
-  /** "3/12" for finite bills, "3 paid" for open-ended subscriptions. */
+  /** "3/12" for finite bills, monthly status for open-ended subscriptions. */
   get progressLabel(): string {
-    return this.isSubscription
-      ? `${this.paidCount} paid`
-      : `${this.paidCount}/${this.terms}`;
+    if (this.isSubscription) {
+      return this.subPaid ? "Paid this month" : "Due this month";
+    }
+    return `${this.paidCount}/${this.terms}`;
   }
 
   circles(): number[] {
@@ -82,6 +94,14 @@ export class BillingDetailComponent {
   }
   isCirclePaid(index: number): boolean {
     return index < this.paidCount;
+  }
+
+  /** Over 8 terms, render a progress bar instead of a grid of circles. */
+  get useTermBar(): boolean {
+    return this.terms > 8;
+  }
+  get progressPct(): number {
+    return this.terms > 0 ? Math.round((this.paidCount / this.terms) * 100) : 0;
   }
 
   get startLabel(): string {
@@ -111,19 +131,40 @@ export class BillingDetailComponent {
     if (this.paying) {
       return;
     }
-    if (this.fullyPaid) {
-      this.snackBar.open(`"${this.bill.name}" is fully paid.`, "Close", {
-        duration: 3000,
-        panelClass: ["success-snackbar"],
-      });
+    if (this.payDone) {
+      this.snackBar.open(
+        this.isSubscription
+          ? `"${this.bill.name}" is already paid this month.`
+          : `"${this.bill.name}" is fully paid.`,
+        "Close",
+        { duration: 3000, panelClass: ["success-snackbar"] }
+      );
       return;
+    }
+
+    // Subscriptions vary month to month — confirm this month's amount first.
+    let amountOverride: number | undefined;
+    if (this.isSubscription) {
+      amountOverride = await firstValueFrom(
+        this.dialog
+          .open(BillingPayDialogComponent, {
+            width: "360px",
+            data: { name: this.bill.name, defaultAmount: this.bill.price },
+          })
+          .afterClosed()
+      );
+      if (amountOverride == null) {
+        return; // cancelled
+      }
     }
 
     this.paying = true;
     try {
-      const result = await this.billingService.payTerm(this.bill);
+      const result = await this.billingService.payTerm(this.bill, amountOverride);
       this.snackBar.open(
-        result.fullyPaid
+        this.isSubscription
+          ? `Paid "${this.bill.name}" for this month. ✓`
+          : result.fullyPaid
           ? `Paid "${this.bill.name}" — fully settled! 🎉`
           : `Paid "${this.bill.name}" — ${result.remaining} term${
               result.remaining === 1 ? "" : "s"

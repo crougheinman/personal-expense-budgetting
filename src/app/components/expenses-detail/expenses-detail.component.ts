@@ -12,6 +12,7 @@ import {
   getCategoryDisplayName,
 } from "@app/models";
 import { ExpensesService } from "@services";
+import { BillingService } from "@app/services/billing.service";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { ExpensesEditComponent } from "../expenses-edit/expenses-edit.component";
 import moment from "moment";
@@ -36,6 +37,7 @@ export class ExpensesDetailComponent {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private expensesService: ExpensesService,
+    private billingService: BillingService,
   ) {}
 
   get icon(): string {
@@ -78,6 +80,8 @@ export class ExpensesDetailComponent {
       }
       try {
         await this.expensesService.deleteExpense(this.expense);
+        // If this expense came from a bill payment, drop that history entry too.
+        await this.billingService.removePaymentForExpense(this.expense);
         this.bottomSheetRef.dismiss();
         this.snackBar.open(`Deleted "${this.expense.name}".`, "Close", {
           duration: 3000,

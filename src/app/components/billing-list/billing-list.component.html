@@ -1,10 +1,45 @@
 <ng-container *ngIf="vm$ | async as vm">
   <div id="billing-summary" class="billing-summary-container mt-2 mb-3">
+    <!-- Salary left this month = monthly income − this month's obligations. -->
+    <div
+      class="salary-banner"
+      *ngIf="vm.hasIncome; else noSalary"
+      [class.negative]="vm.salaryLeft < 0"
+    >
+      <div class="salary-banner__head">
+        <mat-icon>account_balance_wallet</mat-icon>
+        <span>Salary left this month</span>
+      </div>
+      <div class="salary-banner__value">
+        {{ vm.salaryLeft | currency : "PHP" : "symbol" : "1.2-2" }}
+      </div>
+      <div class="salary-banner__sub">
+        {{ vm.monthlyIncome | currency : "PHP" : "symbol" : "1.0-0" }} income
+        −
+        {{ vm.monthObligation | currency : "PHP" : "symbol" : "1.0-0" }} due
+      </div>
+    </div>
+    <ng-template #noSalary>
+      <a class="salary-banner salary-banner--empty" routerLink="/settings">
+        <mat-icon>account_balance_wallet</mat-icon>
+        <span>Add your salary in Settings to see what's left after bills.</span>
+        <mat-icon class="salary-banner__chevron">chevron_right</mat-icon>
+      </a>
+    </ng-template>
+
     <div class="billing-summary-cards">
       <mat-card class="summary-card">
         <mat-card-header>
           <mat-card-title>{{ vm.totalCount }}</mat-card-title>
           <mat-card-subtitle>Total Bills</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+      <mat-card class="summary-card summary-card--accent">
+        <mat-card-header>
+          <mat-card-title>
+            {{ vm.monthObligation | currency : "PHP" : "symbol" : "1.2-2" }}
+          </mat-card-title>
+          <mat-card-subtitle>Due This Month</mat-card-subtitle>
         </mat-card-header>
       </mat-card>
       <mat-card class="summary-card">
@@ -74,8 +109,8 @@
             <span class="bill-type">{{ typeLabel(item) }}</span>
             <span
               class="bill-status"
-              [class.paid]="isFullyPaid(item)"
-              [class.active]="isSubscription(item)"
+              [class.paid]="payDone(item)"
+              [class.active]="isSubscription(item) && !subPaid(item)"
             >
               <mat-icon>{{ statusIcon(item) }}</mat-icon>
               <span class="bill-status__txt">{{ statusLabel(item) }}</span>
@@ -96,13 +131,18 @@
           <!-- Visual term tracker: one circle per term (subscriptions grow a
                green dot per paid cycle + a trailing hollow "next" dot). -->
           <div class="term-tracker" [attr.aria-label]="trackerLabel(item) + ' paid'">
-            <div class="term-tracker__dots">
+            <div class="term-tracker__dots" *ngIf="!useTermBar(item)">
               <span
                 class="term-dot"
                 *ngFor="let i of circlesOf(item)"
                 [class.paid]="isCirclePaid(item, i)"
               ></span>
-              <span class="term-dot" *ngIf="isSubscription(item)"></span>
+            </div>
+            <div class="term-bar" *ngIf="useTermBar(item)">
+              <div
+                class="term-bar__fill"
+                [style.width.%]="progressPct(item)"
+              ></div>
             </div>
             <span class="term-tracker__count">{{ trackerLabel(item) }}</span>
           </div>
@@ -111,49 +151,21 @@
           <button
             type="button"
             class="pay-btn"
-            [class.done]="isFullyPaid(item)"
-            [disabled]="isFullyPaid(item)"
+            [class.done]="payDone(item)"
+            [disabled]="payDone(item)"
             (pointerdown)="stop($event)"
             (keydown.enter)="stop($event)"
             (click)="payBill(item, $event)"
           >
-            <mat-icon>{{ isFullyPaid(item) ? "verified" : "payments" }}</mat-icon>
-            <span>{{ isFullyPaid(item) ? "Settled" : "Pay Bill" }}</span>
+            <mat-icon>{{ payDone(item) ? "verified" : "payments" }}</mat-icon>
+            <span>{{
+              payDone(item)
+                ? isSubscription(item)
+                  ? "Paid"
+                  : "Settled"
+                : "Pay Bill"
+            }}</span>
           </button>
-
-          <!-- Collapsible payment history. -->
-          <div class="bill-history" *ngIf="(item.payments?.length || 0) > 0">
-            <button
-              type="button"
-              class="history-toggle"
-              [attr.aria-expanded]="isHistoryOpen(item)"
-              (pointerdown)="stop($event)"
-              (keydown.enter)="stop($event)"
-              (click)="toggleHistory(item, $event)"
-            >
-              <mat-icon>history</mat-icon>
-              <span>History ({{ item.payments?.length }})</span>
-              <mat-icon class="chevron" [class.open]="isHistoryOpen(item)"
-                >expand_more</mat-icon
-              >
-            </button>
-
-            <ul
-              class="history-list"
-              *ngIf="isHistoryOpen(item)"
-              (pointerdown)="stop($event)"
-            >
-              <li class="history-row" *ngFor="let p of paymentsOf(item)">
-                <mat-icon>task_alt</mat-icon>
-                <span class="history-date">{{
-                  formatPaymentDate(p.timestamp)
-                }}</span>
-                <span class="history-amount">{{
-                  p.amount | currency : "PHP" : "symbol" : "1.2-2"
-                }}</span>
-              </li>
-            </ul>
-          </div>
         </article>
       </div>
     </div>

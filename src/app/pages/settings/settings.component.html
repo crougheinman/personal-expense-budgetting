@@ -57,4 +57,158 @@
       <span>Add a Google Gemini API key in the environment to enable AI features.</span>
     </div>
   </section>
+
+  <!-- Income settings -->
+  <section class="setting-section">
+    <div class="section-title">
+      <mat-icon>payments</mat-icon>
+      <h2>Income</h2>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-info">
+        <h3>Salaries</h3>
+        <p>
+          Add one or more income sources (e.g. a main job and a side gig) so
+          Billings can show what's left after your bills, and Pebby can weigh
+          spending against your income.
+        </p>
+      </div>
+    </div>
+
+    <!-- Existing income sources -->
+    <div class="income-list" *ngIf="incomes.length > 0">
+      <div class="income-row" *ngFor="let inc of incomes">
+        <div class="income-row__icon"><mat-icon>payments</mat-icon></div>
+        <div class="income-row__main">
+          <span class="income-row__name">{{ inc.name || "Salary" }}</span>
+          <span class="income-row__meta">
+            {{ inc.amount | currency : "PHP" : "symbol" : "1.0-0" }} ·
+            {{ freqLabel(inc.frequency) }}
+            <span class="income-row__monthly">
+              → {{ monthlyOf(inc) | currency : "PHP" : "symbol" : "1.0-0" }}/mo
+            </span>
+          </span>
+        </div>
+        <button
+          mat-icon-button
+          class="income-row__btn"
+          (click)="editIncome(inc)"
+          aria-label="Edit salary"
+        >
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          class="income-row__btn income-row__btn--danger"
+          (click)="removeIncome(inc)"
+          aria-label="Remove salary"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Add / edit form -->
+    <form [formGroup]="incomeForm" class="income-form">
+      <mat-form-field appearance="outline" class="income-name">
+        <mat-label>Label (optional)</mat-label>
+        <input
+          matInput
+          type="text"
+          formControlName="name"
+          placeholder="e.g., Main job"
+        />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="income-amount">
+        <mat-label>Amount per pay</mat-label>
+        <span matTextPrefix>₱&nbsp;</span>
+        <input
+          matInput
+          type="number"
+          min="0"
+          step="0.01"
+          formControlName="amount"
+          placeholder="0.00"
+        />
+        <mat-error *ngIf="incomeForm.get('amount')?.hasError('required')">
+          Amount is required
+        </mat-error>
+        <mat-error *ngIf="incomeForm.get('amount')?.hasError('min')">
+          Must be 0 or more
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="income-freq">
+        <mat-label>Frequency</mat-label>
+        <mat-select formControlName="frequency">
+          <mat-option value="monthly">Monthly</mat-option>
+          <mat-option value="bimonthly">Twice a month</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+
+    <div class="income-summary">
+      <span class="income-summary__label">
+        <mat-icon>account_balance_wallet</mat-icon>
+        Total monthly income
+      </span>
+      <strong class="income-summary__value">
+        {{ totalMonthly | currency : "PHP" : "symbol" : "1.2-2" }}
+      </strong>
+    </div>
+
+    <div class="setting-item income-actions">
+      <p
+        class="setting-status"
+        *ngIf="incomeMessage"
+        [class.is-error]="incomeStatus === 'error'"
+        [class.is-done]="incomeStatus === 'saved'"
+      >
+        <mat-icon>{{
+          incomeStatus === 'error'
+            ? 'error_outline'
+            : incomeStatus === 'saved'
+            ? 'check_circle'
+            : 'autorenew'
+        }}</mat-icon>
+        {{ incomeMessage }}
+      </p>
+
+      <div class="income-actions__btns">
+        <button
+          *ngIf="editingId"
+          mat-stroked-button
+          (click)="cancelEdit()"
+          [disabled]="incomeStatus === 'saving'"
+        >
+          Cancel
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          class="run-btn"
+          (click)="submitIncome()"
+          [disabled]="incomeForm.invalid || incomeStatus === 'saving'"
+        >
+          <mat-progress-spinner
+            *ngIf="incomeStatus === 'saving'"
+            diameter="18"
+            mode="indeterminate"
+          ></mat-progress-spinner>
+          <mat-icon *ngIf="incomeStatus !== 'saving'">{{
+            editingId ? 'save' : 'add'
+          }}</mat-icon>
+          {{
+            incomeStatus === 'saving'
+              ? 'Saving…'
+              : editingId
+              ? 'Update salary'
+              : 'Add salary'
+          }}
+        </button>
+      </div>
+    </div>
+  </section>
 </div>

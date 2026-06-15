@@ -1,12 +1,103 @@
 @use 'variables' as *;
 
 .billing-summary-container {
+  // Headline: salary left after this month's bill obligations.
+  .salary-banner {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+    border-radius: 14px;
+    background: linear-gradient(
+      135deg,
+      $color-accent 0%,
+      $color-accent-strong 100%
+    );
+    color: $color-accent-on;
+    box-shadow: 0 8px 22px color-mix(in srgb, var(--app-accent) 26%, transparent);
+
+    .salary-banner__head {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      opacity: 0.92;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    .salary-banner__value {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+
+      @media (max-width: 600px) {
+        font-size: 1.6rem;
+      }
+    }
+
+    .salary-banner__sub {
+      font-size: 0.78rem;
+      opacity: 0.88;
+    }
+
+    // Obligations exceed income — flip to a warning treatment.
+    &.negative {
+      background: linear-gradient(
+        135deg,
+        $color-error 0%,
+        color-mix(in srgb, var(--app-error) 70%, #000) 100%
+      );
+      box-shadow: 0 8px 22px color-mix(in srgb, var(--app-error) 26%, transparent);
+    }
+
+    // No salary set yet — a muted prompt linking to settings.
+    &--empty {
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      background: $color-surface;
+      border: 1px dashed $color-border;
+      color: $color-text-muted;
+      box-shadow: none;
+      text-decoration: none;
+      font-size: 0.86rem;
+      transition: border-color 0.2s ease, color 0.2s ease;
+
+      span {
+        flex: 1 1 auto;
+      }
+
+      mat-icon {
+        color: $color-accent;
+      }
+
+      .salary-banner__chevron {
+        color: $color-text-muted;
+      }
+
+      &:hover {
+        border-color: $color-accent;
+        color: $color-text;
+      }
+    }
+  }
+
   .billing-summary-cards {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
 
     .summary-card {
-      flex: 1 1 0;
+      // 4 cards: one row on wider screens, 2×2 once they hit the 150px basis.
+      flex: 1 1 150px;
       min-width: 0;
       background: $color-surface;
       border: 1px solid $color-border;
@@ -17,6 +108,16 @@
       &:hover {
         transform: translateY(-2px);
         border-color: $color-accent;
+      }
+
+      // The current-month obligation card is highlighted.
+      &--accent {
+        background: $color-accent-soft;
+        border-color: color-mix(in srgb, var(--app-accent) 45%, transparent);
+
+        mat-card-title {
+          color: $color-accent-text;
+        }
       }
 
       mat-card-header {
@@ -65,17 +166,6 @@
 
   .search-field {
     flex: 1;
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -385,89 +475,6 @@
     }
   }
 
-  // ----- Collapsible history log ------------------------------------------
-  .bill-history {
-    border-top: 1px solid $color-border;
-    padding-top: 7px;
-
-    .history-toggle {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      width: 100%;
-      padding: 2px 0;
-      border: 0;
-      background: transparent;
-      cursor: pointer;
-      font-size: 0.74rem;
-      font-weight: 600;
-      color: $color-text-muted;
-
-      &:hover {
-        color: $color-accent-text;
-      }
-
-      mat-icon {
-        font-size: 15px;
-        width: 15px;
-        height: 15px;
-      }
-
-      .chevron {
-        margin-left: auto;
-        transition: transform 0.2s ease;
-
-        &.open {
-          transform: rotate(180deg);
-        }
-      }
-    }
-
-    .history-list {
-      list-style: none;
-      margin: 6px 0 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      max-height: 168px;
-      overflow-y: auto;
-      animation: slideDown 0.2s ease-out;
-
-      .history-row {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.72rem;
-        color: $color-text-muted;
-        padding: 4px 6px;
-        border-radius: 7px;
-        background: $color-surface-2;
-
-        mat-icon {
-          flex-shrink: 0;
-          font-size: 14px;
-          width: 14px;
-          height: 14px;
-          color: $color-success;
-        }
-
-        .history-date {
-          flex: 1 1 auto;
-          min-width: 0;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .history-amount {
-          flex-shrink: 0;
-          font-weight: 700;
-          color: $color-text;
-        }
-      }
-    }
-  }
 }
 
 .empty-list {

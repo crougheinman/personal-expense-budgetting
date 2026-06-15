@@ -1,10 +1,15 @@
 import { Injectable } from "@angular/core";
 import {
   Billing,
+  Income,
   getBillingPaidCount,
   getBillingTerms,
+  getTotalMonthlyIncome,
+  isBillingFullyPaid,
+  isOneTimeBilling,
   isSubscriptionBilling,
 } from "@models";
+import { IncomeService } from "@app/services";
 import {
   BehaviorSubject,
   combineLatest,
@@ -28,6 +33,10 @@ export interface BillingListFacadeModel {
   totalAmount: number; // total obligation across all bills (price × terms)
   paidAmount: number; // total already paid (price × paidTerms)
   remainingBalance: number; // totalAmount − paidAmount
+  monthObligation: number; // amount scheduled this month (subs + due installments + pending one-time)
+  monthlyIncome: number; // resolved monthly salary (0 if unset)
+  hasIncome: boolean; // a salary has been configured
+  salaryLeft: number; // monthlyIncome − monthObligation
 }
 
 export const initialState: BillingListFacadeModel = {
@@ -37,6 +46,10 @@ export const initialState: BillingListFacadeModel = {
   totalAmount: 0,
   paidAmount: 0,
   remainingBalance: 0,
+  monthObligation: 0,
+  monthlyIncome: 0,
+  hasIncome: false,
+  salaryLeft: 0,
 };
 
 @Injectable()
@@ -46,6 +59,7 @@ export class BillingListFacade {
 
   constructor(
     private billingService: BillingService,
+    private incomeService: IncomeService,
     private store: Store<AppState>,
     private snackBar: MatSnackBar
   ) {
@@ -56,8 +70,9 @@ export class BillingListFacade {
     return combineLatest([
       this.getBillingItems(),
       this.searchKey$.asObservable().pipe(distinctUntilChanged()),
+      this.getIncomes(),
     ]).pipe(
-      map(([billingItems, searchKey]) => {
+      map(([billingItems, searchKey, incomes]) => {
         let filteredItems = billingItems;
 
         if (searchKey.length > 0) {
@@ -81,6 +96,9 @@ export class BillingListFacade {
         // only what's already been paid counts (net-zero remaining).
         let totalAmount = 0;
         let paidAmount = 0;
+        // What this month asks of you: every subscription's cycle charge, one
+        // installment for each active recurring plan, and any pending one-time.
+        let monthObligation = 0;
         for (const item of billingItems) {
           const price = item.price || 0;
           const paidCount = getBillingPaidCount(item);
@@ -88,7 +106,19 @@ export class BillingListFacade {
           totalAmount += isSubscriptionBilling(item)
             ? price * paidCount
             : price * getBillingTerms(item);
+
+          if (isSubscriptionBilling(item)) {
+            monthObligation += price;
+          } else if (isOneTimeBilling(item)) {
+            if (paidCount < 1) {
+              monthObligation += price;
+            }
+          } else if (!isBillingFullyPaid(item)) {
+            monthObligation += price;
+          }
         }
+
+        const monthlyIncome = getTotalMonthlyIncome(incomes);
 
         return {
           billingItems: filteredItems,
@@ -97,9 +127,21 @@ export class BillingListFacade {
           totalAmount,
           paidAmount,
           remainingBalance: Math.max(0, totalAmount - paidAmount),
+          monthObligation,
+          monthlyIncome,
+          hasIncome: monthlyIncome > 0,
+          salaryLeft: monthlyIncome - monthObligation,
         };
       }),
       shareReplay({ bufferSize: 1, refCount: true })
+    );
+  }
+
+  private getIncomes(): Observable<Income[]> {
+    return this.store.select(selectAuthenticatedUser).pipe(
+      switchMap((user) =>
+        user?.id ? this.incomeService.getIncomesByUserId(user.id) : of([])
+      )
     );
   }
 
@@ -119,20 +161,26 @@ export class BillingListFacade {
    * dated today and appends a payment record — filling the next term circle
    * (the card re-renders reactively from the updated `payments` array).
    */
-  async payBill(item: Billing): Promise<void> {
+  async payBill(item: Billing, amountOverride?: number): Promise<void> {
+    const subscription = isSubscriptionBilling(item);
     try {
-      const result = await this.billingService.payTerm(item);
+      const result = await this.billingService.payTerm(item, amountOverride);
 
       if (result.alreadyPaid) {
-        this.snackBar.open(`"${item.name}" is fully paid.`, "Close", {
-          duration: 3000,
-          panelClass: ["success-snackbar"],
-        });
+        this.snackBar.open(
+          subscription
+            ? `"${item.name}" is already paid this month.`
+            : `"${item.name}" is fully paid.`,
+          "Close",
+          { duration: 3000, panelClass: ["success-snackbar"] }
+        );
         return;
       }
 
       this.snackBar.open(
-        result.fullyPaid
+        subscription
+          ? `Paid "${item.name}" for this month. ✓`
+          : result.fullyPaid
           ? `Paid "${item.name}" — fully settled! 🎉`
           : `Paid "${item.name}" — ${result.remaining} term${
               result.remaining === 1 ? "" : "s"

@@ -10,6 +10,7 @@ import { BillingCreateComponent } from "./billing-create/billing-create.componen
 import { BillingListComponent } from "./billing-list/billing-list.component";
 import { BillingEditComponent } from "./billing-edit/billing-edit.component";
 import { BillingDetailComponent } from "./billing-detail/billing-detail.component";
+import { BillingPayDialogComponent } from "./billing-pay-dialog/billing-pay-dialog.component";
 import { ConfirmationDialogComponent } from "./confirmation-dialog/confirmation-dialog.component";
 
 import { ReactiveFormsModule } from "@angular/forms";
@@ -38,6 +39,7 @@ import { MaterialModule } from "../shared/material.module";
     BillingListComponent,
     BillingEditComponent,
     BillingDetailComponent,
+    BillingPayDialogComponent,
     ConfirmationDialogComponent,
     InventoryCreateComponent,
     InventoryListComponent,

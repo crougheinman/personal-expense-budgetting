@@ -62,36 +62,59 @@ export function isSubscriptionBilling(
   return billing.type === "subscription" || (billing.type as string) === "fixed";
 }
 
-/** Number of payments made (subscriptions are unbounded; others clamp to terms). */
-export function getBillingPaidCount(
-  billing: Pick<Billing, "type" | "terms" | "payments">
-): number {
-  const paid = billing.payments?.length ?? 0;
-  if (isSubscriptionBilling(billing)) {
-    return paid;
-  }
-  return Math.min(paid, getBillingTerms(billing));
+/** True if the bill has a payment dated within the given month (default: now). */
+export function isBillingPaidThisMonth(
+  billing: Pick<Billing, "payments">,
+  now: Date = new Date()
+): boolean {
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  return (billing.payments ?? []).some((p) => {
+    const ms =
+      p.timestamp && typeof p.timestamp.toMillis === "function"
+        ? p.timestamp.toMillis()
+        : 0;
+    if (!ms) {
+      return false;
+    }
+    const d = new Date(ms);
+    return d.getFullYear() === year && d.getMonth() === month;
+  });
 }
 
 /**
  * Number of tracker slots:
  * - one-time → 1
  * - recurring → the configured installment count (min 1)
- * - subscription → the count of payments so far (it has no fixed total)
+ * - subscription → 1 (a single monthly slot that resets each month)
  */
 export function getBillingTerms(
   billing: Pick<Billing, "type" | "terms" | "payments">
 ): number {
-  if (isOneTimeBilling(billing)) {
+  if (isOneTimeBilling(billing) || isSubscriptionBilling(billing)) {
     return 1;
-  }
-  if (isSubscriptionBilling(billing)) {
-    return getBillingPaidCount(billing);
   }
   return Math.max(1, billing.terms ?? 1);
 }
 
-/** True once every term has been paid. Subscriptions are never "fully paid". */
+/**
+ * Paid-term count for the tracker. Subscriptions reflect only the CURRENT month
+ * (1 if paid this month, else 0); others count lifetime payments up to `terms`.
+ */
+export function getBillingPaidCount(
+  billing: Pick<Billing, "type" | "terms" | "payments">
+): number {
+  if (isSubscriptionBilling(billing)) {
+    return isBillingPaidThisMonth(billing) ? 1 : 0;
+  }
+  const paid = billing.payments?.length ?? 0;
+  return Math.min(paid, getBillingTerms(billing));
+}
+
+/**
+ * True once every term has been paid. Subscriptions are never "fully paid"
+ * (they recur), but `isBillingPaidThisMonth` tells you the current cycle.
+ */
 export function isBillingFullyPaid(
   billing: Pick<Billing, "type" | "terms" | "payments">
 ): boolean {

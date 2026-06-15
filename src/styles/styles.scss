@@ -642,6 +642,25 @@ a {
   }
 }
 
+// Term tracker progress bar — used instead of dots when terms > 8 (a 36-term
+// loan as 36 circles is noise; a fill bar reads cleaner). Shared by card + modal.
+.term-bar {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 8px;
+  border-radius: 999px;
+  background: $color-surface-3;
+  border: 1px solid $color-border;
+  overflow: hidden;
+
+  .term-bar__fill {
+    height: 100%;
+    border-radius: 999px;
+    background: $color-success;
+    transition: width 0.35s ease;
+  }
+}
+
 // Term tracker dot — shared by the bill card and the bill detail modal. ------
 .term-dot {
   width: 11px;

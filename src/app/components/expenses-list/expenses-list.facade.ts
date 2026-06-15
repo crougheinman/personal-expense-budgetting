@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
 import { ExpensesService } from "@services";
+import { BillingService } from "@app/services/billing.service";
 import { Expense } from "@models";
 import { BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of, switchMap } from "rxjs";
 import { Store } from "@ngrx/store";
@@ -60,6 +61,7 @@ export class ExpensesListFacade {
 
   constructor(
     private expensesService: ExpensesService,
+    private billingService: BillingService,
     private store: Store<AppState>
   ) {
     this.vm$ = this.buildViewModel();
@@ -215,9 +217,13 @@ export class ExpensesListFacade {
     );
   }
 
-  /** Permanently deletes a single expense. */
-  deleteExpense(expense: Expense): Promise<void> {
-    return this.expensesService.deleteExpense({ id: expense.id });
+  /**
+   * Permanently deletes an expense. If it was created from a bill payment, the
+   * matching entry is also removed from that bill's history.
+   */
+  async deleteExpense(expense: Expense): Promise<void> {
+    await this.expensesService.deleteExpense({ id: expense.id });
+    await this.billingService.removePaymentForExpense(expense);
   }
 
   previousDay(): void {

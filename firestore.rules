@@ -36,5 +36,10 @@ service cloud.firestore {
       allow read, update, delete: if isOwner();
       allow create: if isCreatingOwn();
     }
+
+    match /income/{docId} {
+      allow read, update, delete: if isOwner();
+      allow create: if isCreatingOwn();
+    }
   }
 }

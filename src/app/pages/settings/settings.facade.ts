@@ -1,9 +1,10 @@
 import { Injectable } from "@angular/core";
 import { Store } from "@ngrx/store";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, Observable, of, switchMap } from "rxjs";
 import { AppState, selectAuthenticatedUser } from "@app/store";
-import { ExpensesService, GeminiService } from "@services";
-import { EXPENSE_CATEGORIES, ExpenseCategory } from "@models";
+import { ExpensesService, GeminiService, IncomeService } from "@services";
+import { IncomeInput } from "@app/services/income.service";
+import { EXPENSE_CATEGORIES, ExpenseCategory, Income } from "@models";
 
 export interface CategorizeResult {
   /** Number of uncategorized expenses found. */
@@ -17,12 +18,43 @@ export class SettingsFacade {
   constructor(
     private store: Store<AppState>,
     private expensesService: ExpensesService,
+    private incomeService: IncomeService,
     private gemini: GeminiService
   ) {}
 
   /** Whether AI features are available (a Gemini key is configured). */
   get geminiConfigured(): boolean {
     return this.gemini.isConfigured;
+  }
+
+  /** The user's saved income sources (live). */
+  getIncomes(): Observable<Income[]> {
+    return this.store.select(selectAuthenticatedUser).pipe(
+      switchMap((user) =>
+        user?.id ? this.incomeService.getIncomesByUserId(user.id) : of([])
+      )
+    );
+  }
+
+  /** Adds a new income source. */
+  async addIncome(input: IncomeInput): Promise<void> {
+    const user = await firstValueFrom(
+      this.store.select(selectAuthenticatedUser)
+    );
+    if (!user?.id) {
+      throw new Error("No authenticated user");
+    }
+    await this.incomeService.addIncome(user.id, input);
+  }
+
+  /** Updates an existing income source. */
+  updateIncome(id: string, input: IncomeInput): Promise<void> {
+    return this.incomeService.updateIncome(id, input);
+  }
+
+  /** Removes an income source. */
+  deleteIncome(id: string): Promise<void> {
+    return this.incomeService.deleteIncome(id);
   }
 
   /**

@@ -16,18 +16,18 @@ import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   Billing,
-  BillingPayment,
   getBillingPaidCount,
   getBillingTerms,
   getBillingTypeIcon,
   getBillingTypeLabel,
   isBillingFullyPaid,
+  isBillingPaidThisMonth,
   isOneTimeBilling,
   isSubscriptionBilling,
 } from "@app/models";
 import { BillingDetailComponent } from "../billing-detail/billing-detail.component";
+import { BillingPayDialogComponent } from "../billing-pay-dialog/billing-pay-dialog.component";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
-import { Timestamp } from "firebase/firestore";
 import moment from "moment";
 
 /** Milliseconds the one-time card fades before it is deleted. */
@@ -44,8 +44,6 @@ const ONE_TIME_FADE_MS = 1200;
 export class BillingListComponent implements OnInit, OnDestroy {
   vm$: Observable<BillingListFacadeModel> = of(initialState);
 
-  /** Ids whose history log is expanded. */
-  private expandedHistory = new Set<string>();
   /** Ids currently playing the one-time fade-out. */
   private removing = new Set<string>();
   /** Ids already scheduled for removal (so the stream can't re-trigger). */
@@ -119,24 +117,47 @@ export class BillingListComponent implements OnInit, OnDestroy {
     return index < this.paidCountOf(item);
   }
 
-  /** Tracker caption: "3/12" for finite bills, "3 paid" for subscriptions. */
+  /** Over 8 terms, render a progress bar instead of a noisy grid of circles. */
+  useTermBar(item: Billing): boolean {
+    return this.termsOf(item) > 8;
+  }
+
+  /** Paid share (0-100) for the progress bar. */
+  progressPct(item: Billing): number {
+    const terms = this.termsOf(item);
+    return terms > 0 ? Math.round((this.paidCountOf(item) / terms) * 100) : 0;
+  }
+
+  /** Subscription paid for the current month (resets next month). */
+  subPaid(item: Billing): boolean {
+    return isBillingPaidThisMonth(item);
+  }
+
+  /** Whether the bill's pay action is done (settled, or sub paid this month). */
+  payDone(item: Billing): boolean {
+    return this.isSubscription(item)
+      ? this.subPaid(item)
+      : this.isFullyPaid(item);
+  }
+
+  /** Tracker caption: "3/12" for finite bills, "Paid"/"Due" for subscriptions. */
   trackerLabel(item: Billing): string {
     if (this.isSubscription(item)) {
-      return `${this.paidCountOf(item)} paid`;
+      return this.subPaid(item) ? "Paid" : "Due";
     }
     return `${this.paidCountOf(item)}/${this.termsOf(item)}`;
   }
 
   statusLabel(item: Billing): string {
     if (this.isSubscription(item)) {
-      return "Active";
+      return this.subPaid(item) ? "Paid" : "Active";
     }
     return this.isFullyPaid(item) ? "Paid" : "Pending";
   }
 
   statusIcon(item: Billing): string {
     if (this.isSubscription(item)) {
-      return "all_inclusive";
+      return this.subPaid(item) ? "check_circle" : "all_inclusive";
     }
     return this.isFullyPaid(item) ? "check_circle" : "schedule";
   }
@@ -149,28 +170,6 @@ export class BillingListComponent implements OnInit, OnDestroy {
       return `Due on day ${item.dueDay}`;
     }
     return "";
-  }
-
-  // --- History log --------------------------------------------------------
-  isHistoryOpen(item: Billing): boolean {
-    return this.expandedHistory.has(item.id);
-  }
-  toggleHistory(item: Billing, event: Event): void {
-    this.stop(event);
-    if (this.expandedHistory.has(item.id)) {
-      this.expandedHistory.delete(item.id);
-    } else {
-      this.expandedHistory.add(item.id);
-    }
-  }
-  paymentsOf(item: Billing): BillingPayment[] {
-    return [...(item.payments ?? [])].sort(
-      (a, b) => this.toMillis(a.timestamp) - this.toMillis(b.timestamp)
-    );
-  }
-  formatPaymentDate(ts: Timestamp): string {
-    const ms = this.toMillis(ts);
-    return ms ? moment(ms).format("MMM D, YYYY · h:mm A") : "—";
   }
 
   // --- Removal animation --------------------------------------------------
@@ -205,13 +204,27 @@ export class BillingListComponent implements OnInit, OnDestroy {
   // --- Actions ------------------------------------------------------------
   payBill(item: Billing, event: Event): void {
     this.stop(event);
-    if (this.isFullyPaid(item) || this.removing.has(item.id)) {
-      this.snackBar.open(`"${item.name}" is fully paid.`, "Close", {
-        duration: 3000,
-        panelClass: ["success-snackbar"],
-      });
+    if (this.payDone(item) || this.removing.has(item.id)) {
+      return; // button is disabled in this state; this is just a safety net
+    }
+
+    // Subscriptions vary month to month — confirm this month's amount first.
+    if (this.isSubscription(item)) {
+      this.dialog
+        .open(BillingPayDialogComponent, {
+          width: "360px",
+          data: { name: item.name, defaultAmount: item.price },
+        })
+        .afterClosed()
+        .subscribe((amount?: number) => {
+          if (amount == null) {
+            return; // cancelled
+          }
+          this.facade.payBill(item, amount);
+        });
       return;
     }
+
     this.facade.payBill(item);
   }
 
@@ -249,9 +262,5 @@ export class BillingListComponent implements OnInit, OnDestroy {
   /** Stops a pointer/click from bubbling to the card's swipe/tap gesture. */
   stop(event: Event): void {
     event.stopPropagation();
-  }
-
-  private toMillis(ts: Timestamp | undefined): number {
-    return ts && typeof ts.toMillis === "function" ? ts.toMillis() : 0;
   }
 }
